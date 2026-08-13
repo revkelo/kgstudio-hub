@@ -344,6 +344,9 @@ p { text-wrap: pretty; }
 /* ── Controles ──────────────────────────────────────────────── */
 
 .controls { display: flex; flex-direction: column; gap: 0.7rem; }
+/* `display:flex` le gana al atributo `hidden`, así que al abrir el panel los
+   controles seguían debajo y se leían dos bloques a la vez. */
+.controls[hidden] { display: none; }
 
 .controls__title {
   font-family: var(--mono);
@@ -571,6 +574,43 @@ kbd {
   border-radius: 16px 16px 0 0;
 }
 .has-webgl.sheet-open .sheet { transform: none; visibility: visible; }
+.has-webgl .sheet.is-dragging { transition: none; }
+
+/* ── Barra de la hoja ───────────────────────────────────────────
+   Sin escena la lista ES el documento y no se minimiza nada: la barra
+   solo existe cuando la lista es una hoja que tapa la zona. */
+
+.sheet__bar { display: none; }
+
+.has-webgl .sheet { padding-top: 0; }
+.has-webgl .sheet__bar {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  /* A sangre: cancela el padding lateral de la hoja para que la barra
+     llegue a los bordes redondeados. */
+  margin: 0 calc(var(--pad) * -1) clamp(1.25rem, 3vw, 2rem);
+  padding: 0.55rem var(--pad) 0.7rem;
+  background: rgba(13,13,16,.94);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  border-radius: 16px 16px 0 0;
+  cursor: grab;
+  touch-action: none;
+}
+.has-webgl .sheet__bar:active { cursor: grabbing; }
+
+.sheet__grip {
+  display: block;
+  width: 2.75rem; height: 3px;
+  margin: 0 auto 0.55rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,.2);
+}
+
+.sheet__bar-in { max-width: 60rem; margin: 0 auto; display: flex; justify-content: flex-end; }
+.sheet__min { cursor: pointer; }
 
 .sheet__inner { max-width: 60rem; margin: 0 auto; }
 

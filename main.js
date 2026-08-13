@@ -142,6 +142,51 @@ function setSheet(open) {
 
 toggle.addEventListener('click', () => setSheet(!root.classList.contains('sheet-open')));
 
+// La hoja tapa el botón que la abrió, así que lleva su propia salida.
+document.getElementById('sheetMin')?.addEventListener('click', () => {
+  setSheet(false);
+  toggle.focus();
+});
+
+/*
+ * Y se puede bajar arrastrando la barra, que es lo que uno intenta en el
+ * teléfono al ver un agarre. Se sigue el dedo en vivo y se decide al soltar:
+ * pasado el umbral se minimiza, si no vuelve a su sitio.
+ */
+const sheetBar = document.getElementById('sheetBar');
+if (sheetBar) {
+  const DISMISS = 90;
+  let dragY = null;
+
+  const move = (e) => {
+    if (dragY === null) return;
+    const dy = Math.max(e.clientY - dragY, 0);
+    sheet.style.transform = dy ? `translateY(${dy}px)` : '';
+  };
+
+  const end = (e) => {
+    if (dragY === null) return;
+    const dy = Math.max(e.clientY - dragY, 0);
+    dragY = null;
+    sheet.classList.remove('is-dragging');
+    sheet.style.transform = '';
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', end);
+    window.removeEventListener('pointercancel', end);
+    if (dy > DISMISS) setSheet(false);
+  };
+
+  sheetBar.addEventListener('pointerdown', (e) => {
+    // El botón de minimizar se apaña solo.
+    if (e.target.closest('button')) return;
+    dragY = e.clientY;
+    sheet.classList.add('is-dragging');
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', end);
+    window.addEventListener('pointercancel', end);
+  });
+}
+
 const year = document.getElementById('year');
 if (year) year.textContent = String(new Date().getFullYear());
 
@@ -192,7 +237,8 @@ function build() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.065;
   controls.enablePan = false;
-  controls.minDistance = 4;
+  // Por dentro del halo del núcleo no hay nada que ver y se pierde el norte.
+  controls.minDistance = 7;
   controls.zoomSpeed = 0.75;
   controls.rotateSpeed = 0.5;
   controls.autoRotate = !REDUCED;
@@ -350,12 +396,20 @@ function build() {
   // Arrancar a la distancia correcta para esta pantalla.
   camera.position.setLength(homeDistance);
 
+  // En vertical el escenario se mide contra la altura del rail, y esa altura
+  // cambia cuando entran las tipografías: hay que volver a medir y reencuadrar.
+  document.fonts?.ready.then(() => {
+    layout();
+    if (!selected) camera.position.setLength(homeDistance);
+  });
+
   /* ── Selección ──────────────────────────────────────────── */
 
   let selected = null;
   let hovered = null;
   let hoveredLabel = null;
   const homeTarget = new THREE.Vector3();
+  const aim = new THREE.Vector3();
 
   function select(body) {
     selected = body;
@@ -417,6 +471,12 @@ function build() {
     downAt = null;
     // Arrastrar no debe seleccionar: solo un toque limpio.
     if (moved > 6) return;
+    // Con la lista arriba, tocar la zona que asoma la minimiza. Es lo que
+    // se espera de una hoja: tocar fuera la cierra.
+    if (root.classList.contains('sheet-open')) {
+      setSheet(false);
+      return;
+    }
     updatePointer(e);
     raycaster.setFromCamera(pointer, camera);
     const hit = raycaster.intersectObjects(hitTargets, false)[0];
@@ -502,6 +562,13 @@ function build() {
   const projected = new THREE.Vector3();
   const toBody = new THREE.Vector3();
   const placements = [];
+  // Franja de borde en la que una etiqueta se apaga al salirse del escenario.
+  const EDGE_FADE = 70;
+
+  function hideLabel(label) {
+    label.style.opacity = '0';
+    label.style.pointerEvents = 'none';
+  }
   const clock = new THREE.Clock();
   let frame = 0;
   let booted = false;
@@ -578,24 +645,43 @@ function build() {
       projected.copy(body.world).project(camera);
 
       if (projected.z > 1 || occluded(body)) {
-        body.label.style.opacity = '0';
-        body.label.style.pointerEvents = 'none';
+        hideLabel(body.label);
         return;
       }
 
-      // Clavar la etiqueta dentro del escenario: nunca sobre el rail
-      // ni fuera de la pantalla.
-      const x = THREE.MathUtils.clamp(
-        (projected.x * 0.5 + 0.5) * W, stage.x + pad, stage.x + stage.w - pad,
-      );
-      const y = THREE.MathUtils.clamp(
-        (-projected.y * 0.5 + 0.5) * H, stage.y + pad * 0.6, stage.y + stage.h - pad * 0.6,
-      );
+      const px = (projected.x * 0.5 + 0.5) * W;
+      const py = (-projected.y * 0.5 + 0.5) * H;
+
+      /*
+       * Una etiqueta clavada al borde deja de nombrar a su cuerpo: apunta a
+       * un sitio donde no hay nada. Antes se recortaban al escenario y, al
+       * acercarse a un cuerpo, las cuatro que se salían acababan apiladas en
+       * la misma esquina, ilegibles. Ahora salirse se paga con opacidad: se
+       * desvanecen en la franja del borde y desaparecen al cruzarla.
+       */
+      const left = stage.x + pad;
+      const right = stage.x + stage.w - pad;
+      const top = stage.y + pad * 0.6;
+      const bottom = stage.y + stage.h - pad * 0.6;
+      const out = Math.max(left - px, px - right, top - py, py - bottom, 0);
+      if (out > EDGE_FADE) {
+        hideLabel(body.label);
+        return;
+      }
 
       const dist = camera.position.distanceTo(body.world);
       const fade = THREE.MathUtils.clamp(1.5 - dist / (homeDistance * 1.5), 0.42, 1);
+      const edge = 1 - out / EDGE_FADE;
+      // Con un producto abierto, los demás nombres bajan la voz: el panel es
+      // lo que se está leyendo.
+      const dim = selected && !isActive ? 0.4 : 1;
 
-      placements.push({ label: body.label, x, y, opacity: isActive ? 1 : fade });
+      placements.push({
+        label: body.label,
+        x: THREE.MathUtils.clamp(px, left, right),
+        y: THREE.MathUtils.clamp(py, top, bottom),
+        opacity: (isActive ? 1 : fade * dim) * edge,
+      });
     });
 
     /*
@@ -606,18 +692,29 @@ function build() {
      */
     placements.sort((a, b) => a.y - b.y);
     const GAP = 32;
+    const TOP = stage.y + pad * 0.6;
     const LIMIT = stage.y + stage.h - pad * 0.6;
-    for (let i = 1; i < placements.length; i++) {
-      const prev = placements[i - 1];
-      const cur = placements[i];
-      if (Math.abs(cur.x - prev.x) > 140) continue;
-      if (cur.y - prev.y < GAP) cur.y = Math.min(prev.y + GAP, LIMIT);
+    // Dos pasadas: empujar hacia abajo y, cuando abajo ya no queda sitio,
+    // devolver la diferencia hacia arriba. Empujar en un solo sentido hacía
+    // que las últimas se pegaran todas al mismo píxel del fondo.
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 1; i < placements.length; i++) {
+        const prev = placements[i - 1];
+        const cur = placements[i];
+        if (Math.abs(cur.x - prev.x) > 140) continue;
+        const overlap = GAP - (cur.y - prev.y);
+        if (overlap <= 0) continue;
+        const down = Math.min(Math.max(LIMIT - cur.y, 0), overlap);
+        cur.y += down;
+        if (overlap - down > 0) prev.y = Math.max(TOP, prev.y - (overlap - down));
+      }
     }
 
     placements.forEach((p) => {
       p.label.style.setProperty('--x', `${Math.round(p.x)}px`);
       p.label.style.setProperty('--y', `${Math.round(p.y)}px`);
-      p.label.style.pointerEvents = 'auto';
+      // Una etiqueta casi transparente no debe seguir capturando el clic.
+      p.label.style.pointerEvents = p.opacity > 0.25 ? 'auto' : 'none';
       p.label.style.opacity = String(p.opacity);
     });
     placements.length = 0;
@@ -626,11 +723,19 @@ function build() {
 
     // Seleccionar arrastra el centro de giro hasta el cuerpo y acerca
     // la cámara: explorar deja de ser dar vueltas al mismo punto.
-    controls.target.lerp(selected ? selected.world : homeTarget, dt * (selected ? 2.4 : 1.5));
+    // El centro de giro no salta al cuerpo, se queda a medio camino entre el
+    // núcleo y él: así el cuerpo elegido queda a la vista sin echar el resto
+    // del sistema fuera del escenario.
+    if (selected) aim.copy(selected.world).multiplyScalar(0.55);
+    else aim.copy(homeTarget);
+    controls.target.lerp(aim, dt * (selected ? 2.4 : 1.5));
 
     if (selected) {
       offset.copy(camera.position).sub(controls.target);
-      const want = THREE.MathUtils.clamp(homeDistance * 0.42, controls.minDistance + 1, controls.maxDistance);
+      // Acercarse, no aterrizar encima: a 0.42 el núcleo llenaba la pantalla,
+      // los demás cuerpos se salían del escenario y se perdía el sistema, que
+      // es lo que hay que seguir viendo mientras se lee un producto.
+      const want = THREE.MathUtils.clamp(homeDistance * 0.66, controls.minDistance + 3, controls.maxDistance);
       offset.setLength(THREE.MathUtils.lerp(offset.length(), want, dt * 1.6));
       camera.position.copy(controls.target).add(offset);
     }

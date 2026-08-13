@@ -179,6 +179,18 @@
 
 <!-- ── Listado real: sin WebGL es la página; con WebGL es vista alterna ── -->
 <section class="sheet" id="lista" aria-label="Sitios en vivo">
+
+  <!-- Con escena, la lista es una hoja que sube desde abajo: necesita su
+       propia salida, porque tapa el botón del rail que la abrió. -->
+  <div class="sheet__bar" id="sheetBar">
+    <span class="sheet__grip" aria-hidden="true"></span>
+    <div class="sheet__bar-in">
+      <button type="button" class="ghost sheet__min" id="sheetMin" aria-controls="lista">
+        Minimizar <span aria-hidden="true">↓</span>
+      </button>
+    </div>
+  </div>
+
   <div class="sheet__inner">
     <div class="sheet__head">
       <h2>Corriendo ahora</h2>
