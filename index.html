@@ -2,21 +2,22 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kevin Gonzalez — Cloud &amp; DevOps Engineer</title>
-<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Explora en 3D todo lo que tengo corriendo bajo kgstudio.top.">
+<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Explora en 3D los sitios que tengo corriendo bajo kgstudio.top y su estado en vivo.">
 <link rel="canonical" href="https://kgstudio.top/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kgstudio.top/">
 <meta property="og:title" content="Kevin Gonzalez — Cloud &amp; DevOps Engineer">
-<meta property="og:description" content="Construyo, despliego y opero. Explora en 3D lo que tengo corriendo ahora mismo.">
+<meta property="og:description" content="Construyo, despliego y opero. Explora la zona: cada sitio se enciende cuando su servidor responde.">
 <meta property="og:image" content="https://kgstudio.top/photo.jpg">
 <meta property="og:locale" content="es_CO">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="#07070a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f56f0d'/%3E%3Ctext x='32' y='43' font-family='ui-monospace,monospace' font-size='27' font-weight='700' fill='%230d0d0d' text-anchor='middle'%3EKG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 
@@ -48,91 +49,118 @@
 
 <a class="skip" href="#lista">Saltar al listado de sitios</a>
 
-<!-- La escena vive detrás de todo. Si no hay WebGL, el canvas nunca se
-     pinta y el listado de abajo queda como la página completa. -->
 <canvas id="scene" aria-hidden="true"></canvas>
-
 <div class="veil" aria-hidden="true"></div>
 
-<header class="top">
-  <span class="top__mark">KG&nbsp;Studio</span>
-  <nav class="top__nav" aria-label="Enlaces externos">
-    <a href="https://github.com/revkelo" rel="me noopener" target="_blank">GitHub</a>
-    <a href="https://linkedin.com/in/kagonzalezdev" rel="me noopener" target="_blank">LinkedIn</a>
-    <a href="mailto:kgagudelo@gmail.com">Correo</a>
-  </nav>
-</header>
+<!-- Tapa el vacío negro mientras llega Three.js del CDN. -->
+<div class="boot" id="boot" aria-hidden="true">
+  <span class="boot__bar"></span>
+  <span class="boot__text">Levantando la zona…</span>
+</div>
 
-<!-- ── Identidad, superpuesta a la escena ────────────────────────── -->
-<section class="hud">
-  <p class="hud__who">
-    <span class="pulse" aria-hidden="true"></span>
-    Bogotá, Colombia · Abierto a proyectos
-  </p>
-  <h1 class="hud__name">Kevin<br>Gonzalez</h1>
-  <p class="hud__role">Cloud &amp; DevOps Engineer</p>
-  <p class="hud__lede">
-    Ingeniero de sistemas. Construyo, despliego y opero.
-    Esto es todo lo que tengo corriendo ahora mismo.
-  </p>
-</section>
+<!--
+  La interfaz vive en su propia franja y el sistema orbital se corre al
+  espacio que queda libre. Por eso nada se superpone a los cuerpos:
+  el script mide estos bloques y desplaza el frustum de la cámara.
+-->
+<div class="rail" id="rail">
 
-<!-- Etiquetas 3D: las posiciona el script sobre cada nodo. Son enlaces
-     de verdad, así que funcionan con teclado y las lee un buscador. -->
+  <div class="rail__top" id="railTop">
+    <header class="top">
+      <span class="top__mark">KG&nbsp;Studio</span>
+      <nav class="top__nav" aria-label="Enlaces externos">
+        <a href="https://github.com/revkelo" rel="me noopener" target="_blank">GitHub</a>
+        <a href="https://linkedin.com/in/kagonzalezdev" rel="me noopener" target="_blank">LinkedIn</a>
+        <a href="mailto:kgagudelo@gmail.com">Correo</a>
+      </nav>
+    </header>
+
+    <section class="hud">
+      <p class="hud__who">
+        <span class="pulse" aria-hidden="true"></span>
+        Bogotá · Abierto a proyectos
+      </p>
+      <h1 class="hud__name">Kevin<br>Gonzalez</h1>
+      <p class="hud__role">Cloud &amp; DevOps Engineer</p>
+      <p class="hud__lede">
+        Ingeniero de sistemas. Construyo, despliego y opero.
+        Cada cuerpo en órbita es un sitio mío, y se enciende solo si su
+        servidor contesta.
+      </p>
+      <p class="hud__count"><span id="countNum">0</span> de 4 respondiendo</p>
+    </section>
+  </div>
+
+  <div class="rail__bottom" id="railBottom">
+
+    <!-- Panel del sitio seleccionado. Ocupa el lugar de los controles. -->
+    <aside class="panel" id="panel" hidden aria-labelledby="panelTitle">
+      <div class="panel__head">
+        <p class="panel__state" id="panelState">comprobando</p>
+        <button type="button" class="panel__close" id="panelClose" aria-label="Cerrar y volver a la zona">✕</button>
+      </div>
+      <h2 class="panel__title" id="panelTitle">—</h2>
+      <p class="panel__host" id="panelHost">—</p>
+      <p class="panel__desc" id="panelDesc">—</p>
+      <p class="panel__stack" id="panelStack">—</p>
+      <a class="panel__go" id="panelGo" href="#" target="_blank" rel="noopener">Abrir sitio <span aria-hidden="true">↗</span></a>
+    </aside>
+
+    <div class="controls" id="controls">
+      <p class="controls__title">Explora la zona</p>
+      <ul class="controls__keys">
+        <li><kbd>arrastra</kbd><span>girar</span></li>
+        <li><kbd>rueda</kbd><span>acercar</span></li>
+        <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>moverte</span></li>
+        <li><kbd>clic</kbd><span>ver un sitio</span></li>
+        <li><kbd>R</kbd><span>volver al centro</span></li>
+      </ul>
+      <p class="controls__touch">Toca un cuerpo para ver de qué se trata.</p>
+    </div>
+
+    <div class="rail__actions">
+      <button type="button" class="ghost" id="viewToggle" aria-expanded="false" aria-controls="lista">
+        Prefiero una lista
+      </button>
+      <p class="foot">kgstudio.top · © <span id="year">2026</span></p>
+    </div>
+
+  </div>
+</div>
+
+<!-- Etiquetas 3D: enlaces reales, con teclado y legibles por buscadores. -->
 <div class="labels" id="labels">
   <a class="node" href="https://portafolio.kgstudio.top" target="_blank" rel="noopener"
-     data-node="portafolio" data-probe="https://portafolio.kgstudio.top">
+     data-node="portafolio" data-probe="https://portafolio.kgstudio.top"
+     data-title="Portafolio" data-stack="Next.js · Three.js · Vercel"
+     data-desc="Mi trayectoria completa, la experiencia y el stack con el que trabajo a diario.">
     <span class="node__dot" aria-hidden="true"></span>
-    <span class="node__body">
-      <span class="node__name">portafolio</span>
-      <span class="node__desc">Mi trayectoria, experiencia y stack completo</span>
-      <span class="node__meta">Next.js · Three.js</span>
-    </span>
+    <span class="node__name">portafolio</span>
   </a>
   <a class="node" href="https://parla.kgstudio.top" target="_blank" rel="noopener"
-     data-node="parla" data-probe="https://parla.kgstudio.top">
+     data-node="parla" data-probe="https://parla.kgstudio.top"
+     data-title="Parla" data-stack="Deepgram · Next.js · Supabase"
+     data-desc="Intérprete médico en vivo: transcribe y traduce español⇄inglés mientras hablas.">
     <span class="node__dot" aria-hidden="true"></span>
-    <span class="node__body">
-      <span class="node__name">parla</span>
-      <span class="node__desc">Intérprete médico en vivo español⇄inglés</span>
-      <span class="node__meta">Deepgram · Supabase</span>
-    </span>
+    <span class="node__name">parla</span>
   </a>
   <a class="node" href="https://reinicia.kgstudio.top" target="_blank" rel="noopener"
-     data-node="reinicia" data-probe="https://reinicia.kgstudio.top">
+     data-node="reinicia" data-probe="https://reinicia.kgstudio.top"
+     data-title="Reinicia" data-stack="HTML · CSS · Vercel"
+     data-desc="Mantenimiento de computadores para los vecinos del conjunto, con precio de una vez.">
     <span class="node__dot" aria-hidden="true"></span>
-    <span class="node__body">
-      <span class="node__name">reinicia</span>
-      <span class="node__desc">Mantenimiento de computadores en el conjunto</span>
-      <span class="node__meta">Estático · Vercel</span>
-    </span>
+    <span class="node__name">reinicia</span>
   </a>
   <a class="node" href="https://arriendos.kgstudio.top" target="_blank" rel="noopener"
-     data-node="arriendos" data-probe="https://arriendos.kgstudio.top">
+     data-node="arriendos" data-probe="https://arriendos.kgstudio.top"
+     data-title="Arriendos" data-stack="Next.js · Supabase · Groq"
+     data-desc="Contratos y documentos de arriendo con asistente de IA. De uso privado.">
     <span class="node__dot" aria-hidden="true"></span>
-    <span class="node__body">
-      <span class="node__name">arriendos</span>
-      <span class="node__desc">Contratos de arriendo con IA <em>· privado</em></span>
-      <span class="node__meta">Next.js · Supabase</span>
-    </span>
+    <span class="node__name">arriendos</span>
   </a>
 </div>
 
-<!-- ── Instrucciones de exploración ──────────────────────────────── -->
-<aside class="hint" id="hint">
-  <p class="hint__title">Explora la zona</p>
-  <ul class="hint__keys">
-    <li><kbd>arrastra</kbd> girar</li>
-    <li><kbd>rueda</kbd> acercar</li>
-    <li><kbd>W A S D</kbd> mover</li>
-    <li><kbd>Tab</kbd> saltar entre sitios</li>
-  </ul>
-  <button type="button" class="hint__toggle" id="viewToggle" aria-expanded="false" aria-controls="lista">
-    Ver como lista
-  </button>
-</aside>
-
-<!-- ── Listado real: fallback sin WebGL, vista alterna y SEO ─────── -->
+<!-- ── Listado real: sin WebGL es la página; con WebGL es vista alterna ── -->
 <section class="sheet" id="lista" aria-label="Sitios en vivo">
   <div class="sheet__inner">
     <div class="sheet__head">
@@ -144,7 +172,7 @@
       <li><a href="https://portafolio.kgstudio.top" target="_blank" rel="noopener" data-row="portafolio">
         <span class="rows__dot" aria-hidden="true"></span>
         <span class="rows__name">portafolio</span>
-        <span class="rows__desc">Mi trayectoria, experiencia y stack completo</span>
+        <span class="rows__desc">Mi trayectoria, la experiencia y el stack completo</span>
         <span class="rows__meta">Next.js · Three.js</span>
       </a></li>
       <li><a href="https://parla.kgstudio.top" target="_blank" rel="noopener" data-row="parla">
@@ -157,7 +185,7 @@
         <span class="rows__dot" aria-hidden="true"></span>
         <span class="rows__name">reinicia</span>
         <span class="rows__desc">Mantenimiento de computadores en el conjunto</span>
-        <span class="rows__meta">Estático · Vercel</span>
+        <span class="rows__meta">HTML · Vercel</span>
       </a></li>
       <li><a href="https://arriendos.kgstudio.top" target="_blank" rel="noopener" data-row="arriendos">
         <span class="rows__dot" aria-hidden="true"></span>
@@ -168,20 +196,15 @@
     </ul>
 
     <div class="sheet__more">
-      <p>Lo demás no vive aquí:</p>
+      <p>Lo demás no vive aquí</p>
       <ul>
-        <li><a href="https://portafolio.kgstudio.top" target="_blank" rel="noopener">Trayectoria y stack completo → portafolio.kgstudio.top</a></li>
-        <li><a href="https://github.com/revkelo" target="_blank" rel="noopener">Todo el código → github.com/revkelo</a></li>
-        <li><a href="mailto:kgagudelo@gmail.com">Escríbeme → kgagudelo@gmail.com</a></li>
+        <li><a href="https://portafolio.kgstudio.top" target="_blank" rel="noopener">Trayectoria y stack completo <span>portafolio.kgstudio.top ↗</span></a></li>
+        <li><a href="https://github.com/revkelo" target="_blank" rel="noopener">Todo el código <span>github.com/revkelo ↗</span></a></li>
+        <li><a href="mailto:kgagudelo@gmail.com">Escríbeme <span>kgagudelo@gmail.com</span></a></li>
       </ul>
     </div>
   </div>
 </section>
-
-<footer class="foot">
-  <p>© <span id="year">2026</span> Kevin Gonzalez — Bogotá</p>
-  <p class="foot__zone">kgstudio.top</p>
-</footer>
 
 <script type="module" src="main.js"></script>
 </body>

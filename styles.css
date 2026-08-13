@@ -1,40 +1,42 @@
 /* ============================================================
    KG Studio — hub (kgstudio.top)
 
-   El dominio es un sistema: una raíz y cuatro subdominios
-   colgando. La página lo dibuja literalmente así, en 3D, y se
-   recorre con el mouse, la rueda, WASD o Tab.
+   El dominio es un sistema: una raíz y cuatro subdominios en
+   órbita. Se recorre arrastrando, con la rueda, con WASD o con
+   Tab, y cada cuerpo se enciende cuando su servidor responde.
+
+   REGLA DE LAYOUT: la interfaz vive en `.rail` y el sistema
+   orbital se corre al espacio que queda libre (el script mide
+   el rail y desplaza el frustum). Nada de texto encima de los
+   cuerpos. Si agregas interfaz, va dentro del rail o rompes eso.
 
    Esta página NO es el portafolio: eso vive en
-   portafolio.kgstudio.top. Aquí solo va quién soy, qué está
-   corriendo y a dónde ir por lo demás.
-
-   Compromiso deliberado con el modo oscuro: la escena es
-   espacio profundo, y un modo claro la contradiría.
+   portafolio.kgstudio.top.
    ============================================================ */
 
 :root {
   --void:      #07070a;
-  --deep:      #0d0d0f;
+  --deep:      #0d0d10;
   --text:      #f3decd;
-  --text-2:    #9a9088;
-  --border:    #ffffff14;
+  --text-2:    #a1968c;
+  --text-3:    #6f665f;
+  --border:    #ffffff1a;
   --orange:    #f56f0d;
-  --orange-lt: #ffa04d;
+  --orange-lt: #ffa34f;
   --green:     #00c758;
 
   --display: "Space Grotesk", system-ui, sans-serif;
   --sans: "Inter", system-ui, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  --t-label: 0.72rem;
-  --t-small: 0.82rem;
-  --t-body:  1rem;
-  --t-lede:  clamp(0.95rem, 0.9rem + 0.25vw, 1.08rem);
-  --t-sub:   clamp(1.15rem, 1rem + 0.7vw, 1.6rem);
-  --t-name:  clamp(2.4rem, 1.4rem + 4.4vw, 4.75rem);
+  --t-label: 0.7rem;
+  --t-small: 0.8rem;
+  --t-body:  0.95rem;
+  --t-name:  clamp(2.1rem, 1.5rem + 2.2vw, 3.4rem);
 
-  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --pad: clamp(1.1rem, 3vw, 2rem);
+  --rail-w: clamp(19rem, 27vw, 25rem);
+  --safe-b: env(safe-area-inset-bottom, 0px);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -48,96 +50,186 @@ body {
   color: var(--text);
   font-family: var(--sans);
   font-size: var(--t-body);
-  line-height: 1.6;
+  line-height: 1.55;
   font-feature-settings: "kern" 1, "liga" 1;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
 
 a { color: inherit; text-decoration: none; }
-p { text-wrap: pretty; margin: 0; }
+p, h1, h2 { margin: 0; }
+p { text-wrap: pretty; }
 
 :focus-visible {
   outline: 2px solid var(--orange);
-  outline-offset: 4px;
+  outline-offset: 3px;
   border-radius: 3px;
 }
 
 .skip {
   position: absolute;
-  left: -9999px;
-  top: 0;
+  left: -9999px; top: 0;
   background: var(--orange);
-  color: #0d0d0f;
+  color: #07070a;
   padding: 0.75rem 1rem;
-  z-index: 60;
+  z-index: 90;
   font-weight: 600;
 }
 .skip:focus { left: 0; }
 
-/* ── La escena ──────────────────────────────────────────────── */
+/* ── Escena ─────────────────────────────────────────────────── */
 
 #scene {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   display: block;
   z-index: 0;
   touch-action: none;
   cursor: grab;
 }
-#scene:active { cursor: grabbing; }
+#scene.is-grabbing { cursor: grabbing; }
+#scene.is-over { cursor: pointer; }
 
-/* Oscurece los bordes para que el texto de las esquinas se lea
-   sin importar dónde queden las estrellas. */
 .veil {
   position: fixed;
   inset: 0;
   z-index: 1;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(7,7,10,.72) 100%),
-    linear-gradient(to bottom, rgba(7,7,10,.85), transparent 22%, transparent 76%, rgba(7,7,10,.9));
+  background: radial-gradient(ellipse at 55% 50%, transparent 34%, rgba(7,7,10,.62) 100%);
 }
 
-/* ── Capas de interfaz ──────────────────────────────────────── */
+/* ── Arranque ───────────────────────────────────────────────── */
 
-.top, .hud, .hint, .foot { position: relative; z-index: 10; }
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  gap: 0.9rem;
+  justify-items: center;
+  background: var(--void);
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+.boot.is-done { opacity: 0; visibility: hidden; }
+
+.boot__bar {
+  width: 9rem; height: 2px;
+  background: rgba(255,255,255,.1);
+  overflow: hidden;
+  position: relative;
+}
+.boot__bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--orange);
+  transform: translateX(-100%);
+  animation: sweep 1.15s ease-in-out infinite;
+}
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.boot__text {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ── Rail: la franja de la interfaz ─────────────────────────────
+   Es la única capa con texto. El sistema orbital nunca entra aquí. */
+
+.rail {
+  position: fixed;
+  inset: 0;
+  z-index: 14;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  pointer-events: none;
+}
+
+.rail > * > *, .rail a, .rail button { pointer-events: auto; }
+
+.rail__top, .rail__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  padding: var(--pad);
+}
+
+.rail__bottom { padding-bottom: calc(var(--pad) + var(--safe-b)); }
+
+/* En pantalla ancha el rail es una columna a la izquierda, con un
+   velo que garantiza contraste sin importar dónde caigan las estrellas. */
+@media (min-width: 64rem) {
+  .rail {
+    right: auto;
+    width: var(--rail-w);
+    background: linear-gradient(to right, rgba(7,7,10,.92) 45%, rgba(7,7,10,0));
+  }
+}
+
+/* En pantalla angosta el rail se pega arriba y abajo, y el sistema
+   queda en la banda del medio. */
+@media (max-width: 63.99rem) {
+  .rail {
+    background:
+      linear-gradient(to bottom, rgba(7,7,10,.9), rgba(7,7,10,0) 42%),
+      linear-gradient(to top, rgba(7,7,10,.94), rgba(7,7,10,0) 34%);
+  }
+}
+
+/* Sin WebGL el rail deja de ser una capa flotante y pasa a ser el
+   encabezado del documento. La identidad se conserva; se van los
+   controles de una exploración que no existe. */
+.no-webgl .rail {
+  position: static;
+  width: auto;
+  background: none;
+  pointer-events: auto;
+  gap: 0;
+}
+.no-webgl .rail__bottom { padding-top: 0; }
+.no-webgl .controls,
+.no-webgl .panel,
+.no-webgl .ghost { display: none; }
+.no-webgl .hud__lede { display: block; }
+
+/* ── Barra ──────────────────────────────────────────────────── */
 
 .top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1.5rem var(--gutter);
   font-family: var(--mono);
   font-size: var(--t-label);
   letter-spacing: 0.02em;
 }
 
 .top__mark { font-weight: 600; }
-.top__nav { display: flex; gap: clamp(0.9rem, 3vw, 1.6rem); }
+.top__nav { display: flex; gap: clamp(0.8rem, 2.5vw, 1.4rem); }
 .top__nav a { color: var(--text-2); transition: color 0.2s ease; }
 .top__nav a:hover { color: var(--orange); }
 
 /* ── Identidad ──────────────────────────────────────────────── */
 
-.hud {
-  padding: clamp(1rem, 4vw, 3rem) var(--gutter) 0;
-  max-width: 34rem;
-  pointer-events: none;
-}
-.hud a { pointer-events: auto; }
+.hud { display: flex; flex-direction: column; gap: 0.85rem; }
 
 .hud__who {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
   font-family: var(--mono);
   font-size: var(--t-label);
   color: var(--text-2);
-  margin-bottom: 1.5rem;
 }
 
 .pulse {
@@ -160,10 +252,8 @@ p { text-wrap: pretty; margin: 0; }
   font-family: var(--display);
   font-weight: 700;
   font-size: var(--t-name);
-  line-height: 0.88;
-  letter-spacing: -0.045em;
-  margin: 0;
-  text-wrap: balance;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
 }
 
 .hud__role {
@@ -172,17 +262,177 @@ p { text-wrap: pretty; margin: 0; }
   text-transform: uppercase;
   letter-spacing: 0.18em;
   color: var(--orange);
-  margin-top: 1.1rem;
 }
 
-.hud__lede {
-  margin-top: 1.5rem;
-  max-width: 34ch;
-  font-size: var(--t-lede);
+.hud__lede { max-width: 32ch; font-size: var(--t-small); color: var(--text-2); }
+
+.hud__count {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  color: var(--text-3);
+}
+#countNum { color: var(--orange); font-weight: 700; }
+
+/* En móvil la identidad se recorta para no robarle banda a la escena. */
+@media (max-width: 63.99rem) {
+  .hud__lede { display: none; }
+  .hud { gap: 0.5rem; }
+}
+
+/* ── Controles ──────────────────────────────────────────────── */
+
+.controls { display: flex; flex-direction: column; gap: 0.7rem; }
+
+.controls__title {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--orange);
+}
+
+.controls__keys {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: var(--t-small);
   color: var(--text-2);
 }
+.controls__keys li { display: flex; align-items: center; gap: 0.35rem; }
+.controls__keys li span { margin-left: 0.35rem; color: var(--text-3); }
 
-/* ── Nodos: etiquetas HTML sobre la escena ──────────────────── */
+kbd {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--text);
+  background: rgba(255,255,255,.07);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 0.18rem 0.4rem;
+  white-space: nowrap;
+}
+
+.controls__touch { display: none; font-size: var(--t-small); color: var(--text-3); }
+
+/* Sin teclado ni mouse fino: se cambian las instrucciones. */
+@media (hover: none) and (pointer: coarse) {
+  .controls__keys { display: none; }
+  .controls__touch { display: block; }
+}
+
+/* ── Panel del sitio seleccionado ───────────────────────────── */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.1rem 1.2rem 1.2rem;
+  background: rgba(20,20,24,.92);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  animation: panelIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.panel[hidden] { display: none; }
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.panel__head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+
+.panel__state {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.panel__state::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+.panel[data-state="live"] .panel__state { color: var(--orange); }
+.panel[data-state="live"] .panel__state::before {
+  background: var(--orange);
+  box-shadow: 0 0 8px rgba(245,111,13,.8);
+}
+
+.panel__close {
+  background: transparent;
+  border: 0;
+  color: var(--text-3);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+.panel__close:hover { color: var(--text); }
+
+.panel__title {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.panel__host { font-family: var(--mono); font-size: var(--t-label); color: var(--text-3); }
+.panel__desc { font-size: var(--t-small); color: var(--text-2); max-width: 34ch; }
+.panel__stack { font-family: var(--mono); font-size: var(--t-label); color: var(--text-3); }
+
+.panel__go {
+  align-self: flex-start;
+  margin-top: 0.5rem;
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #07070a;
+  background: var(--orange);
+  border-radius: 999px;
+  padding: 0.6rem 1.1rem;
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+.panel__go:hover { filter: brightness(1.12); transform: translateY(-1px); }
+
+/* ── Acciones del pie del rail ──────────────────────────────── */
+
+.rail__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.ghost {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  color: var(--text-2);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.5rem 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.ghost:hover { border-color: var(--orange); color: var(--orange); }
+
+.foot { font-family: var(--mono); font-size: var(--t-label); color: var(--text-3); }
+
+/* ── Etiquetas de los cuerpos ───────────────────────────────────
+   Solo el nombre. La descripción vive en el panel, para que cuatro
+   textos no compitan sobre la escena. */
 
 .labels {
   position: fixed;
@@ -193,163 +443,82 @@ p { text-wrap: pretty; margin: 0; }
 
 .node {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   display: flex;
-  align-items: flex-start;
-  gap: 0.6rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 8px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
   pointer-events: auto;
-  will-change: transform, opacity;
-  /* Arrancan invisibles: el bucle las coloca en el primer cuadro y
-     así no se ven amontonadas en la esquina antes de proyectarse. */
   opacity: 0;
-  transition: opacity 0.3s ease, background-color 0.2s ease;
+  will-change: transform, opacity;
+  transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%));
+  transition: opacity 0.25s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* El script fija --x / --y; el translate(-50%) centra sobre el nodo. */
-.node { transform: translate(calc(var(--x, 0px) - 50%), calc(var(--y, 0px) - 50%)); }
-
-.node:hover, .node:focus-visible { background: rgba(255,255,255,.05); }
+.node:hover, .node:focus-visible, .node[data-selected="true"] {
+  background: rgba(20,20,24,.85);
+  border-color: var(--border);
+}
 
 .node__dot {
-  width: 8px; height: 8px;
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--text-2);
+  background: var(--text-3);
   flex: none;
-  margin-top: 0.45rem;
   transition: background-color 0.5s ease, box-shadow 0.5s ease;
 }
-
 .node[data-state="live"] .node__dot {
   background: var(--orange);
-  box-shadow: 0 0 0 4px rgba(245,111,13,.18), 0 0 14px rgba(245,111,13,.7);
+  box-shadow: 0 0 0 3px rgba(245,111,13,.16), 0 0 12px rgba(245,111,13,.7);
 }
-
-.node__body { display: flex; flex-direction: column; gap: 0.1rem; }
 
 .node__name {
   font-family: var(--display);
   font-weight: 600;
-  font-size: var(--t-sub);
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  transition: color 0.25s ease;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  transition: color 0.2s ease;
 }
-.node:hover .node__name, .node:focus-visible .node__name { color: var(--orange-lt); }
-
-/* La descripción solo aparece al acercarse, enfocar o pasar el
-   cursor: de lejos, el sistema debe verse limpio. */
-.node__desc, .node__meta {
-  max-width: 24ch;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: opacity 0.25s ease, max-height 0.25s ease;
-}
-.node__desc { font-size: var(--t-small); color: var(--text-2); line-height: 1.4; }
-.node__desc em { font-style: normal; color: var(--orange); }
-.node__meta { font-family: var(--mono); font-size: var(--t-label); color: var(--text-2); opacity: 0; }
-
-.node:hover .node__desc, .node:focus-visible .node__desc,
-.node[data-near="true"] .node__desc {
-  opacity: 1; max-height: 5rem; margin-top: 0.25rem;
-}
-.node:hover .node__meta, .node:focus-visible .node__meta,
-.node[data-near="true"] .node__meta {
-  opacity: 0.75; max-height: 2rem;
-}
-
-/* ── Ayuda de controles ─────────────────────────────────────── */
-
-.hint {
-  position: fixed;
-  left: var(--gutter);
-  bottom: clamp(1.25rem, 4vw, 2.25rem);
-  z-index: 14;
-  max-width: 17rem;
-}
-
-.hint__title {
-  font-family: var(--mono);
-  font-size: var(--t-label);
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  color: var(--orange);
-  margin-bottom: 0.7rem;
-}
-
-.hint__keys {
-  list-style: none;
-  margin: 0 0 1rem;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  font-size: var(--t-small);
-  color: var(--text-2);
-}
-
-.hint__keys li { display: flex; align-items: center; gap: 0.6rem; }
-
-kbd {
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  color: var(--text);
-  background: rgba(255,255,255,.06);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 0.2rem 0.45rem;
-  white-space: nowrap;
-}
-
-.hint__toggle {
-  font-family: var(--mono);
-  font-size: var(--t-label);
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
-}
-.hint__toggle:hover { border-color: var(--orange); color: var(--orange); }
+.node:hover .node__name,
+.node:focus-visible .node__name,
+.node[data-selected="true"] .node__name { color: var(--orange-lt); }
 
 /* ── Listado ────────────────────────────────────────────────── */
 
-/* Con WebGL empieza oculto y lo abre el botón. Sin WebGL el script
-   nunca añade .has-webgl y el listado es la página entera. */
 .sheet {
   position: relative;
-  z-index: 20;
+  z-index: 30;
   background: var(--deep);
   border-top: 1px solid var(--border);
-  padding: clamp(2.5rem, 7vw, 4.5rem) var(--gutter);
+  padding: clamp(2rem, 6vw, 3.5rem) var(--pad) calc(clamp(2rem, 6vw, 3.5rem) + var(--safe-b));
 }
 
 .has-webgl .sheet {
   position: fixed;
   inset: auto 0 0 0;
-  max-height: 82svh;
+  max-height: 84svh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translateY(101%);
-  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-  box-shadow: 0 -24px 60px rgba(0,0,0,.6);
+  visibility: hidden;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.45s;
+  box-shadow: 0 -24px 60px rgba(0,0,0,.65);
   border-radius: 16px 16px 0 0;
 }
-.has-webgl.sheet-open .sheet { transform: none; }
+.has-webgl.sheet-open .sheet { transform: none; visibility: visible; }
 
-.sheet__inner { max-width: 62rem; margin: 0 auto; }
+.sheet__inner { max-width: 60rem; margin: 0 auto; }
 
-.sheet__head { margin-bottom: 2rem; }
+.sheet__head { margin-bottom: 1.75rem; }
 .sheet__head h2 {
   font-family: var(--display);
   font-weight: 700;
-  font-size: var(--t-sub);
+  font-size: 1.35rem;
   letter-spacing: -0.02em;
-  margin: 0 0 0.5rem;
+  margin-bottom: 0.4rem;
 }
 .sheet__head p { font-size: var(--t-small); color: var(--text-2); }
 .sheet__head strong { color: var(--text); font-weight: 500; }
@@ -359,10 +528,10 @@ kbd {
 
 .rows a {
   display: grid;
-  grid-template-columns: auto 10rem 1fr auto;
+  grid-template-columns: auto 9rem 1fr auto;
   align-items: baseline;
-  gap: 0.3rem 1.5rem;
-  padding: 1rem 0.5rem;
+  gap: 0.25rem 1.5rem;
+  padding: 0.9rem 0.5rem;
   border-radius: 8px;
   transition: background-color 0.2s ease;
 }
@@ -371,7 +540,7 @@ kbd {
 .rows__dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--text-2);
+  background: var(--text-3);
   align-self: center;
   transition: background-color 0.5s ease, box-shadow 0.5s ease;
 }
@@ -380,50 +549,27 @@ kbd {
   box-shadow: 0 0 10px rgba(245,111,13,.7);
 }
 
-.rows__name { font-family: var(--display); font-weight: 600; font-size: 1.05rem; }
+.rows__name { font-family: var(--display); font-weight: 600; font-size: 1rem; }
 .rows__desc { font-size: var(--t-small); color: var(--text-2); }
-.rows__meta { font-family: var(--mono); font-size: var(--t-label); color: var(--text-2); opacity: 0.7; }
+.rows__meta { font-family: var(--mono); font-size: var(--t-label); color: var(--text-3); }
 
-.sheet__more { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
-.sheet__more p { font-family: var(--mono); font-size: var(--t-label); text-transform: uppercase; letter-spacing: 0.14em; color: var(--orange); margin-bottom: 0.9rem; }
-.sheet__more ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.6rem; font-size: var(--t-small); color: var(--text-2); }
-.sheet__more a:hover { color: var(--orange); }
-
-/* ── Pie ────────────────────────────────────────────────────── */
-
-.foot {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 0.4rem 1rem;
-  padding: 1.5rem var(--gutter) 1.75rem;
+.sheet__more { margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+.sheet__more > p {
   font-family: var(--mono);
   font-size: var(--t-label);
-  color: var(--text-2);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--orange);
+  margin-bottom: 0.8rem;
 }
-
-.has-webgl .foot {
-  position: fixed;
-  right: 0; bottom: 0; left: auto;
-  padding: 1.25rem var(--gutter);
-  justify-content: flex-end;
-  z-index: 14;
-}
-.has-webgl .foot p:first-child { display: none; }
-
-/* ── Responsive ─────────────────────────────────────────────── */
+.sheet__more ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; font-size: var(--t-small); }
+.sheet__more li a { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; justify-content: space-between; color: var(--text-2); padding: 0.35rem 0; }
+.sheet__more li a span { font-family: var(--mono); font-size: var(--t-label); color: var(--text-3); }
+.sheet__more li a:hover { color: var(--orange); }
 
 @media (max-width: 48rem) {
   .rows a { grid-template-columns: auto 1fr; }
   .rows__desc, .rows__meta { grid-column: 2; }
-  .hint { right: var(--gutter); max-width: none; }
-  .hint__keys { flex-direction: row; flex-wrap: wrap; gap: 0.5rem 1rem; }
-  .node__desc, .node__meta { display: none; }
-  .hud { max-width: none; }
-}
-
-@media (max-height: 40rem) {
-  .hint__keys { display: none; }
 }
 
 /* ── Movimiento ─────────────────────────────────────────────── */
@@ -431,6 +577,7 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
 }
