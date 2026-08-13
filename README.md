@@ -45,4 +45,4 @@ python -m http.server 8000
 | `portafolio.` | Portafolio personal | Vercel |
 | `parla.` | Intérprete en vivo ES⇄EN | Vercel |
 | `arriendos.` | Gestión de arriendos (privado) | Vercel |
-| `pc.` | Soporte de computadores | GitHub Pages |
+| `pc.` | Soporte de computadores | Vercel |
