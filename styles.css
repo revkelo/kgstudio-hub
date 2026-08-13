@@ -1,16 +1,17 @@
 /* ============================================================
    KG Studio — hub (kgstudio.top)
 
+   Esta página NO es el portafolio: el portafolio ya existe en
+   portafolio.kgstudio.top. Aquí solo va quién soy en dos frases,
+   qué está corriendo, y a dónde ir por lo demás.
+
    Tokens tomados del portafolio para que se lean como un mismo
    sitio: arena #f3decd / #0d0d0d, acento naranja #f56f0d,
    Space Grotesk + Inter.
-
-   Sin tarjetas. La estructura es tipográfica: un índice de
-   nombres enormes que se pintan de naranja cuando su servidor
-   responde, y un muro de proyectos que se explica al recorrerlo.
    ============================================================ */
 
 :root {
+  /* ── Color ─────────────────────────────────────────────── */
   --bg:        #f3decd;
   --surface:   #e7d2c1;
   --text:      #25211c;
@@ -20,9 +21,28 @@
   --orange-dk: #ae5400;
   --green:     #00c758;
 
+  /* ── Familias ──────────────────────────────────────────── */
   --display: "Space Grotesk", system-ui, sans-serif;
   --sans: "Inter", system-ui, sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* ── Escala tipográfica ────────────────────────────────────
+     Cinco pasos y cada uno con un trabajo asignado. Nadie
+     inventa tamaños sueltos fuera de esta lista. */
+  --t-label: 0.75rem;                                        /* etiquetas mono  */
+  --t-small: 0.875rem;                                       /* pies, metadatos */
+  --t-body:  1rem;                                           /* texto corrido   */
+  --t-lede:  clamp(1.05rem, 0.98rem + 0.35vw, 1.25rem);      /* entradilla      */
+  --t-sub:   clamp(1.3rem, 1.05rem + 1.15vw, 2.1rem);        /* rutas, tesis    */
+  --t-name:  clamp(2.5rem, 1.3rem + 5.6vw, 5.25rem);         /* índice y correo */
+  --t-claim: clamp(3rem, 0.9rem + 10.5vw, 9rem);             /* la frase        */
+
+  /* ── Ritmo vertical ────────────────────────────────────── */
+  --s-section: clamp(3.5rem, 8vw, 6.5rem);
+  --s-head: clamp(1.75rem, 4vw, 2.75rem);
+
+  /* ── Medida de lectura ─────────────────────────────────── */
+  --measure-tight: 46ch;
 
   --gutter: clamp(1.25rem, 5vw, 4rem);
   --maxw: 78rem;
@@ -48,12 +68,17 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
-  font-size: 1rem;
+  font-size: var(--t-body);
   line-height: 1.6;
+  font-feature-settings: "kern" 1, "liga" 1;
   -webkit-font-smoothing: antialiased;
 }
 
 a { color: inherit; }
+
+p { text-wrap: pretty; }
+
+h1, h2 { text-wrap: balance; }
 
 :focus-visible {
   outline: 2px solid var(--orange);
@@ -73,6 +98,14 @@ a { color: inherit; }
 }
 .skip:focus { left: 0; }
 
+/* Todas las secciones comparten caja y ritmo: el aire nunca se
+   decide sección por sección. */
+.band {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: var(--s-section) var(--gutter);
+}
+
 /* ── Barra ──────────────────────────────────────────────────── */
 
 .top {
@@ -84,13 +117,13 @@ a { color: inherit; }
   margin: 0 auto;
   padding: 1.75rem var(--gutter);
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: var(--t-label);
   letter-spacing: 0.02em;
 }
 
 .top__mark { font-weight: 600; }
 
-.top__nav { display: flex; gap: 1.5rem; }
+.top__nav { display: flex; gap: clamp(1rem, 3vw, 1.75rem); }
 
 .top__nav a {
   color: var(--text-2);
@@ -101,19 +134,15 @@ a { color: inherit; }
 
 /* ── Apertura ───────────────────────────────────────────────── */
 
-.open {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(3rem, 10vw, 8rem) var(--gutter) clamp(3rem, 8vw, 6rem);
-}
+.open { padding-top: clamp(2.5rem, 7vw, 5rem); }
 
 .open__who {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  margin: 0 0 clamp(1.75rem, 4vw, 2.75rem);
+  margin: 0 0 var(--s-head);
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: var(--t-label);
   color: var(--text-2);
   letter-spacing: 0.01em;
 }
@@ -124,7 +153,6 @@ a { color: inherit; }
   border-radius: 50%;
   background: var(--green);
   flex: none;
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--green) 60%, transparent);
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -136,19 +164,6 @@ a { color: inherit; }
   }
 }
 
-.open__claim {
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(3rem, 13vw, 9.5rem);
-  line-height: 0.86;
-  letter-spacing: -0.045em;
-  margin: 0;
-}
-
-.dot { color: var(--orange); }
-
-/* La frase y el retrato comparten línea: la cara entra al mismo tiempo
-   que el nombre, sin caja que la encuadre. */
 .open__grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -157,8 +172,20 @@ a { color: inherit; }
 }
 
 @media (min-width: 56rem) {
-  .open__grid { grid-template-columns: minmax(0, 1fr) clamp(13rem, 22vw, 19rem); }
+  .open__grid { grid-template-columns: minmax(0, 1fr) clamp(13rem, 22vw, 18rem); }
 }
+
+.open__claim {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: var(--t-claim);
+  line-height: 0.85;
+  letter-spacing: -0.045em;
+  margin: 0;
+  text-wrap: nowrap;
+}
+
+.dot { color: var(--orange); }
 
 .portrait { margin: 0; }
 
@@ -176,46 +203,33 @@ a { color: inherit; }
 .portrait figcaption {
   margin-top: 1.1rem;
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: var(--t-label);
   color: var(--text-2);
   letter-spacing: 0.02em;
 }
 
 .open__lede {
-  max-width: 52ch;
-  margin: clamp(2.25rem, 5vw, 3.25rem) 0 0;
-  font-size: clamp(1.05rem, 1.9vw, 1.25rem);
+  max-width: var(--measure-tight);
+  margin: var(--s-head) 0 0;
+  font-size: var(--t-lede);
   color: var(--text-2);
-  line-height: 1.65;
+  line-height: 1.6;
 }
 .open__lede strong { color: var(--text); font-weight: 600; }
 
-/* Cifras duras, en fila y sin caja: separadas solo por una línea. */
-.proof {
-  list-style: none;
-  margin: clamp(2.5rem, 6vw, 3.5rem) 0 0;
-  padding: 1.75rem 0 0;
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: 1.5rem 2.5rem;
-  font-size: 0.88rem;
-  color: var(--text-2);
-  line-height: 1.45;
-}
-
-.proof__fig {
-  display: block;
+/* La tesis de la página, en display: dice para qué existe esto. */
+.open__thesis {
+  max-width: 30ch;
+  margin: 1.5rem 0 0;
   font-family: var(--display);
-  font-weight: 700;
-  font-size: clamp(1.5rem, 3.5vw, 2.1rem);
-  line-height: 1;
-  letter-spacing: -0.03em;
+  font-weight: 500;
+  font-size: var(--t-sub);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
   color: var(--text);
-  margin-bottom: 0.4rem;
 }
 
-/* ── Encabezado de sección: una regla, no un título suelto ──── */
+/* ── Encabezado de sección ──────────────────────────────────── */
 
 .rule {
   display: flex;
@@ -224,12 +238,12 @@ a { color: inherit; }
   gap: 0.5rem 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border);
-  margin-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  margin-bottom: var(--s-head);
 }
 
 .rule__label {
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: var(--t-label);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.16em;
@@ -238,104 +252,14 @@ a { color: inherit; }
 }
 
 .rule__hint {
-  flex: 1 1 22ch;
+  flex: 1 1 24ch;
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--t-small);
   color: var(--text-2);
-  max-width: 52ch;
+  max-width: 54ch;
 }
 
 /* ── Firma: índice en vivo ──────────────────────────────────── */
-
-.live, .wall, .path, .kit {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(2.5rem, 7vw, 5rem) var(--gutter);
-}
-
-/* ── Trayectoria ────────────────────────────────────────────── */
-
-/* El periodo vive en el margen, como una nota al costado; el texto
-   corre en una sola columna de lectura. Sin tarjetas, solo reglas. */
-
-.road { list-style: none; margin: 0; padding: 0; }
-
-.stop {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.35rem 2.5rem;
-  padding: clamp(1.5rem, 3vw, 2.25rem) 0;
-}
-
-.stop + .stop { border-top: 1px solid var(--border); }
-
-@media (min-width: 46rem) {
-  .stop { grid-template-columns: 9rem minmax(0, 1fr); }
-}
-
-.stop__when {
-  margin: 0;
-  font-family: var(--mono);
-  font-size: 0.76rem;
-  color: var(--orange);
-  letter-spacing: 0.02em;
-  padding-top: 0.35rem;
-}
-
-.stop__what { min-width: 0; }
-
-.stop__role {
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: clamp(1.15rem, 2.6vw, 1.6rem);
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-  margin: 0 0 0.6rem;
-}
-
-.stop__org { color: var(--text-2); font-weight: 400; }
-
-.stop__text {
-  margin: 0;
-  max-width: 62ch;
-  color: var(--text-2);
-  font-size: 0.98rem;
-  line-height: 1.6;
-}
-
-/* ── Herramientas ───────────────────────────────────────────── */
-
-.kit__list { margin: 0; }
-
-.kit__row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.2rem 2.5rem;
-  padding: 1.1rem 0;
-}
-
-.kit__row + .kit__row { border-top: 1px solid var(--border); }
-
-@media (min-width: 46rem) {
-  .kit__row { grid-template-columns: 11rem minmax(0, 1fr); align-items: baseline; }
-}
-
-.kit__row dt {
-  font-family: var(--mono);
-  font-size: 0.76rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-2);
-}
-
-.kit__row dd {
-  margin: 0;
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: clamp(1rem, 2.2vw, 1.35rem);
-  letter-spacing: -0.015em;
-  line-height: 1.45;
-}
 
 .index { list-style: none; margin: 0; padding: 0; }
 
@@ -346,23 +270,23 @@ a { color: inherit; }
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.25rem 2rem;
-  padding: clamp(1rem, 2.5vw, 1.6rem) 0;
+  gap: 0.35rem 2rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem) 0;
   text-decoration: none;
   position: relative;
 }
 
 /*
  * El nombre se dibuja dos veces: el texto base en gris cálido y una copia
- * naranja encima, recortada a 0. Cuando la comprobación confirma que el
- * servidor responde, la copia se despliega de izquierda a derecha: el
- * "pintado" ES el health check, no un adorno.
+ * naranja recortada a 0. Cuando la comprobación confirma que el servidor
+ * responde, la copia se despliega de izquierda a derecha: el "pintado" ES
+ * el health check, no un adorno.
  */
 .entry__name {
   position: relative;
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(2.1rem, 8.5vw, 5.5rem);
+  font-size: var(--t-name);
   line-height: 1;
   letter-spacing: -0.04em;
   color: var(--text-2);
@@ -388,7 +312,7 @@ a { color: inherit; }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.2rem;
+  gap: 0.25rem;
   text-align: left;
   max-width: 34ch;
   padding-bottom: 0.4rem;
@@ -398,14 +322,14 @@ a { color: inherit; }
   .entry__aside { align-items: flex-end; text-align: right; }
 }
 
-.entry__desc { font-size: 0.92rem; color: var(--text-2); line-height: 1.45; }
+.entry__desc { font-size: var(--t-small); color: var(--text-2); line-height: 1.45; }
 .entry__desc em { font-style: normal; color: var(--orange-dk); }
 
 .entry__meta {
   font-family: var(--mono);
-  font-size: 0.72rem;
+  font-size: var(--t-label);
   color: var(--text-2);
-  opacity: 0.7;
+  opacity: 0.72;
 }
 
 .entry__link::before {
@@ -428,129 +352,59 @@ a { color: inherit; }
 .index__root {
   margin: 1.5rem 0 0;
   font-family: var(--mono);
-  font-size: 0.75rem;
+  font-size: var(--t-label);
   color: var(--text-2);
   text-align: right;
 }
 .index__root strong { color: var(--text); font-weight: 500; }
 
-/* ── Muro de proyectos ──────────────────────────────────────── */
+/* ── Rutas: a dónde ir por lo que aquí no está ──────────────── */
 
-/*
- * Los nombres fluyen como un párrafo. Al recorrerlos, la descripción
- * aparece arriba en grande: una sola zona de lectura en vez de once
- * tarjetas compitiendo por atención.
- */
+.routes__list { list-style: none; margin: 0; padding: 0; }
 
-.wall__stage {
-  min-height: 4.5em;
-  margin: 0 0 2rem;
-  font-family: var(--display);
-  font-weight: 500;
-  font-size: clamp(1.15rem, 3vw, 1.85rem);
-  line-height: 1.35;
-  letter-spacing: -0.02em;
-  max-width: 34ch;
-}
+.routes__list li + li { border-top: 1px solid var(--border); }
 
-.wall__stage-idle { color: var(--text-2); opacity: 0.55; }
-
-.names {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.route {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.15em 0.55em;
-}
-
-.proj { display: inline; }
-
-.proj__link {
-  font-family: var(--display);
-  font-weight: 600;
-  font-size: clamp(1.5rem, 4.5vw, 3rem);
-  line-height: 1.15;
-  letter-spacing: -0.03em;
-  color: var(--text);
+  justify-content: space-between;
+  gap: 0.35rem 2rem;
+  padding: clamp(1.1rem, 2.5vw, 1.6rem) 0;
   text-decoration: none;
-  cursor: pointer;
-  transition: color 0.2s ease, opacity 0.2s ease;
+  transition: color 0.2s ease;
 }
 
-.proj__link--closed { cursor: default; }
-
-/* Al enfocar uno, los demás se apagan. */
-.names:hover .proj__link,
-.names:focus-within .proj__link { opacity: 0.32; }
-
-.names .proj__link:hover,
-.names .proj__link:focus-visible { opacity: 1; color: var(--orange); }
-
-/* Separador entre nombres, del mismo color del acento. */
-.proj + .proj::before {
-  content: "·";
-  color: var(--orange);
-  opacity: 0.5;
-  font-size: clamp(1.5rem, 4.5vw, 3rem);
-  margin-right: 0.3em;
+.route__what {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: var(--t-sub);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  max-width: 30ch;
 }
 
-/* La descripción vive en el DOM para que funcione sin JS; en pantalla
-   grande se oculta porque la muestra el escenario de arriba. */
-.proj__desc {
-  display: block;
-  width: 100%;
-  font-size: 0.9rem;
+.route__where {
+  font-family: var(--mono);
+  font-size: var(--t-small);
   color: var(--text-2);
-  line-height: 1.5;
-  margin: 0.15rem 0 0.9rem;
-  max-width: 46ch;
+  white-space: nowrap;
+  transition: color 0.2s ease;
 }
 
-@media (min-width: 48rem) {
-  .proj__desc {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-  .proj { display: inline-flex; align-items: baseline; }
-}
-
-/* En móvil no hay hover: cada nombre lleva su descripción debajo
-   y el escenario sobra. */
-@media (max-width: 47.99rem) {
-  .wall__stage { display: none; }
-  .names { display: block; }
-  .proj + .proj::before { content: none; }
-  .proj { display: block; margin-bottom: 0.35rem; }
-  .names:hover .proj__link, .names:focus-within .proj__link { opacity: 1; }
-}
-
-.wall__all {
-  margin: 2.5rem 0 0;
-  font-size: 0.9rem;
-  color: var(--text-2);
-}
-.wall__all a { color: var(--orange); text-decoration: none; border-bottom: 1px solid currentColor; }
+.route:hover .route__what,
+.route:focus-visible .route__what { color: var(--orange); }
+.route:hover .route__where,
+.route:focus-visible .route__where { color: var(--orange); }
 
 /* ── Cierre ─────────────────────────────────────────────────── */
 
-.end {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: clamp(4rem, 12vw, 9rem) var(--gutter);
-  border-top: 1px solid var(--border);
-}
+.end { border-top: 1px solid var(--border); }
 
 .end__label {
   margin: 0 0 1.25rem;
   font-family: var(--mono);
-  font-size: 0.78rem;
+  font-size: var(--t-label);
   text-transform: uppercase;
   letter-spacing: 0.16em;
   color: var(--orange);
@@ -560,7 +414,7 @@ a { color: inherit; }
   display: inline-block;
   font-family: var(--display);
   font-weight: 700;
-  font-size: clamp(1.6rem, 7vw, 4.5rem);
+  font-size: var(--t-name);
   line-height: 1.05;
   letter-spacing: -0.04em;
   text-decoration: none;
@@ -574,12 +428,11 @@ a { color: inherit; }
 .end__mail:hover { color: var(--orange); background-size: 100% 2px; }
 
 .end__note {
-  margin: 2rem 0 0;
-  max-width: 46ch;
+  margin: var(--s-head) 0 0;
+  max-width: var(--measure-tight);
   color: var(--text-2);
-  font-size: 0.95rem;
+  font-size: var(--t-small);
 }
-.end__note a { color: var(--orange); text-decoration: none; border-bottom: 1px solid currentColor; }
 
 /* ── Pie ────────────────────────────────────────────────────── */
 
@@ -593,12 +446,11 @@ a { color: inherit; }
   justify-content: space-between;
   gap: 0.5rem 1rem;
   font-family: var(--mono);
-  font-size: 0.73rem;
+  font-size: var(--t-label);
   color: var(--text-2);
 }
 .foot p { margin: 0; }
-.foot a { text-decoration: none; }
-.foot a:hover { color: var(--orange); }
+.foot__zone { letter-spacing: 0.04em; }
 
 /* ── Movimiento ─────────────────────────────────────────────── */
 

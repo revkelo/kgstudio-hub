@@ -1,14 +1,22 @@
 # KG Studio — hub
 
-Página principal de <https://kgstudio.top>: quién soy y todo lo que tengo corriendo.
+Página principal de <https://kgstudio.top>.
+
+## Qué es y qué NO es
+
+Es la **puerta de entrada** al dominio: quién soy en dos frases, qué está corriendo en
+cada subdominio, y a dónde ir por lo demás.
+
+**No es un portafolio.** El portafolio ya existe en `portafolio.kgstudio.top` y ahí
+viven la trayectoria, la experiencia, el stack y el catálogo de proyectos. Si una
+sección de esta página empieza a repetir eso, sobra: se borra y se deja el enlace.
 
 Sitio estático puro (HTML + CSS + JS, sin build) desplegado en Vercel. Cada push a
 `main` publica en producción.
 
 ## Identidad
 
-Los tokens salen del portafolio (`portafolio.kgstudio.top`) para que los dos sitios se
-lean como uno solo:
+Los tokens salen del portafolio para que los dos sitios se lean como uno solo:
 
 | Token | Claro | Oscuro |
 | --- | --- | --- |
@@ -18,9 +26,23 @@ lean como uno solo:
 | Acento | `#f56f0d` | `#f56f0d` |
 
 Tipografías: **Space Grotesk** para display, **Inter** para texto, mono del sistema
-para metadatos.
+para etiquetas.
 
-## Las dos ideas de la página
+La escala está declarada de una vez en `:root` — siete pasos, cada uno con un trabajo
+asignado. Si necesitas un tamaño nuevo, ajusta la escala; no escribas un `clamp()`
+suelto en una regla:
+
+```css
+--t-label  etiquetas mono        --t-sub    rutas y tesis
+--t-small  pies y metadatos      --t-name   índice en vivo y correo
+--t-body   texto corrido         --t-claim  la frase de apertura
+--t-lede   entradilla
+```
+
+Lo mismo con el ritmo vertical: todas las secciones llevan `.band`, que aplica
+`--s-section`. Ninguna sección decide su propio aire.
+
+## La idea de la página
 
 **El índice en vivo.** Cada nombre de subdominio está escrito dos veces: el texto base
 en gris y una copia naranja recortada a ancho cero por CSS. Cuando la comprobación
@@ -47,18 +69,14 @@ Para agregar un sitio basta con una entrada más en `<ul class="index">`:
 Si un sitio no responde el nombre se queda gris, nunca en rojo — un problema de red del
 visitante no debería desmentir un sitio que está bien.
 
-**El muro de proyectos.** En vez de once tarjetas, los nombres fluyen como un párrafo y
-la descripción del que estás recorriendo aparece arriba, en grande. Cada descripción
-vive en el DOM dentro de su `<li>`, así que la página funciona sin JS; en móvil, donde
-no hay hover, el CSS la muestra debajo de cada nombre y el escenario se oculta.
-
 ## Estructura
 
 | Archivo | Qué hace |
 | --- | --- |
-| `index.html` | Apertura, índice en vivo, muro de proyectos, contacto |
-| `styles.css` | Tokens y estilos, con modo oscuro por `prefers-color-scheme` |
-| `main.js` | Comprobación de estado, muro interactivo y año del pie |
+| `index.html` | Quién, índice en vivo, rutas, contacto |
+| `styles.css` | Escala, tokens y estilos, con modo oscuro por `prefers-color-scheme` |
+| `main.js` | Comprobación de estado y año del pie |
+| `photo.jpg` | Retrato, también usado como `og:image` |
 
 ## Ver en local
 
@@ -73,7 +91,7 @@ python -m http.server 8000
 | `kgstudio.top` + `www.` | Este hub | `kgstudio-hub` |
 | `portafolio.` | Portafolio personal | `portafolio` |
 | `parla.` | Intérprete en vivo ES⇄EN | `parla` |
-| `pc.` | Soporte de computadores | `kgstudio-soporte` |
+| `reinicia.` + `pc.` | Mantenimiento de computadores | `kgstudio-soporte` |
 | `arriendos.` | Gestión de arriendos (privado) | `arriendos` |
 
 El DNS también vive en Vercel y hay un registro comodín `*`, así que un subdominio
