@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kevin Gonzalez — Cloud &amp; DevOps Engineer</title>
-<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Explora en 3D los sitios que tengo corriendo bajo kgstudio.top y su estado en vivo.">
+<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Explora en 3D los productos que tengo corriendo bajo kgstudio.top y su estado en vivo.">
 <link rel="canonical" href="https://kgstudio.top/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kgstudio.top/">
 <meta property="og:title" content="Kevin Gonzalez — Cloud &amp; DevOps Engineer">
-<meta property="og:description" content="Construyo, despliego y opero. Explora la zona: cada sitio se enciende cuando su servidor responde.">
+<meta property="og:description" content="Construyo, despliego y opero. Explora la zona: cada producto se enciende cuando su servidor responde.">
 <meta property="og:image" content="https://kgstudio.top/photo.jpg">
 <meta property="og:locale" content="es_CO">
 <meta name="twitter:card" content="summary_large_image">
@@ -52,7 +52,6 @@
 <canvas id="scene" aria-hidden="true"></canvas>
 <div class="veil" aria-hidden="true"></div>
 
-<!-- Tapa el vacío negro mientras llega Three.js del CDN. -->
 <div class="boot" id="boot" aria-hidden="true">
   <span class="boot__bar"></span>
   <span class="boot__text">Levantando la zona…</span>
@@ -60,8 +59,8 @@
 
 <!--
   La interfaz vive en su propia franja y el sistema orbital se corre al
-  espacio que queda libre. Por eso nada se superpone a los cuerpos:
-  el script mide estos bloques y desplaza el frustum de la cámara.
+  espacio libre. El script mide estos bloques y desplaza el frustum de la
+  cámara, por eso nada queda encima de los cuerpos.
 -->
 <div class="rail" id="rail">
 
@@ -82,18 +81,29 @@
       </p>
       <h1 class="hud__name">Kevin<br>Gonzalez</h1>
       <p class="hud__role">Cloud &amp; DevOps Engineer</p>
+
+      <!-- El portafolio no orbita: es quien soy, no un producto que opero.
+           Va aquí arriba, junto al cargo. -->
+      <a class="hud__folio" href="https://portafolio.kgstudio.top" target="_blank" rel="noopener"
+         data-node="portafolio" data-probe="https://portafolio.kgstudio.top">
+        <span class="hud__folio-dot" aria-hidden="true"></span>
+        <span class="hud__folio-text">
+          <strong>Ver portafolio</strong>
+          <em>trayectoria, experiencia y stack</em>
+        </span>
+        <span class="hud__folio-go" aria-hidden="true">↗</span>
+      </a>
+
       <p class="hud__lede">
-        Ingeniero de sistemas. Construyo, despliego y opero.
-        Cada cuerpo en órbita es un sitio mío, y se enciende solo si su
-        servidor contesta.
+        Ingeniero de sistemas. Cada cuerpo en órbita es un producto mío en
+        producción, y se enciende solo si su servidor contesta.
       </p>
-      <p class="hud__count"><span id="countNum">0</span> de 4 respondiendo</p>
+      <p class="hud__count"><span id="countNum">0</span> de <span id="countAll">6</span> respondiendo</p>
     </section>
   </div>
 
   <div class="rail__bottom" id="railBottom">
 
-    <!-- Panel del sitio seleccionado. Ocupa el lugar de los controles. -->
     <aside class="panel" id="panel" hidden aria-labelledby="panelTitle">
       <div class="panel__head">
         <p class="panel__state" id="panelState">comprobando</p>
@@ -112,7 +122,7 @@
         <li><kbd>arrastra</kbd><span>girar</span></li>
         <li><kbd>rueda</kbd><span>acercar</span></li>
         <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>moverte</span></li>
-        <li><kbd>clic</kbd><span>ver un sitio</span></li>
+        <li><kbd>clic</kbd><span>ver un producto</span></li>
         <li><kbd>R</kbd><span>volver al centro</span></li>
       </ul>
       <p class="controls__touch">Toca un cuerpo para ver de qué se trata.</p>
@@ -128,15 +138,8 @@
   </div>
 </div>
 
-<!-- Etiquetas 3D: enlaces reales, con teclado y legibles por buscadores. -->
+<!-- Etiquetas de los cuerpos: enlaces reales, con teclado y legibles por buscadores. -->
 <div class="labels" id="labels">
-  <a class="node" href="https://portafolio.kgstudio.top" target="_blank" rel="noopener"
-     data-node="portafolio" data-probe="https://portafolio.kgstudio.top"
-     data-title="Portafolio" data-stack="Next.js · Three.js · Vercel"
-     data-desc="Mi trayectoria completa, la experiencia y el stack con el que trabajo a diario.">
-    <span class="node__dot" aria-hidden="true"></span>
-    <span class="node__name">portafolio</span>
-  </a>
   <a class="node" href="https://parla.kgstudio.top" target="_blank" rel="noopener"
      data-node="parla" data-probe="https://parla.kgstudio.top"
      data-title="Parla" data-stack="Deepgram · Next.js · Supabase"
@@ -144,12 +147,26 @@
     <span class="node__dot" aria-hidden="true"></span>
     <span class="node__name">parla</span>
   </a>
+  <a class="node" href="https://monetiq.kgstudio.top" target="_blank" rel="noopener"
+     data-node="monetiq" data-probe="https://monetiq.kgstudio.top"
+     data-title="MonetIQ" data-stack="Flutter · Next.js · Supabase"
+     data-desc="Finanzas personales con IA: analiza tus gastos y te dice dónde se te está yendo la plata.">
+    <span class="node__dot" aria-hidden="true"></span>
+    <span class="node__name">monetiq</span>
+  </a>
   <a class="node" href="https://reinicia.kgstudio.top" target="_blank" rel="noopener"
      data-node="reinicia" data-probe="https://reinicia.kgstudio.top"
      data-title="Reinicia" data-stack="HTML · CSS · Vercel"
      data-desc="Mantenimiento de computadores para los vecinos del conjunto, con precio de una vez.">
     <span class="node__dot" aria-hidden="true"></span>
     <span class="node__name">reinicia</span>
+  </a>
+  <a class="node" href="https://pagobot.kgstudio.top" target="_blank" rel="noopener"
+     data-node="pagobot" data-probe="https://pagobot.kgstudio.top"
+     data-title="Pagobot" data-stack="Node.js · Telegram · Supabase"
+     data-desc="Bot de Telegram que lleva los pagos del mes y avisa antes de que se venzan.">
+    <span class="node__dot" aria-hidden="true"></span>
+    <span class="node__name">pagobot</span>
   </a>
   <a class="node" href="https://arriendos.kgstudio.top" target="_blank" rel="noopener"
      data-node="arriendos" data-probe="https://arriendos.kgstudio.top"
@@ -165,7 +182,7 @@
   <div class="sheet__inner">
     <div class="sheet__head">
       <h2>Corriendo ahora</h2>
-      <p>Cuatro sitios bajo <strong>kgstudio.top</strong>. El estado se comprueba al abrir la página.</p>
+      <p>Seis sitios bajo <strong>kgstudio.top</strong>. El estado se comprueba al abrir la página.</p>
     </div>
 
     <ul class="rows">
@@ -181,11 +198,23 @@
         <span class="rows__desc">Intérprete médico en vivo español⇄inglés</span>
         <span class="rows__meta">Deepgram · Supabase</span>
       </a></li>
+      <li><a href="https://monetiq.kgstudio.top" target="_blank" rel="noopener" data-row="monetiq">
+        <span class="rows__dot" aria-hidden="true"></span>
+        <span class="rows__name">monetiq</span>
+        <span class="rows__desc">Finanzas personales con análisis de gastos por IA</span>
+        <span class="rows__meta">Flutter · Supabase</span>
+      </a></li>
       <li><a href="https://reinicia.kgstudio.top" target="_blank" rel="noopener" data-row="reinicia">
         <span class="rows__dot" aria-hidden="true"></span>
         <span class="rows__name">reinicia</span>
         <span class="rows__desc">Mantenimiento de computadores en el conjunto</span>
         <span class="rows__meta">HTML · Vercel</span>
+      </a></li>
+      <li><a href="https://pagobot.kgstudio.top" target="_blank" rel="noopener" data-row="pagobot">
+        <span class="rows__dot" aria-hidden="true"></span>
+        <span class="rows__name">pagobot</span>
+        <span class="rows__desc">Bot de Telegram para los pagos del mes</span>
+        <span class="rows__meta">Node.js · Telegram</span>
       </a></li>
       <li><a href="https://arriendos.kgstudio.top" target="_blank" rel="noopener" data-row="arriendos">
         <span class="rows__dot" aria-hidden="true"></span>

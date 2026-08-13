@@ -264,6 +264,48 @@ p { text-wrap: pretty; }
   color: var(--orange);
 }
 
+/* El portafolio, arriba y junto al cargo. No es un producto que yo opere:
+   es la puerta a quién soy, así que tiene su propio lugar y no una órbita. */
+.hud__folio {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(255,255,255,.03);
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.hud__folio:hover {
+  border-color: var(--orange);
+  background: rgba(245,111,13,.07);
+}
+
+.hud__folio-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text-3);
+  flex: none;
+  transition: background-color 0.5s ease, box-shadow 0.5s ease;
+}
+.hud__folio[data-state="live"] .hud__folio-dot {
+  background: var(--orange);
+  box-shadow: 0 0 10px rgba(245,111,13,.7);
+}
+
+.hud__folio-text { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.hud__folio-text strong { font-weight: 600; font-size: 0.9rem; }
+.hud__folio-text em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  color: var(--text-3);
+}
+
+.hud__folio-go { margin-left: auto; color: var(--text-3); transition: color 0.2s ease; }
+.hud__folio:hover .hud__folio-go { color: var(--orange); }
+
 .hud__lede { max-width: 32ch; font-size: var(--t-small); color: var(--text-2); }
 
 .hud__count {
@@ -273,10 +315,30 @@ p { text-wrap: pretty; }
 }
 #countNum { color: var(--orange); font-weight: 700; }
 
-/* En móvil la identidad se recorta para no robarle banda a la escena. */
+/* Cuanto menos alto es el hueco, menos identidad cabe: la escena necesita
+   banda para respirar. Se recorta de lo más prescindible a lo menos. */
+
+/* Móvil y tablet: se va la descripción larga. */
 @media (max-width: 63.99rem) {
   .hud__lede { display: none; }
   .hud { gap: 0.5rem; }
+  .hud__folio { padding: 0.5rem 0.7rem; }
+  .hud__folio-text em { display: none; }
+}
+
+/* Pantallas bajas —teléfono acostado, ventana a media altura—: se va también
+   el contador y la fecha del pie, que son adorno frente a poder explorar. */
+@media (max-height: 34rem) {
+  .hud__count, .foot { display: none; }
+  .hud__name { font-size: 1.75rem; }
+  .rail__top, .rail__bottom { padding: 0.75rem 1rem; gap: 0.6rem; }
+  .controls__keys { flex-direction: row; flex-wrap: wrap; gap: 0.35rem 0.9rem; }
+}
+
+/* Teléfono muy angosto: el rótulo de la marca y el nombre se aprietan. */
+@media (max-width: 24rem) {
+  .top__nav { gap: 0.7rem; }
+  .hud__name { font-size: 2rem; }
 }
 
 /* ── Controles ──────────────────────────────────────────────── */

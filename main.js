@@ -34,14 +34,23 @@ const WIDE = window.matchMedia('(min-width: 64rem)');
 
 /* ── Datos de la zona ───────────────────────────────────────── */
 
+/*
+ * El portafolio no está aquí a propósito: no es un producto que yo opere,
+ * es quien soy. Vive arriba, junto al cargo. Lo que orbita son cosas que
+ * corren solas y se pueden caer.
+ *
+ * Las fases están repartidas para que cinco cuerpos no se alineen nunca en
+ * la misma vertical, que es cuando las etiquetas se estorban.
+ */
 const BODIES = [
-  { id: 'portafolio', radius:  5.0, tilt:  0.30, speed: 0.120, phase: 0.0, size: 0.46 },
-  { id: 'parla',      radius:  6.9, tilt: -0.22, speed: 0.088, phase: 1.9, size: 0.40 },
-  { id: 'reinicia',   radius:  8.9, tilt:  0.44, speed: 0.064, phase: 3.6, size: 0.36 },
-  { id: 'arriendos',  radius: 11.0, tilt: -0.36, speed: 0.049, phase: 5.2, size: 0.34 },
+  { id: 'parla',     radius:  4.6, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
+  { id: 'monetiq',   radius:  6.2, tilt: -0.24, speed: 0.094, phase: 1.4, size: 0.40 },
+  { id: 'reinicia',  radius:  7.9, tilt:  0.42, speed: 0.072, phase: 2.9, size: 0.36 },
+  { id: 'pagobot',   radius:  9.7, tilt: -0.34, speed: 0.056, phase: 4.3, size: 0.34 },
+  { id: 'arriendos', radius: 11.6, tilt:  0.20, speed: 0.044, phase: 5.6, size: 0.33 },
 ];
 
-const OUTER = 11.0;
+const OUTER = 11.6;
 const FOV = 50;
 const COLOR_ORANGE = new THREE.Color('#f56f0d');
 const COLOR_DIM = new THREE.Color('#4a443e');
@@ -54,15 +63,21 @@ const VOID = 0x07070a;
 const TIMEOUT_MS = 6000;
 const live = new Map();
 const countNum = document.getElementById('countNum');
+const countAll = document.getElementById('countAll');
 
-async function probe(node) {
-  const id = node.dataset.node;
+// Todo lo que declare `data-probe` se comprueba: los cuerpos en órbita, y
+// también el portafolio, que no orbita pero es parte de la zona.
+const probes = Array.from(document.querySelectorAll('[data-probe]'));
+if (countAll) countAll.textContent = String(probes.length);
+
+async function probe(el) {
+  const id = el.dataset.node;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    await fetch(node.dataset.probe, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+    await fetch(el.dataset.probe, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
     live.set(id, true);
-    node.dataset.state = 'live';
+    el.dataset.state = 'live';
     rows.filter((r) => r.dataset.row === id).forEach((r) => { r.dataset.state = 'live'; });
     if (countNum) countNum.textContent = String(live.size);
     if (panel.el && panel.current === id) paintPanelState(true);
@@ -141,7 +156,7 @@ function webglAvailable() {
   }
 }
 
-labels.forEach(probe);
+probes.forEach(probe);
 
 if (!webglAvailable()) {
   // Sin escena la página se vuelve documento: la identidad se queda
@@ -486,6 +501,7 @@ function build() {
 
   const projected = new THREE.Vector3();
   const toBody = new THREE.Vector3();
+  const placements = [];
   const clock = new THREE.Clock();
   let frame = 0;
   let booted = false;
@@ -576,14 +592,35 @@ function build() {
         (-projected.y * 0.5 + 0.5) * H, stage.y + pad * 0.6, stage.y + stage.h - pad * 0.6,
       );
 
-      body.label.style.setProperty('--x', `${Math.round(x)}px`);
-      body.label.style.setProperty('--y', `${Math.round(y)}px`);
-      body.label.style.pointerEvents = 'auto';
-
       const dist = camera.position.distanceTo(body.world);
       const fade = THREE.MathUtils.clamp(1.5 - dist / (homeDistance * 1.5), 0.42, 1);
-      body.label.style.opacity = String(isActive ? 1 : fade);
+
+      placements.push({ label: body.label, x, y, opacity: isActive ? 1 : fade });
     });
+
+    /*
+     * Separar las etiquetas que se pisan. Con cinco cuerpos es cuestión de
+     * tiempo que dos queden a la misma altura. Se empujan solo en vertical:
+     * moverlas en horizontal las despegaría de su cuerpo y ya no se sabría
+     * cuál nombra cuál. Las que están en columnas distintas se dejan en paz.
+     */
+    placements.sort((a, b) => a.y - b.y);
+    const GAP = 32;
+    const LIMIT = stage.y + stage.h - pad * 0.6;
+    for (let i = 1; i < placements.length; i++) {
+      const prev = placements[i - 1];
+      const cur = placements[i];
+      if (Math.abs(cur.x - prev.x) > 140) continue;
+      if (cur.y - prev.y < GAP) cur.y = Math.min(prev.y + GAP, LIMIT);
+    }
+
+    placements.forEach((p) => {
+      p.label.style.setProperty('--x', `${Math.round(p.x)}px`);
+      p.label.style.setProperty('--y', `${Math.round(p.y)}px`);
+      p.label.style.pointerEvents = 'auto';
+      p.label.style.opacity = String(p.opacity);
+    });
+    placements.length = 0;
 
     applyKeys(dt);
 
