@@ -3,20 +3,37 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KG Studio — Kevin Gonzalez</title>
-<meta name="description" content="Todo lo que Kevin Gonzalez tiene corriendo: sitios en vivo bajo kgstudio.top y el trabajo detrás. Cloud &amp; DevOps Engineer desde Bogotá, Colombia.">
+<title>Kevin Gonzalez — Cloud &amp; DevOps Engineer</title>
+<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Arquitectura cloud, automatización y gobierno de datos — y productos propios corriendo en producción.">
 <link rel="canonical" href="https://kgstudio.top/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kgstudio.top/">
-<meta property="og:title" content="KG Studio — Kevin Gonzalez">
+<meta property="og:title" content="Kevin Gonzalez — Cloud &amp; DevOps Engineer">
 <meta property="og:description" content="Construyo, despliego y opero. Esto es todo lo que tengo corriendo ahora mismo.">
+<meta property="og:image" content="https://kgstudio.top/photo.jpg">
 <meta property="og:locale" content="es_CO">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#f56f0d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f56f0d'/%3E%3Ctext x='32' y='43' font-family='ui-monospace,monospace' font-size='27' font-weight='700' fill='%230d0d0d' text-anchor='middle'%3EKG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Kevin Gonzalez",
+  "url": "https://kgstudio.top",
+  "image": "https://kgstudio.top/photo.jpg",
+  "jobTitle": "Cloud & DevOps Engineer",
+  "email": "kgagudelo@gmail.com",
+  "address": { "@type": "PostalAddress", "addressLocality": "Bogotá", "addressCountry": "CO" },
+  "alumniOf": { "@type": "CollegeOrUniversity", "name": "Universidad El Bosque" },
+  "sameAs": ["https://github.com/revkelo", "https://linkedin.com/in/kagonzalezdev"]
+}
+</script>
 </head>
 <body>
 
@@ -27,33 +44,92 @@
   <nav class="top__nav" aria-label="Enlaces externos">
     <a href="https://github.com/revkelo" rel="me noopener" target="_blank">GitHub</a>
     <a href="https://linkedin.com/in/kagonzalezdev" rel="me noopener" target="_blank">LinkedIn</a>
+    <a href="mailto:kgagudelo@gmail.com">Correo</a>
   </nav>
 </header>
 
 <main>
 
-  <!-- ── Apertura ────────────────────────────────────────────────── -->
+  <!-- ── Apertura: la frase y la cara ────────────────────────────── -->
   <section class="open">
     <p class="open__who">
       <span class="pulse" aria-hidden="true"></span>
-      Kevin Gonzalez · Cloud &amp; DevOps Engineer · Bogotá
+      Kevin Gonzalez · Cloud &amp; DevOps Engineer · Bogotá, Colombia
     </p>
-    <h1 class="open__claim">
-      Construyo,<br>
-      despliego<br>
-      y opero<span class="dot">.</span>
-    </h1>
+
+    <div class="open__grid">
+      <h1 class="open__claim">
+        Construyo,<br>
+        despliego<br>
+        y opero<span class="dot">.</span>
+      </h1>
+      <figure class="portrait">
+        <img src="photo.jpg" width="640" height="640" alt="Retrato de Kevin Gonzalez" loading="eager" decoding="async">
+        <figcaption>Kevin Gonzalez</figcaption>
+      </figure>
+    </div>
+
     <p class="open__lede">
-      Ingeniero de sistemas de la Universidad El Bosque. Trabajo en arquitectura cloud,
-      automatización y gobierno de datos — y por las noches saco productos propios.
-      Esto es todo lo que tengo corriendo ahora mismo.
+      Soy ingeniero de sistemas de la Universidad El Bosque. De día trabajo en
+      <strong>gobierno de datos y arquitectura cloud</strong>; el resto del tiempo
+      construyo productos propios y los dejo corriendo. Todo lo que hay en esta página
+      está en producción, no en una carpeta.
     </p>
+
+    <ul class="proof">
+      <li><span class="proof__fig">Top 10</span> entre 180 postulados al programa de práctica</li>
+      <li><span class="proof__fig">100%</span> de las pruebas de calidad de datos automatizadas</li>
+      <li><span class="proof__fig">Meritorio</span> proyecto de grado, Universidad El Bosque</li>
+      <li><span class="proof__fig">B1</span> inglés certificado iTEP</li>
+    </ul>
+  </section>
+
+  <!-- ── Trayectoria ─────────────────────────────────────────────── -->
+  <section class="path" aria-labelledby="path-title">
+    <div class="rule">
+      <h2 class="rule__label" id="path-title">Dónde he estado</h2>
+      <p class="rule__hint">Tres frentes al tiempo: la empresa, la universidad y lo propio.</p>
+    </div>
+
+    <ol class="road">
+      <li class="stop">
+        <p class="stop__when">2026 — hoy</p>
+        <div class="stop__what">
+          <h3 class="stop__role">Practicante de Gobierno de Datos <span class="stop__org">· Corona</span></h3>
+          <p class="stop__text">
+            Automaticé por completo las pruebas de calidad de datos con Great Expectations
+            sobre Databricks, y llevé las políticas DAMA-DMBOK a tableros que el negocio
+            realmente usa. Catalogación y linaje de metadatos con Azure DevOps.
+          </p>
+        </div>
+      </li>
+      <li class="stop">
+        <p class="stop__when">2025</p>
+        <div class="stop__what">
+          <h3 class="stop__role">Ingeniero Full-Stack <span class="stop__org">· Universidad El Bosque</span></h3>
+          <p class="stop__text">
+            SOM 3D para 3Dvinci Studios: un pipeline que convierte estudios DICOM en
+            modelos médicos 3D, sobre AWS y FastAPI. Calificado como proyecto meritorio.
+          </p>
+        </div>
+      </li>
+      <li class="stop">
+        <p class="stop__when">2024 — hoy</p>
+        <div class="stop__what">
+          <h3 class="stop__role">DevOps &amp; Cloud <span class="stop__org">· por mi cuenta</span></h3>
+          <p class="stop__text">
+            Arquitecturas serverless en AWS, cargas en Kubernetes y la migración de
+            Google Drive a Microsoft 365 de toda la universidad, sin perder un archivo.
+          </p>
+        </div>
+      </li>
+    </ol>
   </section>
 
   <!-- ── Firma: el índice que se pinta al comprobarse ────────────── -->
   <section class="live" id="vivo" aria-labelledby="vivo-title">
     <div class="rule">
-      <h2 class="rule__label" id="vivo-title">En vivo</h2>
+      <h2 class="rule__label" id="vivo-title">Corriendo ahora</h2>
       <p class="rule__hint">
         Cada nombre se pinta de naranja cuando su servidor responde. Comprobado al abrir esta página.
       </p>
@@ -66,7 +142,7 @@
            data-probe="https://portafolio.kgstudio.top">
           <span class="entry__name" data-text="portafolio">portafolio</span>
           <span class="entry__aside">
-            <span class="entry__desc">Mi trayectoria y mi stack, con un campo de ondas 3D</span>
+            <span class="entry__desc">Mi trayectoria completa, con un campo de ondas 3D</span>
             <span class="entry__meta">Next.js · Three.js</span>
           </span>
         </a>
@@ -109,7 +185,7 @@
     <p class="index__root">todos bajo <strong>kgstudio.top</strong></p>
   </section>
 
-  <!-- ── Muro de proyectos: un párrafo de nombres, sin tarjetas ──── -->
+  <!-- ── Muro de proyectos ───────────────────────────────────────── -->
   <section class="wall" aria-labelledby="wall-title">
     <div class="rule">
       <h2 class="rule__label" id="wall-title">Construido</h2>
@@ -172,18 +248,53 @@
     </p>
   </section>
 
+  <!-- ── Herramientas ────────────────────────────────────────────── -->
+  <section class="kit" aria-labelledby="kit-title">
+    <div class="rule">
+      <h2 class="rule__label" id="kit-title">Con qué trabajo</h2>
+      <p class="rule__hint">Lo que uso a diario, no una lista de todo lo que he tocado alguna vez.</p>
+    </div>
+
+    <dl class="kit__list">
+      <div class="kit__row">
+        <dt>Cloud &amp; DevOps</dt>
+        <dd>AWS · Docker · Kubernetes · Terraform · Azure · GitHub Actions · CI/CD</dd>
+      </div>
+      <div class="kit__row">
+        <dt>Backend</dt>
+        <dd>Python · FastAPI · Java · Spring Boot · Node.js · REST</dd>
+      </div>
+      <div class="kit__row">
+        <dt>Frontend</dt>
+        <dd>TypeScript · React · Next.js · Flutter · Three.js · Tailwind</dd>
+      </div>
+      <div class="kit__row">
+        <dt>Datos &amp; IA</dt>
+        <dd>Databricks · PySpark · Great Expectations · LangChain · Power BI · DAMA-DMBOK</dd>
+      </div>
+      <div class="kit__row">
+        <dt>Datos en reposo</dt>
+        <dd>PostgreSQL · Supabase · MySQL · DynamoDB · Redis</dd>
+      </div>
+    </dl>
+  </section>
+
   <!-- ── Cierre ──────────────────────────────────────────────────── -->
   <section class="end" id="contacto">
     <p class="end__label">¿Trabajamos juntos?</p>
     <a class="end__mail" href="mailto:kgagudelo@gmail.com">kgagudelo@gmail.com</a>
-    <p class="end__note">Disponible para freelance y oportunidades full-time. Respondo el mismo día.</p>
+    <p class="end__note">
+      Disponible para freelance y oportunidades full-time. Respondo el mismo día.
+      También estoy en <a href="https://linkedin.com/in/kagonzalezdev" target="_blank" rel="noopener">LinkedIn</a>
+      y <a href="https://github.com/revkelo" target="_blank" rel="noopener">GitHub</a>.
+    </p>
   </section>
 
 </main>
 
 <footer class="foot">
   <p>© <span id="year">2026</span> Kevin Gonzalez — Bogotá, Colombia</p>
-  <p><a href="https://github.com/revkelo" target="_blank" rel="noopener">GitHub</a> · <a href="https://linkedin.com/in/kagonzalezdev" target="_blank" rel="noopener">LinkedIn</a></p>
+  <p><a href="https://portafolio.kgstudio.top" target="_blank" rel="noopener">Ver portafolio completo ↗</a></p>
 </footer>
 
 <script src="main.js" defer></script>
