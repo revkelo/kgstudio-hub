@@ -202,6 +202,9 @@ p { text-wrap: pretty; margin: 0; }
   border-radius: 8px;
   pointer-events: auto;
   will-change: transform, opacity;
+  /* Arrancan invisibles: el bucle las coloca en el primer cuadro y
+     así no se ven amontonadas en la esquina antes de proyectarse. */
+  opacity: 0;
   transition: opacity 0.3s ease, background-color 0.2s ease;
 }
 
