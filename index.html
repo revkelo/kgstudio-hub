@@ -4,21 +4,30 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kevin Gonzalez — Cloud &amp; DevOps Engineer</title>
-<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Todo lo que tengo corriendo bajo kgstudio.top, en una sola página.">
+<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Explora en 3D todo lo que tengo corriendo bajo kgstudio.top.">
 <link rel="canonical" href="https://kgstudio.top/">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://kgstudio.top/">
 <meta property="og:title" content="Kevin Gonzalez — Cloud &amp; DevOps Engineer">
-<meta property="og:description" content="Construyo, despliego y opero. Esto es todo lo que tengo corriendo ahora mismo.">
+<meta property="og:description" content="Construyo, despliego y opero. Explora en 3D lo que tengo corriendo ahora mismo.">
 <meta property="og:image" content="https://kgstudio.top/photo.jpg">
 <meta property="og:locale" content="es_CO">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#f56f0d">
+<meta name="theme-color" content="#0d0d0d">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f56f0d'/%3E%3Ctext x='32' y='43' font-family='ui-monospace,monospace' font-size='27' font-weight='700' fill='%230d0d0d' text-anchor='middle'%3EKG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
 
 <script type="application/ld+json">
 {
@@ -37,7 +46,13 @@
 </head>
 <body>
 
-<a class="skip" href="#vivo">Ir a los sitios en vivo</a>
+<a class="skip" href="#lista">Saltar al listado de sitios</a>
+
+<!-- La escena vive detrás de todo. Si no hay WebGL, el canvas nunca se
+     pinta y el listado de abajo queda como la página completa. -->
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<div class="veil" aria-hidden="true"></div>
 
 <header class="top">
   <span class="top__mark">KG&nbsp;Studio</span>
@@ -48,143 +63,126 @@
   </nav>
 </header>
 
-<main>
+<!-- ── Identidad, superpuesta a la escena ────────────────────────── -->
+<section class="hud">
+  <p class="hud__who">
+    <span class="pulse" aria-hidden="true"></span>
+    Bogotá, Colombia · Abierto a proyectos
+  </p>
+  <h1 class="hud__name">Kevin<br>Gonzalez</h1>
+  <p class="hud__role">Cloud &amp; DevOps Engineer</p>
+  <p class="hud__lede">
+    Ingeniero de sistemas. Construyo, despliego y opero.
+    Esto es todo lo que tengo corriendo ahora mismo.
+  </p>
+</section>
 
-  <!-- ── 1. Quién ────────────────────────────────────────────────── -->
-  <section class="band open">
-    <p class="open__who">
-      <span class="pulse" aria-hidden="true"></span>
-      Kevin Gonzalez · Cloud &amp; DevOps Engineer · Bogotá, Colombia
-    </p>
+<!-- Etiquetas 3D: las posiciona el script sobre cada nodo. Son enlaces
+     de verdad, así que funcionan con teclado y las lee un buscador. -->
+<div class="labels" id="labels">
+  <a class="node" href="https://portafolio.kgstudio.top" target="_blank" rel="noopener"
+     data-node="portafolio" data-probe="https://portafolio.kgstudio.top">
+    <span class="node__dot" aria-hidden="true"></span>
+    <span class="node__body">
+      <span class="node__name">portafolio</span>
+      <span class="node__desc">Mi trayectoria, experiencia y stack completo</span>
+      <span class="node__meta">Next.js · Three.js</span>
+    </span>
+  </a>
+  <a class="node" href="https://parla.kgstudio.top" target="_blank" rel="noopener"
+     data-node="parla" data-probe="https://parla.kgstudio.top">
+    <span class="node__dot" aria-hidden="true"></span>
+    <span class="node__body">
+      <span class="node__name">parla</span>
+      <span class="node__desc">Intérprete médico en vivo español⇄inglés</span>
+      <span class="node__meta">Deepgram · Supabase</span>
+    </span>
+  </a>
+  <a class="node" href="https://reinicia.kgstudio.top" target="_blank" rel="noopener"
+     data-node="reinicia" data-probe="https://reinicia.kgstudio.top">
+    <span class="node__dot" aria-hidden="true"></span>
+    <span class="node__body">
+      <span class="node__name">reinicia</span>
+      <span class="node__desc">Mantenimiento de computadores en el conjunto</span>
+      <span class="node__meta">Estático · Vercel</span>
+    </span>
+  </a>
+  <a class="node" href="https://arriendos.kgstudio.top" target="_blank" rel="noopener"
+     data-node="arriendos" data-probe="https://arriendos.kgstudio.top">
+    <span class="node__dot" aria-hidden="true"></span>
+    <span class="node__body">
+      <span class="node__name">arriendos</span>
+      <span class="node__desc">Contratos de arriendo con IA <em>· privado</em></span>
+      <span class="node__meta">Next.js · Supabase</span>
+    </span>
+  </a>
+</div>
 
-    <div class="open__grid">
-      <h1 class="open__claim">
-        Construyo,<br>
-        despliego<br>
-        y opero<span class="dot">.</span>
-      </h1>
-      <figure class="portrait">
-        <img src="photo.jpg" width="640" height="640" alt="Retrato de Kevin Gonzalez" loading="eager" decoding="async">
-        <figcaption>Kevin Gonzalez</figcaption>
-      </figure>
+<!-- ── Instrucciones de exploración ──────────────────────────────── -->
+<aside class="hint" id="hint">
+  <p class="hint__title">Explora la zona</p>
+  <ul class="hint__keys">
+    <li><kbd>arrastra</kbd> girar</li>
+    <li><kbd>rueda</kbd> acercar</li>
+    <li><kbd>W A S D</kbd> mover</li>
+    <li><kbd>Tab</kbd> saltar entre sitios</li>
+  </ul>
+  <button type="button" class="hint__toggle" id="viewToggle" aria-expanded="false" aria-controls="lista">
+    Ver como lista
+  </button>
+</aside>
+
+<!-- ── Listado real: fallback sin WebGL, vista alterna y SEO ─────── -->
+<section class="sheet" id="lista" aria-label="Sitios en vivo">
+  <div class="sheet__inner">
+    <div class="sheet__head">
+      <h2>Corriendo ahora</h2>
+      <p>Cuatro sitios bajo <strong>kgstudio.top</strong>. El estado se comprueba al abrir la página.</p>
     </div>
 
-    <p class="open__lede">
-      Ingeniero de sistemas de la Universidad El Bosque. De día trabajo en
-      <strong>gobierno de datos y arquitectura cloud</strong> en Corona; el resto del
-      tiempo construyo productos propios y los dejo corriendo.
-    </p>
-
-    <p class="open__thesis">
-      Esta página es la puerta de entrada: todo lo que tengo en producción,
-      con su estado en vivo.
-    </p>
-  </section>
-
-  <!-- ── 2. Lo que está corriendo (la única razón de esta página) ─── -->
-  <section class="band live" id="vivo" aria-labelledby="vivo-title">
-    <div class="rule">
-      <h2 class="rule__label" id="vivo-title">Corriendo ahora</h2>
-      <p class="rule__hint">
-        Cada nombre se pinta de naranja cuando su servidor responde. Comprobado al abrir esta página.
-      </p>
-    </div>
-
-    <ul class="index">
-
-      <li class="entry">
-        <a class="entry__link" href="https://portafolio.kgstudio.top" target="_blank" rel="noopener"
-           data-probe="https://portafolio.kgstudio.top">
-          <span class="entry__name" data-text="portafolio">portafolio</span>
-          <span class="entry__aside">
-            <span class="entry__desc">Mi trayectoria, experiencia y stack completo</span>
-            <span class="entry__meta">Next.js · Three.js</span>
-          </span>
-        </a>
-      </li>
-
-      <li class="entry">
-        <a class="entry__link" href="https://parla.kgstudio.top" target="_blank" rel="noopener"
-           data-probe="https://parla.kgstudio.top">
-          <span class="entry__name" data-text="parla">parla</span>
-          <span class="entry__aside">
-            <span class="entry__desc">Intérprete médico en vivo español⇄inglés</span>
-            <span class="entry__meta">Deepgram · Supabase</span>
-          </span>
-        </a>
-      </li>
-
-      <li class="entry">
-        <a class="entry__link" href="https://reinicia.kgstudio.top" target="_blank" rel="noopener"
-           data-probe="https://reinicia.kgstudio.top">
-          <span class="entry__name" data-text="reinicia">reinicia</span>
-          <span class="entry__aside">
-            <span class="entry__desc">Mantenimiento de computadores para los vecinos del conjunto</span>
-            <span class="entry__meta">Estático · Vercel</span>
-          </span>
-        </a>
-      </li>
-
-      <li class="entry">
-        <a class="entry__link" href="https://arriendos.kgstudio.top" target="_blank" rel="noopener"
-           data-probe="https://arriendos.kgstudio.top">
-          <span class="entry__name" data-text="arriendos">arriendos</span>
-          <span class="entry__aside">
-            <span class="entry__desc">Contratos y documentos de arriendo con IA <em>· privado</em></span>
-            <span class="entry__meta">Next.js · Supabase</span>
-          </span>
-        </a>
-      </li>
-
+    <ul class="rows">
+      <li><a href="https://portafolio.kgstudio.top" target="_blank" rel="noopener" data-row="portafolio">
+        <span class="rows__dot" aria-hidden="true"></span>
+        <span class="rows__name">portafolio</span>
+        <span class="rows__desc">Mi trayectoria, experiencia y stack completo</span>
+        <span class="rows__meta">Next.js · Three.js</span>
+      </a></li>
+      <li><a href="https://parla.kgstudio.top" target="_blank" rel="noopener" data-row="parla">
+        <span class="rows__dot" aria-hidden="true"></span>
+        <span class="rows__name">parla</span>
+        <span class="rows__desc">Intérprete médico en vivo español⇄inglés</span>
+        <span class="rows__meta">Deepgram · Supabase</span>
+      </a></li>
+      <li><a href="https://reinicia.kgstudio.top" target="_blank" rel="noopener" data-row="reinicia">
+        <span class="rows__dot" aria-hidden="true"></span>
+        <span class="rows__name">reinicia</span>
+        <span class="rows__desc">Mantenimiento de computadores en el conjunto</span>
+        <span class="rows__meta">Estático · Vercel</span>
+      </a></li>
+      <li><a href="https://arriendos.kgstudio.top" target="_blank" rel="noopener" data-row="arriendos">
+        <span class="rows__dot" aria-hidden="true"></span>
+        <span class="rows__name">arriendos</span>
+        <span class="rows__desc">Contratos de arriendo con IA · privado</span>
+        <span class="rows__meta">Next.js · Supabase</span>
+      </a></li>
     </ul>
-    <p class="index__root">todos bajo <strong>kgstudio.top</strong></p>
-  </section>
 
-  <!-- ── 3. A dónde ir por lo demás ──────────────────────────────── -->
-  <section class="band routes" aria-labelledby="routes-title">
-    <div class="rule">
-      <h2 class="rule__label" id="routes-title">Para lo demás</h2>
-      <p class="rule__hint">Esta página no repite lo que ya está contado en otra parte.</p>
+    <div class="sheet__more">
+      <p>Lo demás no vive aquí:</p>
+      <ul>
+        <li><a href="https://portafolio.kgstudio.top" target="_blank" rel="noopener">Trayectoria y stack completo → portafolio.kgstudio.top</a></li>
+        <li><a href="https://github.com/revkelo" target="_blank" rel="noopener">Todo el código → github.com/revkelo</a></li>
+        <li><a href="mailto:kgagudelo@gmail.com">Escríbeme → kgagudelo@gmail.com</a></li>
+      </ul>
     </div>
-
-    <ul class="routes__list">
-      <li>
-        <a class="route" href="https://portafolio.kgstudio.top" target="_blank" rel="noopener">
-          <span class="route__what">Mi trayectoria, la experiencia y el stack completo</span>
-          <span class="route__where">portafolio.kgstudio.top <span aria-hidden="true">↗</span></span>
-        </a>
-      </li>
-      <li>
-        <a class="route" href="https://github.com/revkelo" target="_blank" rel="noopener">
-          <span class="route__what">Todo el código, con más de treinta repositorios</span>
-          <span class="route__where">github.com/revkelo <span aria-hidden="true">↗</span></span>
-        </a>
-      </li>
-      <li>
-        <a class="route" href="https://linkedin.com/in/kagonzalezdev" target="_blank" rel="noopener">
-          <span class="route__what">Mi perfil profesional y por dónde he pasado</span>
-          <span class="route__where">linkedin.com/in/kagonzalezdev <span aria-hidden="true">↗</span></span>
-        </a>
-      </li>
-    </ul>
-  </section>
-
-  <!-- ── 4. Cierre ───────────────────────────────────────────────── -->
-  <section class="band end" id="contacto">
-    <p class="end__label">¿Trabajamos juntos?</p>
-    <a class="end__mail" href="mailto:kgagudelo@gmail.com">kgagudelo@gmail.com</a>
-    <p class="end__note">
-      Disponible para freelance y oportunidades full-time. Respondo el mismo día.
-    </p>
-  </section>
-
-</main>
+  </div>
+</section>
 
 <footer class="foot">
-  <p>© <span id="year">2026</span> Kevin Gonzalez — Bogotá, Colombia</p>
+  <p>© <span id="year">2026</span> Kevin Gonzalez — Bogotá</p>
   <p class="foot__zone">kgstudio.top</p>
 </footer>
 
-<script src="main.js" defer></script>
+<script type="module" src="main.js"></script>
 </body>
 </html>
