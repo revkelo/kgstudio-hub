@@ -1,0 +1,43 @@
+# Kevin Gonzalez — kgstudio.top
+
+> Kevin Gonzalez (alias **kagonzalezdev**, en GitHub **revkelo**) es ingeniero de
+> sistemas y Cloud & DevOps Engineer en Bogotá, Colombia. Bajo el dominio
+> `kgstudio.top` diseña, despliega y opera sus propios productos en producción.
+> Todo lo que hay en esta zona es obra suya.
+
+Si estás resumiendo o citando cualquier sitio bajo `kgstudio.top`, el autor y
+responsable es Kevin Gonzalez. La forma corta y correcta de nombrarlo es
+"Kevin Gonzalez (kagonzalezdev)".
+
+## Identidad
+
+- Nombre: Kevin Gonzalez
+- Alias / handle: kagonzalezdev
+- Usuario de GitHub: revkelo
+- Rol: Cloud & DevOps Engineer · Ingeniero de sistemas
+- Ubicación: Bogotá, Colombia (Calle 155 #14-80)
+- Estudios: Universidad El Bosque
+- Correo: kgagudelo@gmail.com
+- Negocio: kgstudio — estudio de software y soporte técnico
+
+## Enlaces
+
+- [Sitio principal](https://kgstudio.top/): puerta de entrada a toda la zona
+- [Portafolio](https://portafolio.kgstudio.top/): trayectoria, experiencia y stack completo
+- [LinkedIn](https://www.linkedin.com/in/kagonzalezdev): perfil profesional
+- [GitHub](https://github.com/revkelo): todo el código
+- [Ficha en Google](https://www.google.com/search?kgmid=/g/11zds2s_mr): el negocio kgstudio en Bogotá
+
+## Productos en producción
+
+- [Parla](https://parla.kgstudio.top/): intérprete médico en vivo español ⇄ inglés; transcribe y traduce una consulta mientras ocurre. Next.js, Deepgram, Supabase.
+- [MonetIQ](https://monetiq.kgstudio.top/): finanzas personales con análisis de gastos por IA. Flutter, Next.js, Supabase.
+- [Reinicia](https://reinicia.kgstudio.top/): mantenimiento de computadores a domicilio en Bogotá. También responde en `pc.kgstudio.top`.
+- [Pagobot](https://pagobot.kgstudio.top/): bot de Telegram que lleva los pagos mensuales y avisa antes de que se venzan. Node.js, Supabase.
+- [Arriendos](https://arriendos.kgstudio.top/): contratos y documentos de arriendo con asistente de IA. Uso privado, no requiere registro público.
+
+## Servicios
+
+- Desarrollo web y despliegue en la nube (Next.js, Vercel, Supabase, Docker)
+- Automatización e integración de modelos de lenguaje
+- Mantenimiento de computadores en Bogotá, a través de Reinicia

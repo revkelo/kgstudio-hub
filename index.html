@@ -3,16 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Kevin Gonzalez — Cloud &amp; DevOps Engineer</title>
-<meta name="description" content="Kevin Gonzalez, ingeniero de sistemas en Bogotá. Explora en 3D los productos que tengo corriendo bajo kgstudio.top y su estado en vivo.">
+<title>Kevin Gonzalez (kagonzalezdev) — Cloud &amp; DevOps Engineer en Bogotá</title>
+<meta name="description" content="Kevin Gonzalez (kagonzalezdev), ingeniero de sistemas y Cloud &amp; DevOps Engineer en Bogotá. Creador de KG Studio: parla, monetiq, pagobot, arriendos y reinicia, todos en producción bajo kgstudio.top.">
 <link rel="canonical" href="https://kgstudio.top/">
-<meta property="og:type" content="website">
+<meta name="author" content="Kevin Gonzalez">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="google" content="notranslate">
+<meta property="og:type" content="profile">
 <meta property="og:url" content="https://kgstudio.top/">
-<meta property="og:title" content="Kevin Gonzalez — Cloud &amp; DevOps Engineer">
+<meta property="og:site_name" content="KG Studio">
+<meta property="og:title" content="Kevin Gonzalez (kagonzalezdev) — Cloud &amp; DevOps Engineer">
 <meta property="og:description" content="Construyo, despliego y opero. Explora la zona: cada producto se enciende cuando su servidor responde.">
 <meta property="og:image" content="https://kgstudio.top/photo.jpg">
+<meta property="og:image:alt" content="Retrato de Kevin Gonzalez">
 <meta property="og:locale" content="es_CO">
+<meta property="profile:first_name" content="Kevin">
+<meta property="profile:last_name" content="Gonzalez">
+<meta property="profile:username" content="kagonzalezdev">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:creator" content="@kagonzalezdev">
 <meta name="theme-color" content="#07070a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f56f0d'/%3E%3Ctext x='32' y='43' font-family='ui-monospace,monospace' font-size='27' font-weight='700' fill='%230d0d0d' text-anchor='middle'%3EKG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,18 +39,133 @@
 }
 </script>
 
+<!--
+  Un solo grafo con `@id` estables. Los demás sitios de la zona (reinicia, parla…)
+  no repiten mis datos: apuntan a estos `@id` con una referencia. Así Google —y los
+  buscadores con IA, que leen esto antes que el texto— entienden que kgstudio.top,
+  la ficha de Maps y cada producto son la misma persona y el mismo negocio, en vez
+  de cinco entidades sueltas con el mismo nombre.
+
+  Si cambias un dato aquí, cámbialo también en la ficha de Google Business: el
+  nombre, la dirección y el sitio web tienen que decir exactamente lo mismo.
+-->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "Kevin Gonzalez",
-  "url": "https://kgstudio.top",
-  "image": "https://kgstudio.top/photo.jpg",
-  "jobTitle": "Cloud & DevOps Engineer",
-  "email": "kgagudelo@gmail.com",
-  "address": { "@type": "PostalAddress", "addressLocality": "Bogotá", "addressCountry": "CO" },
-  "alumniOf": { "@type": "CollegeOrUniversity", "name": "Universidad El Bosque" },
-  "sameAs": ["https://github.com/revkelo", "https://linkedin.com/in/kagonzalezdev"]
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://kgstudio.top/#kevin",
+      "name": "Kevin Gonzalez",
+      "alternateName": ["kagonzalezdev", "revkelo", "Kevin González"],
+      "url": "https://kgstudio.top/",
+      "mainEntityOfPage": "https://kgstudio.top/",
+      "image": "https://kgstudio.top/photo.jpg",
+      "jobTitle": "Cloud & DevOps Engineer",
+      "description": "Ingeniero de sistemas colombiano. Diseño, despliego y opero productos propios bajo kgstudio.top: interpretación médica en vivo, finanzas personales con IA, automatización de pagos y gestión de arriendos.",
+      "email": "kgagudelo@gmail.com",
+      "knowsLanguage": ["es", "en"],
+      "knowsAbout": [
+        "Cloud computing", "DevOps", "Next.js", "Supabase", "Vercel",
+        "Docker", "Node.js", "Python", "Three.js", "Ingeniería de datos",
+        "Integración de modelos de lenguaje"
+      ],
+      "homeLocation": { "@type": "Place", "name": "Bogotá, Colombia" },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Bogotá",
+        "addressRegion": "Bogotá D.C.",
+        "addressCountry": "CO"
+      },
+      "alumniOf": { "@type": "CollegeOrUniversity", "name": "Universidad El Bosque" },
+      "worksFor": { "@id": "https://kgstudio.top/#kgstudio" },
+      "sameAs": [
+        "https://github.com/revkelo",
+        "https://www.linkedin.com/in/kagonzalezdev",
+        "https://www.tiktok.com/@kagonzalezdev"
+      ]
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": "https://kgstudio.top/#kgstudio",
+      "name": "kgstudio",
+      "alternateName": ["KG Studio", "kgstudio.top"],
+      "url": "https://kgstudio.top/",
+      "image": "https://kgstudio.top/photo.jpg",
+      "description": "Estudio de software de Kevin Gonzalez en Bogotá: desarrollo web y en la nube, automatización y mantenimiento de computadores.",
+      "founder": { "@id": "https://kgstudio.top/#kevin" },
+      "employee": { "@id": "https://kgstudio.top/#kevin" },
+      "email": "kgagudelo@gmail.com",
+      "identifier": {
+        "@type": "PropertyValue",
+        "propertyID": "Google Knowledge Graph MID",
+        "value": "/g/11zds2s_mr"
+      },
+      "priceRange": "$$",
+      "currenciesAccepted": "COP",
+      "knowsLanguage": ["es", "en"],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Calle 155 #14-80",
+        "addressLocality": "Bogotá",
+        "addressRegion": "Bogotá D.C.",
+        "addressCountry": "CO"
+      },
+      "areaServed": [
+        { "@type": "City", "name": "Bogotá" },
+        { "@type": "Country", "name": "Colombia" }
+      ],
+      "sameAs": [
+        "https://www.google.com/search?kgmid=/g/11zds2s_mr",
+        "https://github.com/revkelo",
+        "https://www.linkedin.com/in/kagonzalezdev"
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Lo que opero",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Desarrollo web y despliegue en la nube" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Automatización e integración de IA" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Mantenimiento de computadores", "url": "https://reinicia.kgstudio.top/" } }
+        ]
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://kgstudio.top/#website",
+      "url": "https://kgstudio.top/",
+      "name": "KG Studio",
+      "inLanguage": "es-CO",
+      "publisher": { "@id": "https://kgstudio.top/#kgstudio" },
+      "author": { "@id": "https://kgstudio.top/#kevin" }
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": "https://kgstudio.top/#pagina",
+      "url": "https://kgstudio.top/",
+      "name": "Kevin Gonzalez — Cloud & DevOps Engineer",
+      "isPartOf": { "@id": "https://kgstudio.top/#website" },
+      "about": { "@id": "https://kgstudio.top/#kevin" },
+      "mainEntity": { "@id": "https://kgstudio.top/#kevin" },
+      "inLanguage": "es-CO",
+      "primaryImageOfPage": { "@type": "ImageObject", "url": "https://kgstudio.top/photo.jpg" }
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://kgstudio.top/#productos",
+      "name": "Productos de Kevin Gonzalez en producción",
+      "itemListOrder": "https://schema.org/ItemListUnordered",
+      "numberOfItems": 6,
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "item": { "@type": "WebSite", "name": "Portafolio de Kevin Gonzalez", "url": "https://portafolio.kgstudio.top/", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 2, "item": { "@type": "SoftwareApplication", "name": "Parla", "url": "https://parla.kgstudio.top/", "applicationCategory": "HealthApplication", "description": "Intérprete médico en vivo español ⇄ inglés.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 3, "item": { "@type": "SoftwareApplication", "name": "MonetIQ", "url": "https://monetiq.kgstudio.top/", "applicationCategory": "FinanceApplication", "description": "Finanzas personales con análisis de gastos por IA.", "operatingSystem": "Android, Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 4, "item": { "@type": "Service", "name": "Reinicia", "url": "https://reinicia.kgstudio.top/", "description": "Mantenimiento de computadores a domicilio en Bogotá.", "provider": { "@id": "https://kgstudio.top/#kgstudio" } } },
+        { "@type": "ListItem", "position": 5, "item": { "@type": "SoftwareApplication", "name": "Pagobot", "url": "https://pagobot.kgstudio.top/", "applicationCategory": "FinanceApplication", "description": "Bot de Telegram que lleva los pagos del mes.", "operatingSystem": "Telegram", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 6, "item": { "@type": "SoftwareApplication", "name": "Arriendos", "url": "https://arriendos.kgstudio.top/", "applicationCategory": "BusinessApplication", "description": "Contratos y documentos de arriendo con asistente de IA.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } }
+      ]
+    }
+  ]
 }
 </script>
 </head>
@@ -95,8 +219,9 @@
       </a>
 
       <p class="hud__lede">
-        Ingeniero de sistemas. Cada cuerpo en órbita es un producto mío en
-        producción, y se enciende solo si su servidor contesta.
+        Ingeniero de sistemas en Bogotá, <strong>kagonzalezdev</strong> en todas
+        partes. Cada cuerpo en órbita es un producto mío en producción, y se
+        enciende solo si su servidor contesta.
       </p>
       <p class="hud__count"><span id="countNum">0</span> de <span id="countAll">6</span> respondiendo</p>
     </section>

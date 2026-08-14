@@ -69,6 +69,42 @@ Para agregar un sitio basta con una entrada más en `<ul class="index">`:
 Si un sitio no responde el nombre se queda gris, nunca en rojo — un problema de red del
 visitante no debería desmentir un sitio que está bien.
 
+## SEO y entidad
+
+Esta página es la **fuente de verdad de quién soy** para Google y para los
+buscadores con IA. El `@graph` de `index.html` declara cuatro cosas con `@id`
+estables, y ningún otro sitio de la zona vuelve a describirlas: solo las citan.
+
+| `@id` | Qué es |
+| --- | --- |
+| `https://kgstudio.top/#kevin` | Kevin Gonzalez, la persona |
+| `https://kgstudio.top/#kgstudio` | El negocio, el mismo de la ficha de Google Maps |
+| `https://kgstudio.top/#website` | El sitio |
+| `https://kgstudio.top/#productos` | La lista de lo que está corriendo |
+
+Cuando agregues un producto a la zona, agrégalo también al `ItemList` y pon en su
+sitio `"author": { "@id": "https://kgstudio.top/#kevin" }`. Esa referencia cruzada
+es lo que hace que un asistente que resume cualquiera de mis páginas sepa de quién
+es. Sin ella, cada sitio es un desconocido más.
+
+`llms.txt` dice lo mismo en prosa, para los rastreadores de IA que lo leen antes
+que el HTML. Si cambias un dato de identidad, cámbialo en los dos.
+
+**El nombre y la dirección tienen que ser idénticos** aquí, en `reinicia` y en la
+ficha de Google Business (`kgstudio`, Calle 155 #14-80, Bogotá). Google compara
+los tres textos; si uno difiere, no une la ficha del mapa con el sitio.
+
+### Pendientes que no se resuelven desde el código
+
+- Verificar `kgstudio.top` en Google Search Console y enviar el sitemap.
+- En la ficha de Google Business, poner `https://kgstudio.top/` como sitio web.
+- Falta `hasMap`. El `sameAs` ya apunta a la entidad por su MID
+  (`/g/11zds2s_mr`, el identificador que Google le dio a la ficha), pero un
+  enlace directo al mapa necesita el `place_id` que sale de
+  Maps → Compartir → Copiar vínculo.
+- Cuando exista un número solo para el negocio, agregar `telephone` aquí y en
+  `reinicia`, escrito igual que en la ficha.
+
 ## Estructura
 
 | Archivo | Qué hace |
@@ -77,6 +113,9 @@ visitante no debería desmentir un sitio que está bien.
 | `styles.css` | Escala, tokens y estilos, con modo oscuro por `prefers-color-scheme` |
 | `main.js` | Comprobación de estado y año del pie |
 | `photo.jpg` | Retrato, también usado como `og:image` |
+| `robots.txt` | Rastreo abierto, incluidos los bots de IA, y ruta del sitemap |
+| `sitemap.xml` | La única URL del host |
+| `llms.txt` | Quién soy y qué opero, en prosa, para buscadores con IA |
 
 ## Ver en local
 

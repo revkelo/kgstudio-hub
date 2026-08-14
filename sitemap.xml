@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Una sola página: el hub. Los subdominios no van aquí — un sitemap solo puede
+  declarar URLs de su propio host, así que cada sitio de la zona lleva el suyo.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kgstudio.top/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
