@@ -339,7 +339,16 @@ function build() {
     scene.add(group);
 
     const label = labels.find((n) => n.dataset.node === data.id) || null;
-    const body = { ...data, group, mesh, hit, glow, orbit, label, angle: data.phase, world: new THREE.Vector3() };
+    const body = {
+      ...data, group, mesh, hit, glow, orbit, label,
+      angle: data.phase, world: new THREE.Vector3(),
+      // Medio ancho y medio alto de la etiqueta, medidos al hacer el layout.
+      // Estos valores solo se usan hasta la primera medición.
+      halfW: 55, halfH: 15,
+      // Cuánto está apartada de su sitio ahora mismo, suavizado. `labelShown`
+      // evita heredar el empujón de la última vez que se vio.
+      push: 0, labelShown: false,
+    };
     if (label) label.__body = body;
     hit.__body = body;
     return body;
@@ -387,6 +396,10 @@ function build() {
 
     renderer.setSize(W, H, false);
     camera.updateProjectionMatrix();
+
+    // Las etiquetas cambian de tamaño con la tipografía y con el ancho de
+    // pantalla, y de su tamaño depende cuándo se consideran encimadas.
+    measureLabels();
   }
 
   window.addEventListener('resize', layout);
@@ -402,6 +415,10 @@ function build() {
     layout();
     if (!selected) camera.position.setLength(homeDistance);
   });
+
+  // Y una medida más al primer cuadro: en `layout()` inicial las etiquetas
+  // todavía no tienen caja si la hoja de estilos acaba de aplicarse.
+  requestAnimationFrame(measureLabels);
 
   /* ── Selección ──────────────────────────────────────────── */
 
@@ -564,10 +581,31 @@ function build() {
   const placements = [];
   // Franja de borde en la que una etiqueta se apaga al salirse del escenario.
   const EDGE_FADE = 70;
+  // Aire mínimo entre dos etiquetas que se pisan, además de su propio alto.
+  const AIR = 10;
 
-  function hideLabel(label) {
-    label.style.opacity = '0';
-    label.style.pointerEvents = 'none';
+  /*
+   * El tamaño real de cada etiqueta, medido una vez. Antes se suponía que
+   * todas ocupaban 32 × 140 px, y no es cierto: "arriendos" es bastante más
+   * ancha que "parla". Con un ancho supuesto, dos nombres separados 150 px se
+   * daban por libres aunque se estuvieran pisando, y dos separados 130 px se
+   * apartaban sin necesidad — moverse sin motivo también se ve mal.
+   */
+  function measureLabels() {
+    bodies.forEach((body) => {
+      if (!body.label) return;
+      const r = body.label.getBoundingClientRect();
+      // Si aún no tiene caja (fuentes sin cargar) se conserva la anterior.
+      if (r.width) { body.halfW = r.width / 2; body.halfH = r.height / 2; }
+    });
+  }
+
+  function hideLabel(body) {
+    body.label.style.opacity = '0';
+    body.label.style.pointerEvents = 'none';
+    // Al reaparecer debe hacerlo en su sitio, no viajando desde donde
+    // estaba hace rato: se marca para que el suavizado no interpole.
+    body.labelShown = false;
   }
   const clock = new THREE.Clock();
   let frame = 0;
@@ -645,7 +683,7 @@ function build() {
       projected.copy(body.world).project(camera);
 
       if (projected.z > 1 || occluded(body)) {
-        hideLabel(body.label);
+        hideLabel(body);
         return;
       }
 
@@ -665,7 +703,7 @@ function build() {
       const bottom = stage.y + stage.h - pad * 0.6;
       const out = Math.max(left - px, px - right, top - py, py - bottom, 0);
       if (out > EDGE_FADE) {
-        hideLabel(body.label);
+        hideLabel(body);
         return;
       }
 
@@ -676,10 +714,14 @@ function build() {
       // lo que se está leyendo.
       const dim = selected && !isActive ? 0.4 : 1;
 
+      const y = THREE.MathUtils.clamp(py, top, bottom);
       placements.push({
-        label: body.label,
+        body,
         x: THREE.MathUtils.clamp(px, left, right),
-        y: THREE.MathUtils.clamp(py, top, bottom),
+        // `y` la mueve la separación; `rawY` se guarda para saber cuánto la
+        // apartó y poder suavizar solo esa diferencia.
+        y,
+        rawY: y,
         opacity: (isActive ? 1 : fade * dim) * edge,
       });
     });
@@ -689,33 +731,94 @@ function build() {
      * tiempo que dos queden a la misma altura. Se empujan solo en vertical:
      * moverlas en horizontal las despegaría de su cuerpo y ya no se sabría
      * cuál nombra cuál. Las que están en columnas distintas se dejan en paz.
+     *
+     * Cada pareja se aparta a medias y en sentidos opuestos, y se repite la
+     * pasada reordenando. Antes se empujaba solo a la de abajo y, cuando no
+     * cabía, se corregía a la de arriba — que ya había sido dada por buena y
+     * podía volver a pisar a la anterior. Además el arreglo se ordenaba una
+     * sola vez, así que tras el primer empujón las comparaciones se hacían
+     * contra un orden que ya no existía: quedaban solapes sin resolver (uno
+     * de cada treinta casos) y desplazamientos de hasta 90 px de golpe.
      */
-    placements.sort((a, b) => a.y - b.y);
-    const GAP = 32;
     const TOP = stage.y + pad * 0.6;
     const LIMIT = stage.y + stage.h - pad * 0.6;
-    // Dos pasadas: empujar hacia abajo y, cuando abajo ya no queda sitio,
-    // devolver la diferencia hacia arriba. Empujar en un solo sentido hacía
-    // que las últimas se pegaran todas al mismo píxel del fondo.
-    for (let pass = 0; pass < 2; pass++) {
-      for (let i = 1; i < placements.length; i++) {
-        const prev = placements[i - 1];
-        const cur = placements[i];
-        if (Math.abs(cur.x - prev.x) > 140) continue;
-        const overlap = GAP - (cur.y - prev.y);
-        if (overlap <= 0) continue;
-        const down = Math.min(Math.max(LIMIT - cur.y, 0), overlap);
-        cur.y += down;
-        if (overlap - down > 0) prev.y = Math.max(TOP, prev.y - (overlap - down));
+
+    /*
+     * Todas contra todas, no solo contra la vecina de arriba: si la de en
+     * medio está en otra columna, la primera y la tercera se pisan y por
+     * vecindad nunca se comparaban. Con cinco etiquetas son diez parejas,
+     * así que mirarlas todas no cuesta nada.
+     *
+     * Se repite hasta que nadie se mueva; apartar a dos puede acercar a un
+     * tercero. En la práctica termina en cuatro o cinco vueltas, y el tope
+     * está solo para que no se quede dando vueltas si algo no converge.
+     */
+    for (let pass = 0; pass < 12; pass++) {
+      let movido = false;
+
+      for (let i = 0; i < placements.length; i++) {
+        for (let j = i + 1; j < placements.length; j++) {
+          let a = placements[i];
+          let b = placements[j];
+          // `a` es siempre la de arriba: así el reparto es simétrico.
+          if (a.y > b.y) { const t = a; a = b; b = t; }
+
+          // ¿Se pisan de verdad? Con los anchos reales de cada una.
+          if (Math.abs(b.x - a.x) >= a.body.halfW + b.body.halfW) continue;
+
+          const sobra = (a.body.halfH + b.body.halfH + AIR) - (b.y - a.y);
+          if (sobra <= 0) continue;
+
+          // A medias y en sentidos opuestos: el grupo se abre por el centro
+          // en vez de arrastrar a una sola hasta el fondo del escenario.
+          const mitad = sobra / 2;
+          a.y = Math.max(TOP + a.body.halfH, a.y - mitad);
+          b.y = Math.min(LIMIT - b.body.halfH, b.y + mitad);
+          movido = true;
+        }
       }
+
+      if (!movido) break;
     }
 
+    /*
+     * Suavizado, pero SOLO del empujón, no de la posición.
+     *
+     * Al cruzarse dos cuerpos la separación aparece y desaparece de un
+     * fotograma al siguiente, y el nombre pega un tirón. La tentación es
+     * filtrar la posición final, y es un error: un filtro de primer orden
+     * deja un desfase constante de velocidad/k, así que mientras el sistema
+     * gira la etiqueta se quedaría flotando detrás de su propio cuerpo — que
+     * es justo lo que no puede pasar, porque entonces deja de nombrarlo.
+     *
+     * Lo que se suaviza es cuánto se aparta de su sitio. Cuando nadie la
+     * estorba el empujón es cero y la etiqueta va clavada a su cuerpo, sin
+     * retraso; cuando hay que apartarla, se aparta progresivamente.
+     */
+    const seguimiento = 1 - Math.exp(-14 * dt);
+
     placements.forEach((p) => {
-      p.label.style.setProperty('--x', `${Math.round(p.x)}px`);
-      p.label.style.setProperty('--y', `${Math.round(p.y)}px`);
+      const body = p.body;
+      // `p.y` trae ya la separación aplicada; `p.rawY` es donde caería sola.
+      const empujon = p.y - p.rawY;
+
+      if (body.labelShown) {
+        body.push += (empujon - body.push) * seguimiento;
+      } else {
+        // Recién aparecida: sin empujón heredado, aparece donde le toca.
+        body.push = 0;
+        body.labelShown = true;
+      }
+
+      const y = THREE.MathUtils.clamp(p.rawY + body.push, TOP, LIMIT);
+      const label = body.label;
+      // Sin redondear: a un píxel entero el nombre tiembla cuando el sistema
+      // gira despacio, porque la posición salta de un píxel al siguiente.
+      label.style.setProperty('--x', `${p.x.toFixed(2)}px`);
+      label.style.setProperty('--y', `${y.toFixed(2)}px`);
       // Una etiqueta casi transparente no debe seguir capturando el clic.
-      p.label.style.pointerEvents = p.opacity > 0.25 ? 'auto' : 'none';
-      p.label.style.opacity = String(p.opacity);
+      label.style.pointerEvents = p.opacity > 0.25 ? 'auto' : 'none';
+      label.style.opacity = String(p.opacity);
     });
     placements.length = 0;
 
