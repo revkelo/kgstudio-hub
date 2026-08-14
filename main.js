@@ -31,6 +31,10 @@ const rows = Array.from(document.querySelectorAll('.rows a'));
 
 const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const WIDE = window.matchMedia('(min-width: 64rem)');
+const COARSE = window.matchMedia('(hover: none) and (pointer: coarse)');
+// Dónde está el rail. Tiene que decir lo mismo que styles.css: si aquí y allá
+// no coinciden, el sistema se centra en una banda que no es la que quedó libre.
+const SIDE = window.matchMedia('(min-width: 64rem), (min-width: 40rem) and (max-height: 34rem)');
 
 /* ── Datos de la zona ───────────────────────────────────────── */
 
@@ -122,6 +126,8 @@ function openPanel(node) {
   paintPanelState(live.get(node.dataset.node) === true);
   panel.el.hidden = false;
   panel.controls.hidden = true;
+  // En vertical el panel necesita sitio: la marca lo cede (ver styles.css).
+  root.classList.add('panel-open');
   labels.forEach((n) => { n.dataset.selected = String(n === node); });
 }
 
@@ -129,6 +135,7 @@ function closePanel() {
   panel.current = null;
   panel.el.hidden = true;
   panel.controls.hidden = false;
+  root.classList.remove('panel-open');
   labels.forEach((n) => { n.dataset.selected = 'false'; });
 }
 
@@ -225,9 +232,21 @@ if (!webglAvailable()) {
 /* ── Escena ─────────────────────────────────────────────────── */
 
 function build() {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  /*
+   * En el teléfono lo que se siente como "va raro" muchas veces no es el
+   * encuadre: son los fotogramas. Un móvil con pantalla a 3× estaba pintando
+   * nueve veces más píxeles que un portátil, con antialias encima, para una
+   * escena de líneas finas sobre negro donde el suavizado casi no se nota.
+   * Se le baja el listón: dos tercios de resolución y sin antialias. La
+   * diferencia se ve en la fluidez, no en la imagen.
+   */
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: !COARSE.matches,
+    powerPreference: 'high-performance',
+  });
   renderer.setClearColor(VOID, 1);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, COARSE.matches ? 1.6 : 2));
 
   const scene = new THREE.Scene();
   // La niebla da profundidad al sistema, pero las estrellas se excluyen:
@@ -268,8 +287,11 @@ function build() {
     }));
   }
 
-  const stars = starfield(1600, 110, 0.34, 0xcfc6bb, 0.8);
-  const embers = starfield(200, 70, 0.55, 0xf56f0d, 0.45);
+  // Menos estrellas en el teléfono: en una pantalla de cinco pulgadas la
+  // mitad no se distinguen y sí se pagan.
+  const denso = COARSE.matches ? 0.55 : 1;
+  const stars = starfield(Math.round(1600 * denso), 110, 0.34, 0xcfc6bb, 0.8);
+  const embers = starfield(Math.round(200 * denso), 70, 0.55, 0xf56f0d, 0.45);
   scene.add(stars, embers);
 
   /* ── Núcleo ─────────────────────────────────────────────── */
@@ -365,62 +387,133 @@ function build() {
    * `stage` es el rectángulo libre. El frustum se desplaza para que
    * el sistema quede centrado ahí, y la distancia se calcula para
    * que la órbita externa entre completa en ese rectángulo.
+   *
+   * `stage` es el encuadre que se está usando ahora y `want` al que
+   * habría que ir; entre los dos hay un suavizado. Reencuadrar de golpe
+   * era lo que hacía que en el teléfono la escena diera brincos, y por
+   * dos motivos distintos:
+   *
+   *  - La barra de direcciones del navegador aparece y desaparece sola,
+   *    y con ella cambia `innerHeight` en 60-100 px. Cada aparición era
+   *    un salto del sistema entero.
+   *  - Al abrir un producto, el panel crece dentro del rail y la banda
+   *    libre se encoge de un fotograma al siguiente.
+   *
+   * Ahora ambos son un movimiento de cámara, que es lo que parecen: el
+   * encuadre se acomoda en lugar de teletransportarse.
    */
 
   const stage = { x: 0, y: 0, w: 0, h: 0 };
+  const want = { x: 0, y: 0, w: 0, h: 0 };
   let homeDistance = 26;
+  let wantDistance = 26;
+  let framed = false;
+  const reframe = new THREE.Vector3();
 
-  function layout() {
+  function measure() {
     const W = window.innerWidth;
     const H = window.innerHeight;
     const pad = Math.min(W, H) * 0.06;
 
-    if (WIDE.matches) {
+    if (SIDE.matches) {
       const railW = railEl.getBoundingClientRect().width;
-      stage.x = railW; stage.y = 0;
-      stage.w = Math.max(W - railW, 200); stage.h = H;
+      want.x = railW; want.y = 0;
+      want.w = Math.max(W - railW, 200); want.h = H;
     } else {
       const t = railTop.getBoundingClientRect().height;
       const b = railBottom.getBoundingClientRect().height;
-      stage.x = 0; stage.y = t;
-      stage.w = W; stage.h = Math.max(H - t - b, 200);
+      want.x = 0; want.y = t;
+      want.w = W; want.h = Math.max(H - t - b, 200);
     }
 
-    // Correr el frustum: el centro del escenario deja de ser el del canvas.
-    const shiftX = (stage.x + stage.w / 2) - W / 2;
-    const shiftY = (stage.y + stage.h / 2) - H / 2;
-    camera.aspect = W / H;
-    camera.setViewOffset(W, H, -shiftX, -shiftY, W, H);
-
-    // Distancia que hace caber la órbita externa dentro del escenario.
+    /*
+     * Distancia que hace caber la órbita externa: se calcula por ancho y por
+     * alto y manda la mayor, que es la que cabe en los dos.
+     *
+     * En vertical el rail no es una pared, es un degradado. En un teléfono la
+     * banda libre es un tercio de la pantalla y exigir que el sistema entrase
+     * entero lo dejaba diminuto —cinco puntitos en el centro— con las órbitas
+     * tan juntas que los nombres se pisaban sin remedio. Dejar que las de
+     * fuera se cuelen un poco bajo el degradado se ve mejor y, de paso, apaga
+     * las etiquetas de los cuerpos que se salen: son justo las que sobraban.
+     */
     const half = Math.tan((FOV * Math.PI) / 360);
-    const usable = Math.max(Math.min(stage.w - pad * 2, stage.h - pad * 2), 120);
-    homeDistance = THREE.MathUtils.clamp((OUTER * 1.08 * H) / (half * usable), 15, 52);
-    controls.maxDistance = homeDistance * 1.7;
+    const bleed = SIDE.matches ? 1 : 1.34;
+    const fit = (usable) => (OUTER * 1.08 * H) / (half * Math.max(usable, 120));
+    const before = wantDistance;
+    wantDistance = THREE.MathUtils.clamp(
+      Math.max(fit(want.w - pad * 2), fit(want.h * bleed - pad * 2)),
+      15, 52,
+    );
+
+    // Un reencuadre de verdad —girar el teléfono, cambiar de ventana— se
+    // lleva la cámara con él, conservando el zoom que el visitante traía.
+    // Los temblores de la barra de direcciones se quedan bajo el umbral.
+    if (framed && Math.abs(wantDistance - before) / before > 0.06) {
+      reframe.copy(camera.position).sub(controls.target).multiplyScalar(wantDistance / before);
+      camera.position.copy(controls.target).add(reframe);
+    }
 
     renderer.setSize(W, H, false);
-    camera.updateProjectionMatrix();
+    camera.aspect = W / H;
 
     // Las etiquetas cambian de tamaño con la tipografía y con el ancho de
     // pantalla, y de su tamaño depende cuándo se consideran encimadas.
     measureLabels();
   }
 
-  window.addEventListener('resize', layout);
-  WIDE.addEventListener('change', layout);
-  layout();
+  // Cada fotograma acerca el encuadre real al que se quiere. El primero es
+  // instantáneo: no hay nada desde donde venir.
+  function frameStage(dt) {
+    const W = window.innerWidth;
+    const H = window.innerHeight;
+    const k = framed ? 1 - Math.exp(-7 * dt) : 1;
+    framed = true;
+
+    stage.x += (want.x - stage.x) * k;
+    stage.y += (want.y - stage.y) * k;
+    stage.w += (want.w - stage.w) * k;
+    stage.h += (want.h - stage.h) * k;
+    homeDistance += (wantDistance - homeDistance) * k;
+
+    // Correr el frustum: el centro del escenario deja de ser el del canvas.
+    const shiftX = (stage.x + stage.w / 2) - W / 2;
+    const shiftY = (stage.y + stage.h / 2) - H / 2;
+    camera.setViewOffset(W, H, -shiftX, -shiftY, W, H);
+    camera.updateProjectionMatrix();
+    controls.maxDistance = homeDistance * 1.7;
+  }
+
+  window.addEventListener('resize', measure);
+  SIDE.addEventListener('change', measure);
+  // En el teléfono `resize` no siempre llega cuando la barra del navegador se
+  // mueve; `visualViewport` sí lo cuenta.
+  window.visualViewport?.addEventListener('resize', measure);
+
+  /*
+   * Y el rail se mide solo. Su alto cambia sin que la ventana cambie: al
+   * abrir un producto entra el panel, al cerrarlo vuelven los controles.
+   * Antes eso no reencuadraba nada, así que en vertical el panel se comía
+   * media escena y los cuerpos de abajo quedaban debajo del texto.
+   */
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(measure);
+    ro.observe(railTop);
+    ro.observe(railBottom);
+  }
+
+  measure();
+  stage.x = want.x; stage.y = want.y; stage.w = want.w; stage.h = want.h;
+  homeDistance = wantDistance;
 
   // Arrancar a la distancia correcta para esta pantalla.
   camera.position.setLength(homeDistance);
 
   // En vertical el escenario se mide contra la altura del rail, y esa altura
-  // cambia cuando entran las tipografías: hay que volver a medir y reencuadrar.
-  document.fonts?.ready.then(() => {
-    layout();
-    if (!selected) camera.position.setLength(homeDistance);
-  });
+  // cambia cuando entran las tipografías: hay que volver a medir.
+  document.fonts?.ready.then(measure);
 
-  // Y una medida más al primer cuadro: en `layout()` inicial las etiquetas
+  // Y una medida más al primer cuadro: en el `measure()` inicial las etiquetas
   // todavía no tienen caja si la hoja de estilos acaba de aplicarse.
   requestAnimationFrame(measureLabels);
 
@@ -467,11 +560,42 @@ function build() {
 
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+  const screen = new THREE.Vector3();
   let downAt = null;
 
   function updatePointer(e) {
     pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
     pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+  }
+
+  /*
+   * Elegir un cuerpo con el dedo no es apuntar con el ratón: la yema tapa lo
+   * que se quiere tocar y lo que llega es el centro del contacto, no lo que
+   * uno estaba mirando. Con raycast a secas había que insistir dos y tres
+   * veces sobre una bolita que además se mueve.
+   *
+   * Primero se prueba el rayo, que es exacto cuando acierta; si no da en
+   * nada, se toma el cuerpo más cercano al toque en pantalla dentro de un
+   * radio de dedo. Con ratón el radio es pequeño: ahí sí se apunta.
+   */
+  function pickAt(cx, cy) {
+    pointer.x = (cx / window.innerWidth) * 2 - 1;
+    pointer.y = -(cy / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const direct = raycaster.intersectObjects(hitTargets, false)[0];
+    if (direct) return direct.object.__body;
+
+    let best = null;
+    let bestD = COARSE.matches ? 46 : 18;
+    bodies.forEach((body) => {
+      screen.copy(body.world).project(camera);
+      if (screen.z > 1) return;
+      const px = (screen.x * 0.5 + 0.5) * window.innerWidth;
+      const py = (-screen.y * 0.5 + 0.5) * window.innerHeight;
+      const d = Math.hypot(px - cx, py - cy);
+      if (d < bestD) { bestD = d; best = body; }
+    });
+    return best;
   }
 
   canvas.addEventListener('pointermove', (e) => {
@@ -498,10 +622,8 @@ function build() {
       setSheet(false);
       return;
     }
-    updatePointer(e);
-    raycaster.setFromCamera(pointer, camera);
-    const hit = raycaster.intersectObjects(hitTargets, false)[0];
-    if (hit) select(hit.object.__body);
+    const body = pickAt(e.clientX, e.clientY);
+    if (body) select(body);
     else deselect();
   });
 
@@ -625,15 +747,26 @@ function build() {
     }
   });
 
+  /*
+   * ¿El núcleo se atraviesa entre la cámara y el cuerpo? Esto era un raycast
+   * por cuerpo y por fotograma contra la malla del núcleo: seis barridos de
+   * triángulos cada 16 ms, que en el teléfono se notaban.
+   *
+   * A efectos de tapar, el núcleo es una esfera centrada en el origen, así
+   * que basta mirar a qué distancia pasa el rayo del centro. Mismo resultado,
+   * media docena de multiplicaciones.
+   */
+  const CORE_R2 = (2.2 * 0.97) ** 2;
+
   function occluded(body) {
-    // ¿El núcleo se atraviesa entre la cámara y el cuerpo?
     toBody.copy(body.world).sub(camera.position);
     const distance = toBody.length();
-    raycaster.set(camera.position, toBody.normalize());
-    raycaster.far = distance;
-    const blocked = raycaster.intersectObject(coreSolid, false).length > 0;
-    raycaster.far = Infinity;
-    return blocked;
+    toBody.divideScalar(distance);
+    // Dónde pasa el rayo más cerca del origen. Fuera del tramo cámara→cuerpo
+    // el núcleo no puede estorbar: o queda detrás, o más allá del cuerpo.
+    const t = -camera.position.dot(toBody);
+    if (t <= 0 || t >= distance) return false;
+    return camera.position.lengthSq() - t * t < CORE_R2;
   }
 
   function loop() {
@@ -642,6 +775,8 @@ function build() {
     const dt = Math.min(clock.getDelta(), 0.05);
     const W = window.innerWidth;
     const H = window.innerHeight;
+
+    frameStage(dt);
 
     idle += dt;
     if (idle > 7 && !selected && !REDUCED && !root.classList.contains('sheet-open')) {
@@ -656,11 +791,17 @@ function build() {
       embers.rotation.y -= dt * 0.009;
     }
 
-    // Hover sobre los cuerpos.
-    raycaster.setFromCamera(pointer, camera);
-    const hit = raycaster.intersectObjects(hitTargets, false)[0];
-    hovered = hit ? hit.object.__body : null;
-    canvas.classList.toggle('is-over', !!hovered);
+    // Hover sobre los cuerpos. En táctil no existe tal cosa: el puntero se
+    // queda clavado donde se tocó por última vez y dejaba un cuerpo crecido
+    // para siempre, como si el dedo siguiera encima.
+    if (COARSE.matches) {
+      hovered = null;
+    } else {
+      raycaster.setFromCamera(pointer, camera);
+      const hit = raycaster.intersectObjects(hitTargets, false)[0];
+      hovered = hit ? hit.object.__body : null;
+      canvas.classList.toggle('is-over', !!hovered);
+    }
 
     const pad = Math.min(W, H) * 0.05;
 
@@ -727,8 +868,27 @@ function build() {
         y,
         rawY: y,
         opacity: (isActive ? 1 : fade * dim) * edge,
+        // Para el cupo de abajo: lo abierto o tocado no se descarta nunca, y
+        // entre los demás mandan los que están más cerca de la cámara.
+        rank: isActive ? Infinity : -dist,
       });
     });
+
+    /*
+     * Cupo de nombres visibles. En un teléfono no caben seis: la banda libre
+     * mide un tercio de lo que mide en un portátil y la separación acababa
+     * apilándolos contra el borde, todos pegados y ninguno legible. Se
+     * quedan el abierto y los más cercanos; el resto sigue ahí, como punto,
+     * y basta tocarlo para saber qué es. En pantalla ancha no hay cupo.
+     */
+    const cupo = WIDE.matches
+      ? placements.length
+      : THREE.MathUtils.clamp(Math.floor(stage.h / 64), 3, 4);
+    if (placements.length > cupo) {
+      placements.sort((a, b) => b.rank - a.rank);
+      for (let i = cupo; i < placements.length; i++) hideLabel(placements[i].body);
+      placements.length = cupo;
+    }
 
     /*
      * Separar las etiquetas que se pisan. Con seis cuerpos es cuestión de
@@ -799,7 +959,7 @@ function build() {
      * estorba el empujón es cero y la etiqueta va clavada a su cuerpo, sin
      * retraso; cuando hay que apartarla, se aparta progresivamente.
      */
-    const seguimiento = 1 - Math.exp(-14 * dt);
+    const seguimiento = 1 - Math.exp(-16 * dt);
 
     placements.forEach((p) => {
       const body = p.body;
@@ -814,7 +974,40 @@ function build() {
         body.labelShown = true;
       }
 
-      const y = THREE.MathUtils.clamp(p.rawY + body.push, TOP, LIMIT);
+      p.finalY = THREE.MathUtils.clamp(p.rawY + body.push, TOP, LIMIT);
+      p.drop = false;
+    });
+
+    /*
+     * Última palabra, y sobre la posición que de verdad se va a pintar —la
+     * suavizada, no la que salió del reparto—. Si dos siguen pisándose,
+     * porque el escenario no da para más o porque se están cruzando ahora
+     * mismo, se apaga la menos importante. Un nombre encima de otro no se
+     * lee, y dos ilegibles son peor que uno solo: el que se va sigue ahí
+     * como punto y basta tocarlo.
+     */
+    for (let i = 0; i < placements.length; i++) {
+      const a = placements[i];
+      if (a.drop) continue;
+      for (let j = i + 1; j < placements.length; j++) {
+        const b = placements[j];
+        if (b.drop) continue;
+        if (Math.abs(b.x - a.x) >= a.body.halfW + b.body.halfW) continue;
+        if (Math.abs(b.finalY - a.finalY) >= a.body.halfH + b.body.halfH) continue;
+        const fuera = a.rank >= b.rank ? b : a;
+        fuera.drop = true;
+        if (fuera === a) break;
+      }
+    }
+
+    placements.forEach((p) => {
+      const body = p.body;
+      if (p.drop) {
+        hideLabel(body);
+        return;
+      }
+
+      const y = p.finalY;
       const label = body.label;
       // Sin redondear: a un píxel entero el nombre tiembla cuando el sistema
       // gira despacio, porque la posición salta de un píxel al siguiente.

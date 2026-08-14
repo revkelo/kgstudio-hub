@@ -167,8 +167,12 @@ p { text-wrap: pretty; }
 .rail__bottom { padding-bottom: calc(var(--pad) + var(--safe-b)); }
 
 /* En pantalla ancha el rail es una columna a la izquierda, con un
-   velo que garantiza contraste sin importar dónde caigan las estrellas. */
-@media (min-width: 64rem) {
+   velo que garantiza contraste sin importar dónde caigan las estrellas.
+
+   Y también con el teléfono acostado: ahí sobra ancho y falta alto, así que
+   apilar interfaz arriba y abajo dejaba al sistema una franja de dos dedos
+   en una esquina. De lado, la escena se queda con toda la altura. */
+@media (min-width: 64rem), (min-width: 40rem) and (max-height: 34rem) {
   .rail {
     right: auto;
     width: var(--rail-w);
@@ -176,14 +180,32 @@ p { text-wrap: pretty; }
   }
 }
 
+@media (min-width: 40rem) and (max-height: 34rem) {
+  .rail { width: clamp(16rem, 42vw, 21rem); }
+}
+
 /* En pantalla angosta el rail se pega arriba y abajo, y el sistema
    queda en la banda del medio. */
-@media (max-width: 63.99rem) {
+@media (max-width: 63.99rem) and (min-height: 34.01rem) {
   .rail {
     background:
       linear-gradient(to bottom, rgba(7,7,10,.9), rgba(7,7,10,0) 42%),
       linear-gradient(to top, rgba(7,7,10,.94), rgba(7,7,10,0) 34%);
   }
+}
+
+@media (max-width: 63.99rem) {
+  /*
+   * Y deja de robar el dedo. En vertical el rail ocupa todo el ancho, así
+   * que sus bloques de texto —el nombre, el pie— se tragaban el arrastre:
+   * empezar a girar desde la mitad de arriba de la pantalla no hacía nada.
+   * Solo lo que se pulsa de verdad recibe el toque; el resto lo deja pasar
+   * a la escena, que es lo que hay detrás.
+   */
+  .rail > * > * { pointer-events: none; }
+  .rail a, .rail button, .panel { pointer-events: auto; }
+
+  .rail__top { padding-top: calc(var(--pad) + env(safe-area-inset-top, 0px)); }
 }
 
 /* Sin WebGL el rail deja de ser una capa flotante y pasa a ser el
@@ -324,6 +346,14 @@ p { text-wrap: pretty; }
   .hud { gap: 0.5rem; }
   .hud__folio { padding: 0.5rem 0.7rem; }
   .hud__folio-text em { display: none; }
+
+  /* Con un producto abierto el panel pide sitio abajo, y arriba lo que
+     sobra es la invitación al portafolio: el visitante ya está leyendo
+     otra cosa. Vuelve sola al cerrar. */
+  .panel-open .hud__folio { display: none; }
+
+  /* Un panel largo no puede empujar la escena hasta dejarla en nada. */
+  .panel { max-height: 46svh; overflow-y: auto; overscroll-behavior: contain; }
 }
 
 /* Pantallas bajas —teléfono acostado, ventana a media altura—: se va también
@@ -546,6 +576,27 @@ kbd {
   font-size: 0.95rem;
   letter-spacing: -0.01em;
   transition: color 0.2s ease;
+}
+
+/* En pantalla angosta las etiquetas se aprietan: cuanto menos ocupa cada
+   nombre, menos se pisan entre ellos y menos hay que apartarlos. Y sobre la
+   escena, sin caja detrás, el nombre necesita algo de sombra para leerse
+   cuando cae encima de una zona clara de estrellas. */
+@media (max-width: 63.99rem) {
+  .node {
+    gap: 0.35rem;
+    padding: 0.22rem 0.45rem 0.22rem 0.35rem;
+  }
+  .node__name {
+    font-size: 0.82rem;
+    text-shadow: 0 1px 6px rgba(7,7,10,.9), 0 0 2px rgba(7,7,10,.8);
+  }
+  .node__dot { width: 6px; height: 6px; }
+}
+
+/* El nombre largo solo cabe con sitio de sobra. */
+@media (max-width: 48rem) {
+  .node__long { display: none; }
 }
 .node:hover .node__name,
 .node:focus-visible .node__name,
