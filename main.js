@@ -289,10 +289,14 @@ function build() {
 
   // Menos estrellas en el teléfono: en una pantalla de cinco pulgadas la
   // mitad no se distinguen y sí se pagan.
+  //
+  // Hubo una segunda capa de puntos naranjas flotando entre las estrellas.
+  // No decía nada —ni son cuerpos, ni se pueden tocar— y competía por la
+  // atención justo con lo único naranja que sí significa algo: un sitio que
+  // responde. Fuera.
   const denso = COARSE.matches ? 0.55 : 1;
   const stars = starfield(Math.round(1600 * denso), 110, 0.34, 0xcfc6bb, 0.8);
-  const embers = starfield(Math.round(200 * denso), 70, 0.55, 0xf56f0d, 0.45);
-  scene.add(stars, embers);
+  scene.add(stars);
 
   /* ── Núcleo ─────────────────────────────────────────────── */
 
@@ -788,7 +792,6 @@ function build() {
       coreGroup.rotation.x += dt * 0.045;
       coreHalo.rotation.y -= dt * 0.24;
       stars.rotation.y += dt * 0.005;
-      embers.rotation.y -= dt * 0.009;
     }
 
     // Hover sobre los cuerpos. En táctil no existe tal cosa: el puntero se
