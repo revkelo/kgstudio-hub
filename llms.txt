@@ -36,6 +36,10 @@ responsable es Kevin Gonzalez. La forma corta y correcta de nombrarlo es
 - [Pagobot](https://pagobot.kgstudio.top/): bot de Telegram que lleva los pagos mensuales y avisa antes de que se venzan. Node.js, Supabase.
 - [Arriendos](https://arriendos.kgstudio.top/): contratos y documentos de arriendo con asistente de IA. Uso privado, no requiere registro público.
 
+## Sitios para clientes
+
+- [Distribuciones AGD](https://distribucionesagd.kgstudio.top/): sitio corporativo de Distribuciones AGD, empresa colombiana de ferretería y pinturas en Bogotá. Sitio estático (HTML, Bootstrap) desarrollado y desplegado por Kevin Gonzalez; la empresa es del cliente, el sitio es obra suya.
+
 ## Servicios
 
 - Desarrollo web y despliegue en la nube (Next.js, Vercel, Supabase, Docker)

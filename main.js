@@ -1,7 +1,7 @@
 /* ============================================================
    kgstudio.top — la zona como sistema orbital
 
-   Un núcleo (el dominio raíz) y cuatro cuerpos en órbita (los
+   Un núcleo (el dominio raíz) y los cuerpos en órbita (los
    subdominios). Se recorre arrastrando, con la rueda, con WASD,
    con Tab o tocando un cuerpo.
 
@@ -39,8 +39,11 @@ const WIDE = window.matchMedia('(min-width: 64rem)');
  * es quien soy. Vive arriba, junto al cargo. Lo que orbita son cosas que
  * corren solas y se pueden caer.
  *
- * Las fases están repartidas para que cinco cuerpos no se alineen nunca en
+ * Las fases están repartidas para que los cuerpos no se alineen nunca en
  * la misma vertical, que es cuando las etiquetas se estorban.
+ *
+ * `agd` es el único que no es producto propio: es el sitio de un cliente
+ * que también vive en la zona. Orbita igual porque también se puede caer.
  */
 const BODIES = [
   { id: 'parla',     radius:  4.6, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
@@ -48,9 +51,10 @@ const BODIES = [
   { id: 'reinicia',  radius:  7.9, tilt:  0.42, speed: 0.072, phase: 2.9, size: 0.36 },
   { id: 'pagobot',   radius:  9.7, tilt: -0.34, speed: 0.056, phase: 4.3, size: 0.34 },
   { id: 'arriendos', radius: 11.6, tilt:  0.20, speed: 0.044, phase: 5.6, size: 0.33 },
+  { id: 'agd',       radius: 13.5, tilt: -0.16, speed: 0.036, phase: 2.1, size: 0.32 },
 ];
 
-const OUTER = 11.6;
+const OUTER = 13.5;
 const FOV = 50;
 const COLOR_ORANGE = new THREE.Color('#f56f0d');
 const COLOR_DIM = new THREE.Color('#4a443e');
@@ -727,7 +731,7 @@ function build() {
     });
 
     /*
-     * Separar las etiquetas que se pisan. Con cinco cuerpos es cuestión de
+     * Separar las etiquetas que se pisan. Con seis cuerpos es cuestión de
      * tiempo que dos queden a la misma altura. Se empujan solo en vertical:
      * moverlas en horizontal las despegaría de su cuerpo y ya no se sabría
      * cuál nombra cuál. Las que están en columnas distintas se dejan en paz.
@@ -746,7 +750,7 @@ function build() {
     /*
      * Todas contra todas, no solo contra la vecina de arriba: si la de en
      * medio está en otra columna, la primera y la tercera se pisan y por
-     * vecindad nunca se comparaban. Con cinco etiquetas son diez parejas,
+     * vecindad nunca se comparaban. Con seis etiquetas son quince parejas,
      * así que mirarlas todas no cuesta nada.
      *
      * Se repite hasta que nadie se mueva; apartar a dos puede acercar a un
