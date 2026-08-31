@@ -36,7 +36,7 @@ responsable es Kevin Gonzalez. La forma corta y correcta de nombrarlo es
 - [Pagobot](https://pagobot.kgstudio.top/): bot de Telegram que lleva los pagos mensuales y avisa antes de que se venzan. Node.js, Supabase.
 - [Arriendos](https://arriendos.kgstudio.top/): contratos y documentos de arriendo con asistente de IA. Uso privado, no requiere registro público.
 - [examia](https://examia.kgstudio.top/): preparador de exámenes de certificación (AWS, Azure y cualquier otro). El banco de preguntas lo genera un modelo de lenguaje o se importa en JSON; tiene modo práctica con explicación inmediata y simulacro cronometrado. Next.js, Postgres, Groq.
-- [Simulador iTEP B1](https://itep.kgstudio.top/): simulador gratuito del examen de inglés iTEP B1 con las cinco secciones —grammar, listening, reading, writing y speaking—, tiempos reales por sección y reporte de nivel CEFR. Útil para quien debe certificar inglés B1 para grado. Vite y JavaScript, sin cuenta ni registro.
+- [Examen preparatorio](https://itep.kgstudio.top/): simulacro gratuito del examen de inglés iTEP B1 con las cinco secciones —grammar, listening, reading, writing y speaking—, tiempos reales por sección y reporte de nivel CEFR. Útil para quien debe certificar inglés B1 para grado. Vite y JavaScript, sin cuenta ni registro.
 
 ## Sitios para clientes
 

@@ -166,6 +166,22 @@ p { text-wrap: pretty; }
 
 .rail__bottom { padding-bottom: calc(var(--pad) + var(--safe-b)); }
 
+/*
+ * El rail no puede desbordar la pantalla.
+ *
+ * Es una columna fija de alto completo con `space-between`: al abrir un
+ * producto, el panel hacía crecer el bloque de abajo y, como nada lo
+ * contenía, se salía por el borde inferior. En 1366×768 —el portátil más
+ * común— el contenido medía 906 px en 768 de pantalla: el panel se veía,
+ * pero el botón "Abrir sitio" quedaba fuera y el sitio no se podía abrir.
+ *
+ * El reparto de la escasez es explícito: el bloque de abajo (el panel y su
+ * botón) NO se encoge; lo que cede es la presentación de arriba.
+ */
+.rail { overflow: hidden; }
+.rail__top { min-height: 0; overflow: hidden; }
+.rail__bottom { flex: none; }
+
 /* En pantalla ancha el rail es una columna a la izquierda, con un
    velo que garantiza contraste sin importar dónde caigan las estrellas.
 
@@ -352,8 +368,15 @@ p { text-wrap: pretty; }
      otra cosa. Vuelve sola al cerrar. */
   .panel-open .hud__folio { display: none; }
 
-  /* Un panel largo no puede empujar la escena hasta dejarla en nada. */
-  .panel { max-height: 46svh; overflow-y: auto; overscroll-behavior: contain; }
+}
+
+/* Con un producto abierto y poca altura, la presentación estorba: quien
+   está leyendo la ficha de un sitio ya no necesita que le cuenten quién soy.
+   Vuelve sola al cerrar el panel. */
+@media (max-height: 52rem) {
+  .panel-open .hud__lede,
+  .panel-open .hud__folio,
+  .panel-open .hud__count { display: none; }
 }
 
 /* Pantallas bajas —teléfono acostado, ventana a media altura—: se va también
@@ -431,6 +454,10 @@ kbd {
   animation: panelIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .panel[hidden] { display: none; }
+
+/* Un panel largo no puede empujar la escena hasta dejarla en nada —ni, en
+   pantalla baja, empujar su propio botón fuera de la vista. */
+.panel { max-height: min(46svh, 22rem); overflow-y: auto; overscroll-behavior: contain; }
 
 @keyframes panelIn {
   from { opacity: 0; transform: translateY(10px); }

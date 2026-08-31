@@ -48,6 +48,11 @@ const SIDE = window.matchMedia('(min-width: 64rem), (min-width: 40rem) and (max-
  *
  * `agd` es el único que no es producto propio: es el sitio de un cliente
  * que también vive en la zona. Orbita igual porque también se puede caer.
+ *
+ * Los radios se reparten, no se estiran: al entrar cuerpos nuevos por fuera,
+ * la cámara —que encuadra la órbita externa— se aleja para que quepan y los
+ * de dentro se quedan en un puñado de píxeles. Reajustando toda la escala,
+ * el sistema se ve igual de lleno con ocho que con seis.
  */
 const BODIES = [
   { id: 'parla',     radius:  4.4, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
@@ -556,9 +561,13 @@ function build() {
     node.addEventListener('focus', () => select(node.__body));
     // Un clic en la etiqueta selecciona; para abrir el sitio está el
     // botón del panel. Así se puede explorar sin salirse de la página.
+    //
+    // Y volver a pulsar el mismo cuerpo lo suelta: antes la única salida
+    // era la ✕ del panel, y se quedaba fijo aunque se insistiera encima.
     node.addEventListener('click', (e) => {
       e.preventDefault();
-      select(node.__body);
+      if (selected === node.__body) deselect();
+      else select(node.__body);
     });
   });
 
@@ -629,7 +638,8 @@ function build() {
       return;
     }
     const body = pickAt(e.clientX, e.clientY);
-    if (body) select(body);
+    // Pulsar el que ya está abierto lo cierra; pulsar el vacío también.
+    if (body && body !== selected) select(body);
     else deselect();
   });
 
