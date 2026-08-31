@@ -50,15 +50,17 @@ const SIDE = window.matchMedia('(min-width: 64rem), (min-width: 40rem) and (max-
  * que también vive en la zona. Orbita igual porque también se puede caer.
  */
 const BODIES = [
-  { id: 'parla',     radius:  4.6, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
-  { id: 'monetiq',   radius:  6.2, tilt: -0.24, speed: 0.094, phase: 1.4, size: 0.40 },
-  { id: 'reinicia',  radius:  7.9, tilt:  0.42, speed: 0.072, phase: 2.9, size: 0.36 },
-  { id: 'pagobot',   radius:  9.7, tilt: -0.34, speed: 0.056, phase: 4.3, size: 0.34 },
-  { id: 'arriendos', radius: 11.6, tilt:  0.20, speed: 0.044, phase: 5.6, size: 0.33 },
-  { id: 'agd',       radius: 13.5, tilt: -0.16, speed: 0.036, phase: 2.1, size: 0.32 },
+  { id: 'parla',     radius:  4.4, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
+  { id: 'monetiq',   radius:  5.9, tilt: -0.24, speed: 0.094, phase: 1.4, size: 0.40 },
+  { id: 'reinicia',  radius:  7.4, tilt:  0.42, speed: 0.072, phase: 2.9, size: 0.36 },
+  { id: 'pagobot',   radius:  8.9, tilt: -0.34, speed: 0.056, phase: 4.3, size: 0.34 },
+  { id: 'arriendos', radius: 10.5, tilt:  0.20, speed: 0.044, phase: 5.6, size: 0.33 },
+  { id: 'examia',    radius: 12.2, tilt:  0.34, speed: 0.038, phase: 3.4, size: 0.33 },
+  { id: 'itep',      radius: 14.0, tilt: -0.28, speed: 0.033, phase: 0.8, size: 0.32 },
+  { id: 'agd',       radius: 15.9, tilt: -0.16, speed: 0.029, phase: 2.1, size: 0.31 },
 ];
 
-const OUTER = 13.5;
+const OUTER = 15.9;
 const FOV = 50;
 const COLOR_ORANGE = new THREE.Color('#f56f0d');
 const COLOR_DIM = new THREE.Color('#4a443e');
