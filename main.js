@@ -564,10 +564,18 @@ function build() {
     //
     // Y volver a pulsar el mismo cuerpo lo suelta: antes la única salida
     // era la ✕ del panel, y se quedaba fijo aunque se insistiera encima.
+    //
+    // La comparación es contra lo que había ANTES de pulsar, no contra
+    // `selected`: al hacer clic, el navegador enfoca el enlace primero, y
+    // ese `focus` ya selecciona. Mirando `selected` en el clic, un toque
+    // limpio abría y cerraba el panel en el mismo gesto.
+    let previo = null;
+    node.addEventListener('pointerdown', () => { previo = selected; });
     node.addEventListener('click', (e) => {
       e.preventDefault();
-      if (selected === node.__body) deselect();
+      if (previo === node.__body) deselect();
       else select(node.__body);
+      previo = selected;
     });
   });
 
