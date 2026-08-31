@@ -370,13 +370,28 @@ p { text-wrap: pretty; }
 
 }
 
-/* Con un producto abierto y poca altura, la presentación estorba: quien
-   está leyendo la ficha de un sitio ya no necesita que le cuenten quién soy.
-   Vuelve sola al cerrar el panel. */
+/*
+ * Con un producto abierto y poca altura, la presentación cede el sitio: quien
+ * está leyendo la ficha de un sitio ya no necesita que le cuenten quién soy.
+ * El nombre y el cargo NO se mueven —son el ancla de la página—; lo que se va
+ * es el párrafo, el enlace al portafolio y el contador, y vuelven al cerrar.
+ *
+ * Se van con un fundido y no de golpe: `allow-discrete` deja animar hasta el
+ * `display`, así que el cambio se lee como que una tarjeta ocupa el lugar de
+ * un texto, en vez de como un salto. Donde no se soporte, desaparecen sin más:
+ * el resultado es el de antes, no uno roto.
+ */
 @media (max-height: 52rem) {
+  .hud__lede, .hud__folio, .hud__count {
+    transition: opacity 0.22s ease, transform 0.22s ease, display 0.22s allow-discrete;
+  }
   .panel-open .hud__lede,
   .panel-open .hud__folio,
-  .panel-open .hud__count { display: none; }
+  .panel-open .hud__count {
+    display: none;
+    opacity: 0;
+    transform: translateY(-6px);
+  }
 }
 
 /* Pantallas bajas —teléfono acostado, ventana a media altura—: se va también
@@ -455,9 +470,20 @@ kbd {
 }
 .panel[hidden] { display: none; }
 
-/* Un panel largo no puede empujar la escena hasta dejarla en nada —ni, en
-   pantalla baja, empujar su propio botón fuera de la vista. */
-.panel { max-height: min(46svh, 22rem); overflow-y: auto; overscroll-behavior: contain; }
+/*
+ * El panel se mide contra la pantalla, no contra un número fijo.
+ *
+ * Un tope en rem parecía prudente y era justo lo contrario: con el navegador
+ * al 125% el contenido crece pero el tope no, así que la ficha —cuatro
+ * líneas y un botón— aparecía con barra de scroll propia. Con este cálculo
+ * el tope solo se alcanza en ventanas de verdad diminutas; en cualquier
+ * pantalla normal la tarjeta se ve entera y sin barras.
+ */
+.panel {
+  max-height: calc(100dvh - 15rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
 
 @keyframes panelIn {
   from { opacity: 0; transform: translateY(10px); }
@@ -500,6 +526,8 @@ kbd {
 }
 .panel__close:hover { color: var(--text); }
 
+.panel__body { display: flex; flex-direction: column; gap: 0.35rem; }
+
 .panel__title {
   font-family: var(--display);
   font-weight: 700;
@@ -508,13 +536,33 @@ kbd {
   line-height: 1.05;
 }
 
-.panel__host { font-family: var(--mono); font-size: var(--t-label); color: var(--text-3); }
-.panel__desc { font-size: var(--t-small); color: var(--text-2); max-width: 34ch; }
-.panel__stack { font-family: var(--mono); font-size: var(--t-label); color: var(--text-3); }
+.panel__host {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  color: var(--text-3);
+  margin-top: -0.15rem;
+}
+.panel__desc {
+  font-size: var(--t-small);
+  line-height: 1.5;
+  color: var(--text-2);
+  max-width: 34ch;
+  margin-top: 0.35rem;
+}
+/* El stack es dato de ficha técnica, no parte del texto: va debajo de una
+   línea de pelo para que la descripción no compita con él. */
+.panel__stack {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  color: var(--text-3);
+  margin-top: 0.25rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border);
+}
 
 .panel__go {
   align-self: flex-start;
-  margin-top: 0.5rem;
+  margin-top: 0.35rem;
   font-family: var(--mono);
   font-size: var(--t-label);
   letter-spacing: 0.06em;
