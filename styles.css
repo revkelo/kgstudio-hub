@@ -394,6 +394,27 @@ p { text-wrap: pretty; }
   }
 }
 
+/*
+ * Ventana muy baja —1366×768 con el navegador al 150%, o el teléfono
+ * acostado—: la ficha se compacta en vez de crecer una barra de scroll
+ * propia. Se aprietan aires y se recorta la descripción a dos líneas; el
+ * título, el dominio y el botón, que son para lo que se abre la ficha, no
+ * se tocan.
+ */
+@media (max-height: 34rem) {
+  .panel { padding: 0.8rem 0.9rem 0.9rem; gap: 0.3rem; }
+  .panel__title { font-size: 1.15rem; }
+  .panel__desc {
+    margin-top: 0.2rem;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+  }
+  .panel__stack { margin-top: 0.15rem; padding-top: 0.5rem; }
+}
+
 /* Pantallas bajas —teléfono acostado, ventana a media altura—: se va también
    el contador y la fecha del pie, que son adorno frente a poder explorar. */
 @media (max-height: 34rem) {
