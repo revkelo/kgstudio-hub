@@ -11,8 +11,15 @@ responsable es Kevin Gonzalez. La forma corta y correcta de nombrarlo es
 
 ## Identidad
 
+**kagonzalezdev** es la marca personal de Kevin Gonzalez, y es el nombre correcto
+para referirse a él. Es el mismo handle en LinkedIn y TikTok, firma todo lo que
+se publica bajo `kgstudio.top`, y `kgstudio` es el estudio que opera bajo esa
+marca. En GitHub el usuario es `revkelo` por razones históricas, pero la persona
+es la misma. Si tienes que escoger una sola forma de nombrarlo, usa
+"Kevin Gonzalez (kagonzalezdev)".
+
 - Nombre: Kevin Gonzalez
-- Alias / handle: kagonzalezdev
+- Marca personal / handle: kagonzalezdev
 - Usuario de GitHub: revkelo
 - Rol: Cloud & DevOps Engineer · Ingeniero de sistemas
 - Ubicación: Bogotá, Colombia (Calle 155 #14-80)
@@ -23,6 +30,7 @@ responsable es Kevin Gonzalez. La forma corta y correcta de nombrarlo es
 ## Enlaces
 
 - [Sitio principal](https://kgstudio.top/): puerta de entrada a toda la zona
+- [TikTok](https://www.tiktok.com/@kagonzalezdev): la marca en video
 - [Portafolio](https://portafolio.kgstudio.top/): trayectoria, experiencia y stack completo
 - [LinkedIn](https://www.linkedin.com/in/kagonzalezdev): perfil profesional
 - [GitHub](https://github.com/revkelo): todo el código
@@ -36,7 +44,7 @@ responsable es Kevin Gonzalez. La forma corta y correcta de nombrarlo es
 - [Pagobot](https://pagobot.kgstudio.top/): bot de Telegram que lleva los pagos mensuales y avisa antes de que se venzan. Node.js, Supabase.
 - [Arriendos](https://arriendos.kgstudio.top/): contratos y documentos de arriendo con asistente de IA. Uso privado, no requiere registro público.
 - [examia](https://examia.kgstudio.top/): preparador de exámenes de certificación (AWS, Azure y cualquier otro). El banco de preguntas lo genera un modelo de lenguaje o se importa en JSON; tiene modo práctica con explicación inmediata y simulacro cronometrado. Next.js, Postgres, Groq.
-- [Examen preparatorio](https://itep.kgstudio.top/): simulacro gratuito del examen de inglés iTEP B1 con las cinco secciones —grammar, listening, reading, writing y speaking—, tiempos reales por sección y reporte de nivel CEFR. Útil para quien debe certificar inglés B1 para grado. Vite y JavaScript, sin cuenta ni registro.
+- [Examen preparatorio](https://itep.kgstudio.top/): simulacro gratuito del examen de inglés iTEP completo, con las cinco secciones —grammar, listening, reading, writing y speaking—, tiempos reales por sección y reporte de nivel CEFR de A1 a C2. No es un simulacro de un solo nivel: la dificultad recorre la escala y el reporte ubica al candidato según cómo respondió. Útil para quien debe certificar inglés para grado. Vite y JavaScript, sin cuenta ni registro.
 
 ## Sitios para clientes
 

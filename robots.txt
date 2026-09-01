@@ -5,4 +5,19 @@
 User-agent: *
 Allow: /
 
+# Nombrados aparte a propósito. Esta página es la fuente de verdad de quién soy
+# para los buscadores con IA, y leen llms.txt antes que el HTML: si mañana la
+# regla general se restringe, estos tienen que seguir entrando.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://kgstudio.top/sitemap.xml

@@ -15,13 +15,25 @@
 <meta property="og:title" content="Kevin Gonzalez (kagonzalezdev) — Cloud &amp; DevOps Engineer">
 <meta property="og:description" content="Construyo, despliego y opero. Explora la zona: cada producto se enciende cuando su servidor responde.">
 <meta property="og:image" content="https://kgstudio.top/photo.jpg">
-<meta property="og:image:alt" content="Retrato de Kevin Gonzalez">
+<meta property="og:image:secure_url" content="https://kgstudio.top/photo.jpg">
+<!-- El retrato es cuadrado (640x640). Declarar la medida evita que WhatsApp y
+     LinkedIn recorten a su criterio, y por eso la tarjeta de X va como
+     `summary`: en `summary_large_image` un cuadrado se recorta a 2:1 y la
+     cara queda partida. -->
+<meta property="og:image:width" content="640">
+<meta property="og:image:height" content="640">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:alt" content="Retrato de Kevin Gonzalez, kagonzalezdev">
 <meta property="og:locale" content="es_CO">
 <meta property="profile:first_name" content="Kevin">
 <meta property="profile:last_name" content="Gonzalez">
 <meta property="profile:username" content="kagonzalezdev">
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="summary">
 <meta name="twitter:creator" content="@kagonzalezdev">
+<meta name="twitter:title" content="Kevin Gonzalez (kagonzalezdev) — Cloud &amp; DevOps Engineer">
+<meta name="twitter:description" content="Construyo, despliego y opero. Explora la zona: cada producto se enciende cuando su servidor responde.">
+<meta name="twitter:image" content="https://kgstudio.top/photo.jpg">
+<meta name="twitter:image:alt" content="Retrato de Kevin Gonzalez, kagonzalezdev">
 <meta name="theme-color" content="#07070a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f56f0d'/%3E%3Ctext x='32' y='43' font-family='ui-monospace,monospace' font-size='27' font-weight='700' fill='%230d0d0d' text-anchor='middle'%3EKG%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -79,6 +91,27 @@
       },
       "alumniOf": { "@type": "CollegeOrUniversity", "name": "Universidad El Bosque" },
       "worksFor": { "@id": "https://kgstudio.top/#kgstudio" },
+      "brand": { "@id": "https://kgstudio.top/#kagonzalezdev" },
+      "identifier": [
+        { "@type": "PropertyValue", "propertyID": "GitHub", "value": "revkelo" },
+        { "@type": "PropertyValue", "propertyID": "LinkedIn", "value": "kagonzalezdev" },
+        { "@type": "PropertyValue", "propertyID": "TikTok", "value": "kagonzalezdev" }
+      ],
+      "sameAs": [
+        "https://github.com/revkelo",
+        "https://www.linkedin.com/in/kagonzalezdev",
+        "https://www.tiktok.com/@kagonzalezdev"
+      ]
+    },
+    {
+      "@type": "Brand",
+      "@id": "https://kgstudio.top/#kagonzalezdev",
+      "name": "kagonzalezdev",
+      "alternateName": ["Kevin Gonzalez", "kgstudio", "KG Studio"],
+      "url": "https://kgstudio.top/",
+      "logo": "https://kgstudio.top/photo.jpg",
+      "description": "Marca personal de Kevin Gonzalez. Es el mismo nombre en GitHub, LinkedIn y TikTok, y el que firma todo lo que se publica bajo kgstudio.top.",
+      "slogan": "Construyo, despliego y opero.",
       "sameAs": [
         "https://github.com/revkelo",
         "https://www.linkedin.com/in/kagonzalezdev",
@@ -95,6 +128,7 @@
       "description": "Estudio de software de Kevin Gonzalez en Bogotá: desarrollo web y en la nube, automatización y mantenimiento de computadores.",
       "founder": { "@id": "https://kgstudio.top/#kevin" },
       "employee": { "@id": "https://kgstudio.top/#kevin" },
+      "brand": { "@id": "https://kgstudio.top/#kagonzalezdev" },
       "email": "kgagudelo@gmail.com",
       "identifier": {
         "@type": "PropertyValue",
@@ -135,6 +169,7 @@
       "@id": "https://kgstudio.top/#website",
       "url": "https://kgstudio.top/",
       "name": "KG Studio",
+      "alternateName": ["kgstudio", "kgstudio.top", "kagonzalezdev"],
       "inLanguage": "es-CO",
       "publisher": { "@id": "https://kgstudio.top/#kgstudio" },
       "author": { "@id": "https://kgstudio.top/#kevin" }
@@ -164,7 +199,7 @@
         { "@type": "ListItem", "position": 5, "item": { "@type": "SoftwareApplication", "name": "Pagobot", "url": "https://pagobot.kgstudio.top/", "applicationCategory": "FinanceApplication", "description": "Bot de Telegram que lleva los pagos del mes.", "operatingSystem": "Telegram", "author": { "@id": "https://kgstudio.top/#kevin" } } },
         { "@type": "ListItem", "position": 6, "item": { "@type": "SoftwareApplication", "name": "Arriendos", "url": "https://arriendos.kgstudio.top/", "applicationCategory": "BusinessApplication", "description": "Contratos y documentos de arriendo con asistente de IA.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
         { "@type": "ListItem", "position": 7, "item": { "@type": "SoftwareApplication", "name": "examia", "url": "https://examia.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulacros de exámenes de certificación con preguntas generadas por IA o importadas en JSON.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 8, "item": { "@type": "SoftwareApplication", "name": "Examen preparatorio (iTEP B1)", "url": "https://itep.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulador del examen de inglés iTEP B1: gramática, listening, reading, writing y speaking con tiempos reales.", "operatingSystem": "Web", "isAccessibleForFree": true, "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 8, "item": { "@type": "SoftwareApplication", "name": "Examen preparatorio (iTEP)", "url": "https://itep.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulador del examen de inglés iTEP completo: grammar, listening, reading, writing y speaking con tiempos reales y reporte CEFR de A1 a C2.", "operatingSystem": "Web", "isAccessibleForFree": true, "author": { "@id": "https://kgstudio.top/#kevin" } } },
         { "@type": "ListItem", "position": 9, "item": { "@type": "WebSite", "name": "Distribuciones AGD", "url": "https://distribucionesagd.kgstudio.top/", "description": "Sitio corporativo de Distribuciones AGD, ferretería y pinturas en Bogotá.", "inLanguage": "es-CO", "author": { "@id": "https://kgstudio.top/#kevin" }, "creator": { "@id": "https://kgstudio.top/#kgstudio" } } }
       ]
     }
@@ -313,7 +348,7 @@
   <a class="node" href="https://itep.kgstudio.top" target="_blank" rel="noopener"
      data-node="itep" data-probe="https://itep.kgstudio.top"
      data-title="Examen preparatorio" data-stack="Vite · JavaScript · Vercel"
-     data-desc="Simulacro del examen de inglés iTEP B1: las cinco secciones, con sus tiempos reales.">
+     data-desc="Simulacro del examen de inglés iTEP: las cinco secciones, con sus tiempos reales.">
     <span class="node__dot" aria-hidden="true"></span>
     <span class="node__name">Preparatorio</span>
   </a>
@@ -394,7 +429,7 @@
       <li><a href="https://itep.kgstudio.top" target="_blank" rel="noopener" data-row="itep">
         <span class="rows__dot" aria-hidden="true"></span>
         <span class="rows__name">examen preparatorio</span>
-        <span class="rows__desc">Simulacro del examen de inglés iTEP B1, con sus tiempos</span>
+        <span class="rows__desc">Simulacro del examen de inglés iTEP, con sus tiempos</span>
         <span class="rows__meta">Vite · JavaScript</span>
       </a></li>
       <li><a href="https://distribucionesagd.kgstudio.top" target="_blank" rel="noopener" data-row="agd">

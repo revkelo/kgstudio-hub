@@ -3,10 +3,16 @@
   Una sola página: el hub. Los subdominios no van aquí — un sitemap solo puede
   declarar URLs de su propio host, así que cada sitio de la zona lleva el suyo.
 -->
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://kgstudio.top/</loc>
+    <lastmod>2026-08-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://kgstudio.top/photo.jpg</image:loc>
+      <image:title>Kevin Gonzalez — kagonzalezdev</image:title>
+    </image:image>
   </url>
 </urlset>
