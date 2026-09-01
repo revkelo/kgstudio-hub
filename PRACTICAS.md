@@ -609,3 +609,39 @@ es silencioso por diseño: devuelve null y la factura sale sin número.
 **Qué se hace.** Antes de mover un esquema, se revisan los cuerpos de sus
 funciones buscando nombres de esquema escritos a mano, y se recrean. Y después
 se ejecuta una de cada tipo, no solo se cuenta que las tablas llegaron.
+
+### 2026-09-01 - Una prueba que borró datos de producción
+
+**Qué pasó.** La prueba automática del modo salas de examia necesitaba un
+examen del que la cuenta de prueba fuera dueña, porque solo el dueño puede
+abrir una sala. En vez de crear uno, cogió uno real y le cambió el `owner_id` a
+la cuenta desechable. Al terminar, la prueba borró esa cuenta, y el
+`on delete cascade` de `exam_sets.owner_id` se llevó el examen con todas sus
+preguntas.
+
+Se corrió tres veces. Se perdieron **cuatro bancos de preguntas, 106 preguntas,
+3 intentos y 64 respuestas**. No hay vuelta atrás: el plan gratuito de Supabase
+no tiene copias (`pitr_enabled: false`, `backups: []`), y el respaldo que se
+había hecho esa misma mañana cubría `public`, `core` y `rentals` -los esquemas
+que se iban a migrar- pero no `exams`.
+
+**Por qué está mal.** Dos decisiones, y la segunda es la que convirtió un
+descuido en pérdida.
+
+La primera: una prueba escribió sobre datos que no creó ella. Reasignar el
+dueño de una fila real es una escritura destructiva disfrazada de preparación.
+
+La segunda: el respaldo se limitó a lo que se iba a tocar. Eso suena prudente y
+es justo lo contrario, porque lo que rompe casi nunca es lo que estabas
+mirando. Respaldar tres esquemas de cinco costaba lo mismo que respaldar los
+cinco: 978 KB.
+
+**Qué se hace.**
+
+1. Una prueba **crea sus propios datos** y no reutiliza ninguno existente, ni
+   siquiera "prestado". Si necesita ser dueña de algo, lo insertó ella.
+2. El respaldo cubre **todos** los esquemas de la base, no los del cambio en
+   curso. Está en `scripts/` y tarda segundos.
+3. Antes de cualquier sesión que escriba en producción, se corre el respaldo.
+   Con Supabase en plan gratuito no hay red debajo: el volcado a JSON es la
+   única copia que existe.
