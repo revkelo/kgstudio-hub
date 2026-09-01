@@ -83,6 +83,62 @@ textos; si uno difiere, no une la ficha del mapa con el sitio.
 
 ---
 
+## Identidad y correo
+
+La zona tiene **una sola identidad**. Los sitios que piden cuenta -parla,
+examia y autoreel- comparten `auth.users` del proyecto de Supabase
+`supabase-crimson-drum`, provisto por la integración del Marketplace de Vercel.
+Quien se registra en uno entra en los otros con la misma clave y empieza sin
+datos, porque cada fila cuelga de su `owner_id`.
+
+`arriendos` es la excepción y conviene saberlo antes de tocar nada: no usa el
+sistema de correo de Supabase. Entra por PIN y firma su propio JWT con el
+secreto del proyecto. Cambiar la configuración de correo no le afecta.
+
+`monetiq` va aparte: apunta a otro proyecto de Supabase, con su propia
+configuración.
+
+### La configuración de correo también es una
+
+SMTP, plantillas, caducidad de los enlaces y la lista de URLs de retorno son
+del proyecto entero, no de cada sitio. Lo que se cambia para uno se cambia para
+los tres. Se aplica con `scripts/configurar-correo.mjs`, que sin `--aplicar`
+solo enseña lo que hay y lo que va a poner.
+
+El correo sale por **Brevo** (`smtp-relay.brevo.com:587`), no por el servidor
+compartido de Supabase: ese manda unos pocos correos por hora para todo el
+proyecto, y con eso la confirmación no llega.
+
+### Una cuenta sin correo confirmado no se puede recuperar
+
+Todo sitio con cuentas lleva las dos piezas juntas: confirmar el correo al
+registrarse y recuperar la contraseña por correo. No son dos funciones
+independientes -la segunda depende de la primera-, porque sin una dirección
+verificada no hay a dónde mandar el enlace con la certeza de que llega a su
+dueño.
+
+El registro se escribe siempre así, mirando lo que devuelve `signUp`:
+
+```
+if (data.user && data.session) -> adentro, la confirmación está apagada
+else                           -> a "revisa tu correo"
+```
+
+Escrito de esa forma, encender o apagar la confirmación en Supabase no obliga a
+tocar el código ni a volver a desplegar.
+
+### El orden importa: primero el SMTP, después el despliegue
+
+examia y autoreel creaban las cuentas con `admin.createUser` y
+`email_confirm: true`, o sea dando el correo por bueno sin comprobarlo. No era
+un descuido: era el apaño para que el registro funcionara cuando la
+confirmación no llegaba.
+
+Por eso cambiar ese código a `signUp` **antes** de tener el SMTP funcionando
+rompe el registro de los dos sitios: se enciende la verificación y no hay quién
+entregue el correo. Se configura el servidor de correo primero, se comprueba con
+un registro de verdad, y solo entonces se despliega el código nuevo.
+
 ## Registro de fallos
 
 Cada entrada: qué pasó, por qué estaba mal, qué se hace en su lugar.
@@ -332,3 +388,35 @@ formulario.
 **Qué se hace.** Un destino de vuelta se rechaza si empieza por `//` o por
 `/` seguido de barra invertida. En general: si un valor viene de la URL, viene
 de fuera, y "empieza por" nunca es una validación completa.
+
+### 2026-09-01 - Crear cuentas dando el correo por bueno
+
+**Qué pasó.** examia y autoreel registraban con `admin.createUser` y
+`email_confirm: true`: la cuenta nacía con el correo marcado como verificado sin
+que nadie lo hubiera comprobado.
+
+**Por qué está mal.** Dos cosas, y la segunda es peor que la primera.
+Cualquiera podía registrarse con un correo ajeno y quedarse con esa dirección
+para siempre, porque el dueño real ya no podía usarla. Y ninguna de esas cuentas
+se podía recuperar: sin dirección verificada no hay a dónde mandar el enlace, así
+que olvidar la contraseña significaba perder la cuenta.
+
+**Qué se hace.** `signUp` y confirmación de verdad, con un SMTP propio que
+entregue. Y las dos piezas se montan juntas: si un sitio pide cuenta, lleva
+confirmación y recuperación, no una sola.
+
+### 2026-09-01 - El certificado del relay de Brevo no dice "brevo"
+
+**Qué pasó.** Al comprobar las credenciales SMTP contra
+`smtp-relay.brevo.com`, la conexión TLS falló con `ERR_TLS_CERT_ALTNAME_INVALID`:
+el servidor presenta un certificado de `smtp-relay.sendinblue.com`, el nombre
+anterior de Brevo.
+
+**Por qué importa.** Leído rápido parece que las credenciales están mal o que
+hay alguien en medio. No es ninguna de las dos: es el nombre viejo, que sigue en
+el certificado. Autenticando contra ese nombre, Brevo contestó
+`235 Authentication succeeded`.
+
+**Qué se hace.** Antes de cablear unas credenciales de correo en cuatro sitios,
+se prueban solas contra el servidor. Y si el fallo es de nombre de certificado,
+se mira cuál presenta de verdad antes de concluir que la clave es incorrecta.
