@@ -300,3 +300,35 @@ nunca es un marcador de posición: se pone el dominio real, y la variable de
 entorno queda para sobreescribirlo, no para hacerlo funcionar. Y antes de dar
 por bueno el SEO de un sitio, se pide el HTML **de producción** con `curl` y se
 lee el `canonical` que sirve de verdad, en vez de leer el código y suponer.
+
+### 2026-08-31 - El middleware mandaba a robots.txt y al og:image al login
+
+**Qué pasó.** El matcher del proxy de examia excluía los estáticos por
+extensión (`.svg`, `.png`…) pero no `robots.txt`, `sitemap.xml`, `llms.txt` ni
+la ruta `/opengraph-image`. Como ninguna lleva sesión, el proxy las respondía
+con un 307 a `/entrar`.
+
+**Por qué está mal.** No se ve desde el sitio y anula el SEO entero: Google no
+podía leer el robots ni el sitemap por muy bien escritos que estuvieran, y
+cada enlace compartido en WhatsApp o LinkedIn salía sin imagen, porque la
+tarjeta pedía la imagen y recibía una redirección al formulario de acceso.
+
+**Qué se hace.** El matcher del middleware excluye explícitamente lo que piden
+los robots y las redes sociales. Y se comprueba con `curl` que devuelven 200,
+no leyendo la lista de rutas públicas: la lista decía lo correcto y el matcher
+igual las interceptaba antes de llegar a ella.
+
+### 2026-08-31 - `startsWith('/')` no basta para validar un destino
+
+**Qué pasó.** El formulario de acceso de examia leía a dónde volver de la URL
+y lo aceptaba si empezaba por `/`. `//otro-sitio.com` empieza por `/`, y el
+navegador la lee como una URL de otro dominio.
+
+**Por qué está mal.** Es un redirector abierto colgando del formulario de
+acceso, que es exactamente la pieza que hace falta para un enlace de phishing
+convincente: sale del dominio de verdad y aterriza en una copia con el mismo
+formulario.
+
+**Qué se hace.** Un destino de vuelta se rechaza si empieza por `//` o por
+`/` seguido de barra invertida. En general: si un valor viene de la URL, viene
+de fuera, y "empieza por" nunca es una validación completa.
