@@ -221,3 +221,32 @@ sobrevivieron a ambas.
 **Qué se hace.** Las apps de la zona con lógica de interfaz llevan una prueba que
 monta la página en jsdom y pulsa los botones. En `itep` es `npm test`. Se corre
 antes de cada push.
+
+### 2026-08-31 - Un importador "generoso" que rechazaba el formato de la casa
+
+**Qué pasó.** El importador de `examia` acepta claves en español y en inglés,
+opciones de tres formas y la respuesta por letra, índice o texto. Pero no
+aceptaba el banco de `quiz-engine`, que es el formato en el que Kevin ya tenía
+preguntas escritas: enunciado en `text`, opciones como pares `["A","texto"]` y
+el archivo en `.js` con `let RAW = [`.
+
+**Por qué está mal.** La tolerancia se había medido contra formatos imaginados
+(lo que devuelve un modelo, lo que exporta otro simulador) y no contra los
+archivos que existen de verdad en los repos de al lado.
+
+**Qué se hace.** Antes de dar por bueno un importador, se prueba con un archivo
+real del propio ecosistema, sin editarlo. En `examia` esa prueba lee
+`quiz-engine/preguntas.js` directamente.
+
+### 2026-08-31 - Cortar un archivo .js asumiendo que solo trae datos
+
+**Qué pasó.** Al leer `preguntas.js` se quitó la envoltura `let RAW =` y se
+mandó el resto al parser. El archivo real no termina en el array: sigue con las
+funciones del motor, y el parser se atragantó con el primer `;`.
+
+**Por qué está mal.** Un archivo de datos en `.js` casi nunca es solo datos.
+
+**Qué se hace.** Se recorta el primer literal contando corchetes, saltando
+cadenas -con sus escapes- y comentarios, y se tira lo que venga detrás. Un
+escáner, nunca `eval` ni `new Function`: el archivo lo sube un usuario, y
+ejecutarlo en el servidor sería darle la máquina.
