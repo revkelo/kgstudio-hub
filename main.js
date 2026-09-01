@@ -1,5 +1,5 @@
 /* ============================================================
-   kgstudio.top — la zona como sistema orbital
+   kgstudio.top - la zona como sistema orbital
 
    Un núcleo (el dominio raíz) y los cuerpos en órbita (los
    subdominios). Se recorre arrastrando, con la rueda, con WASD,
@@ -7,7 +7,7 @@
 
    El encendido de cada cuerpo ES la comprobación de estado: si
    el servidor responde, se prende naranja. Si no responde queda
-   apagado, nunca en rojo — un fallo de red del visitante no debe
+   apagado, nunca en rojo - un fallo de red del visitante no debe
    desmentir un sitio que está bien.
 
    LAYOUT: la interfaz ocupa `.rail` y el sistema se corre al
@@ -50,7 +50,7 @@ const SIDE = window.matchMedia('(min-width: 64rem), (min-width: 40rem) and (max-
  * que también vive en la zona. Orbita igual porque también se puede caer.
  *
  * Los radios se reparten, no se estiran: al entrar cuerpos nuevos por fuera,
- * la cámara —que encuadra la órbita externa— se aleja para que quepan y los
+ * la cámara -que encuadra la órbita externa- se aleja para que quepan y los
  * de dentro se quedan en un puñado de píxeles. Reajustando toda la escala,
  * el sistema se ve igual de lleno con ocho que con seis.
  */
@@ -298,7 +298,7 @@ function build() {
   // mitad no se distinguen y sí se pagan.
   //
   // Hubo una segunda capa de puntos naranjas flotando entre las estrellas.
-  // No decía nada —ni son cuerpos, ni se pueden tocar— y competía por la
+  // No decía nada -ni son cuerpos, ni se pueden tocar- y competía por la
   // atención justo con lo único naranja que sí significa algo: un sitio que
   // responde. Fuera.
   const denso = COARSE.matches ? 0.55 : 1;
@@ -443,7 +443,7 @@ function build() {
      *
      * En vertical el rail no es una pared, es un degradado. En un teléfono la
      * banda libre es un tercio de la pantalla y exigir que el sistema entrase
-     * entero lo dejaba diminuto —cinco puntitos en el centro— con las órbitas
+     * entero lo dejaba diminuto -cinco puntitos en el centro- con las órbitas
      * tan juntas que los nombres se pisaban sin remedio. Dejar que las de
      * fuera se cuelen un poco bajo el degradado se ve mejor y, de paso, apaga
      * las etiquetas de los cuerpos que se salen: son justo las que sobraban.
@@ -457,7 +457,7 @@ function build() {
       15, 52,
     );
 
-    // Un reencuadre de verdad —girar el teléfono, cambiar de ventana— se
+    // Un reencuadre de verdad -girar el teléfono, cambiar de ventana- se
     // lleva la cámara con él, conservando el zoom que el visitante traía.
     // Los temblores de la barra de direcciones se quedan bajo el umbral.
     if (framed && Math.abs(wantDistance - before) / before > 0.06) {
@@ -739,7 +739,7 @@ function build() {
    * todas ocupaban 32 × 140 px, y no es cierto: "arriendos" es bastante más
    * ancha que "parla". Con un ancho supuesto, dos nombres separados 150 px se
    * daban por libres aunque se estuvieran pisando, y dos separados 130 px se
-   * apartaban sin necesidad — moverse sin motivo también se ve mal.
+   * apartaban sin necesidad - moverse sin motivo también se ve mal.
    */
   function measureLabels() {
     bodies.forEach((body) => {
@@ -921,7 +921,7 @@ function build() {
      *
      * Cada pareja se aparta a medias y en sentidos opuestos, y se repite la
      * pasada reordenando. Antes se empujaba solo a la de abajo y, cuando no
-     * cabía, se corregía a la de arriba — que ya había sido dada por buena y
+     * cabía, se corregía a la de arriba - que ya había sido dada por buena y
      * podía volver a pisar a la anterior. Además el arreglo se ordenaba una
      * sola vez, así que tras el primer empujón las comparaciones se hacían
      * contra un orden que ya no existía: quedaban solapes sin resolver (uno
@@ -975,7 +975,7 @@ function build() {
      * fotograma al siguiente, y el nombre pega un tirón. La tentación es
      * filtrar la posición final, y es un error: un filtro de primer orden
      * deja un desfase constante de velocidad/k, así que mientras el sistema
-     * gira la etiqueta se quedaría flotando detrás de su propio cuerpo — que
+     * gira la etiqueta se quedaría flotando detrás de su propio cuerpo - que
      * es justo lo que no puede pasar, porque entonces deja de nombrarlo.
      *
      * Lo que se suaviza es cuánto se aparta de su sitio. Cuando nadie la
@@ -1002,8 +1002,8 @@ function build() {
     });
 
     /*
-     * Última palabra, y sobre la posición que de verdad se va a pintar —la
-     * suavizada, no la que salió del reparto—. Si dos siguen pisándose,
+     * Última palabra, y sobre la posición que de verdad se va a pintar -la
+     * suavizada, no la que salió del reparto-. Si dos siguen pisándose,
      * porque el escenario no da para más o porque se están cruzando ahora
      * mismo, se apaga la menos importante. Un nombre encima de otro no se
      * lee, y dos ilegibles son peor que uno solo: el que se va sigue ahí

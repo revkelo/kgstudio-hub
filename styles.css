@@ -1,5 +1,5 @@
 /* ============================================================
-   KG Studio — hub (kgstudio.top)
+   KG Studio - hub (kgstudio.top)
 
    El dominio es un sistema: una raíz y cuatro subdominios en
    órbita. Se recorre arrastrando, con la rueda, con WASD o con
@@ -171,8 +171,8 @@ p { text-wrap: pretty; }
  *
  * Es una columna fija de alto completo con `space-between`: al abrir un
  * producto, el panel hacía crecer el bloque de abajo y, como nada lo
- * contenía, se salía por el borde inferior. En 1366×768 —el portátil más
- * común— el contenido medía 906 px en 768 de pantalla: el panel se veía,
+ * contenía, se salía por el borde inferior. En 1366×768 -el portátil más
+ * común- el contenido medía 906 px en 768 de pantalla: el panel se veía,
  * pero el botón "Abrir sitio" quedaba fuera y el sitio no se podía abrir.
  *
  * El reparto de la escasez es explícito: el bloque de abajo (el panel y su
@@ -213,7 +213,7 @@ p { text-wrap: pretty; }
 @media (max-width: 63.99rem) {
   /*
    * Y deja de robar el dedo. En vertical el rail ocupa todo el ancho, así
-   * que sus bloques de texto —el nombre, el pie— se tragaban el arrastre:
+   * que sus bloques de texto -el nombre, el pie- se tragaban el arrastre:
    * empezar a girar desde la mitad de arriba de la pantalla no hacía nada.
    * Solo lo que se pulsa de verdad recibe el toque; el resto lo deja pasar
    * a la escena, que es lo que hay detrás.
@@ -373,7 +373,7 @@ p { text-wrap: pretty; }
 /*
  * Con un producto abierto y poca altura, la presentación cede el sitio: quien
  * está leyendo la ficha de un sitio ya no necesita que le cuenten quién soy.
- * El nombre y el cargo NO se mueven —son el ancla de la página—; lo que se va
+ * El nombre y el cargo NO se mueven -son el ancla de la página-; lo que se va
  * es el párrafo, el enlace al portafolio y el contador, y vuelven al cerrar.
  *
  * Se van con un fundido y no de golpe: `allow-discrete` deja animar hasta el
@@ -395,8 +395,8 @@ p { text-wrap: pretty; }
 }
 
 /*
- * Ventana muy baja —1366×768 con el navegador al 150%, o el teléfono
- * acostado—: la ficha se compacta en vez de crecer una barra de scroll
+ * Ventana muy baja -1366×768 con el navegador al 150%, o el teléfono
+ * acostado-: la ficha se compacta en vez de crecer una barra de scroll
  * propia. Se aprietan aires y se recorta la descripción a dos líneas; el
  * título, el dominio y el botón, que son para lo que se abre la ficha, no
  * se tocan.
@@ -415,7 +415,7 @@ p { text-wrap: pretty; }
   .panel__stack { margin-top: 0.15rem; padding-top: 0.5rem; }
 }
 
-/* Pantallas bajas —teléfono acostado, ventana a media altura—: se va también
+/* Pantallas bajas -teléfono acostado, ventana a media altura-: se va también
    el contador y la fecha del pie, que son adorno frente a poder explorar. */
 @media (max-height: 34rem) {
   .hud__count, .foot { display: none; }
@@ -495,8 +495,8 @@ kbd {
  * El panel se mide contra la pantalla, no contra un número fijo.
  *
  * Un tope en rem parecía prudente y era justo lo contrario: con el navegador
- * al 125% el contenido crece pero el tope no, así que la ficha —cuatro
- * líneas y un botón— aparecía con barra de scroll propia. Con este cálculo
+ * al 125% el contenido crece pero el tope no, así que la ficha -cuatro
+ * líneas y un botón- aparecía con barra de scroll propia. Con este cálculo
  * el tope solo se alcanza en ventanas de verdad diminutas; en cualquier
  * pantalla normal la tarjeta se ve entera y sin barras.
  */

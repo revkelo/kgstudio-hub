@@ -1,4 +1,4 @@
-# kgstudio.top — puerta de entrada de Kevin Gonzalez (kagonzalezdev).
+# kgstudio.top - puerta de entrada de Kevin Gonzalez (kagonzalezdev).
 # Todo es público y todo se puede rastrear, incluidos los rastreadores de IA:
 # que un asistente pueda leer esta zona es exactamente lo que se busca.
 
