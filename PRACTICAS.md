@@ -98,6 +98,23 @@ secreto del proyecto. Cambiar la configuración de correo no le afecta.
 `monetiq` va aparte: apunta a otro proyecto de Supabase, con su propia
 configuración.
 
+### Quién manda los correos: el hook, no Supabase
+
+El proyecto tiene activado un **Send Email Hook** que apunta a
+`parla.kgstudio.top/api/auth/email-hook`. Supabase no envía nada: llama a ese
+endpoint y este compone el correo y lo manda por el SMTP de Brevo.
+
+No es un rodeo caprichoso. Las plantillas de correo de Supabase son UNA para
+todo el proyecto, y el proyecto lo comparten tres productos. El hook es el
+único sitio donde el correo puede llevar la marca del producto en el que la
+persona se está registrando; la tabla de marcas vive en
+`parla/app/api/auth/email-hook/sitios.ts` y el sitio se deduce del host de
+`redirect_to`.
+
+Consecuencia práctica: si el hook falla, `signUp` falla. Eso es deliberado
+-más vale un registro que no pasa que una cuenta creada sin su correo-, y de
+paso convierte cualquier registro real en una prueba de que el envío funciona.
+
 ### La configuración de correo también es una
 
 SMTP, plantillas, caducidad de los enlaces y la lista de URLs de retorno son
@@ -420,3 +437,71 @@ el certificado. Autenticando contra ese nombre, Brevo contestó
 **Qué se hace.** Antes de cablear unas credenciales de correo en cuatro sitios,
 se prueban solas contra el servidor. Y si el fallo es de nombre de certificado,
 se mira cuál presenta de verdad antes de concluir que la clave es incorrecta.
+
+### 2026-09-01 - Enlaces de correo apuntando a localhost
+
+**Qué pasó.** La `site_url` del proyecto de Supabase era
+`http://127.0.0.1:3000` y la lista de redirecciones permitidas tenía una sola
+entrada, `https://127.0.0.1:3000`.
+
+**Por qué está mal.** Supabase usa `site_url` como destino de los enlaces del
+correo cuando el `redirectTo` que pide la app no está en la lista de
+permitidas. Como no lo estaba ninguno, TODOS los enlaces de confirmación y
+recuperación de la zona llevaban a una dirección que solo existe en la máquina
+de quien la escribió. El correo salía, llegaba, y el enlace no iba a ninguna
+parte.
+
+**Qué se hace.** La lista de permitidas incluye una entrada por sitio con
+comodín que cubra la query: `https://sitio/auth/callback**`, además de
+`https://sitio/**`. Los comodines casan segmentos de ruta y el `?` no lo es, así
+que sin esa entrada el destino con `?next=…` se descarta en silencio. Y se
+comprueba siguiendo un enlace de verdad, no leyendo la configuración.
+
+### 2026-09-01 - Un enlace de correo llega de tres formas, no de una
+
+**Qué pasó.** Los tres callbacks de la zona solo entendían `?code=`. Un enlace
+con el token en el fragmento (`#access_token=…`) los dejaba en la puerta con un
+error. En confirmación era feo, porque la cuenta sí quedaba confirmada; en
+recuperación era peor, porque nunca se llegaba al formulario de contraseña
+nueva.
+
+**Por qué está mal.** El fragmento de una URL no viaja al servidor: el
+navegador se lo queda. Una ruta de servidor no puede leerlo por definición, así
+que no hay forma de arreglarlo ahí.
+
+**Qué se hace.** El callback entiende `?code=` (PKCE), `?token_hash=` (la
+plantilla con `{{ .TokenHash }}`) y, si no hay ninguno, reenvía a una página
+cliente que sí ve el fragmento y llama a `setSession`. El fragmento sobrevive a
+la redirección porque el navegador lo conserva.
+
+### 2026-09-01 - El certificado de Brevo depende de la región
+
+**Qué pasó.** Probando el SMTP desde Bogotá, el relay sirvió un certificado de
+`smtp-relay-offshore-southamerica-east-v2.sendinblue.com`, que no incluye
+`smtp-relay.brevo.com` entre sus nombres. Se dedujo que había que verificar
+contra el nombre viejo y se fijó `servername: smtp-relay.sendinblue.com`.
+
+**Por qué está mal.** Desde us-east, que es donde corre la función, Brevo sirve
+`smtp-relay-offshore-us-east1-v2.brevo.com`, y ese SÍ incluye
+`smtp-relay.brevo.com`. El apaño que arreglaba la prueba local era exactamente
+lo que rompía el envío en producción: el registro dejó de funcionar en los tres
+sitios a la vez.
+
+**Qué se hace.** No se fuerza el nombre del certificado. Y una conclusión sacada
+de una prueba local contra un servicio con nodos por región es una hipótesis, no
+un hecho: se confirma en el entorno donde va a correr el código.
+
+### 2026-09-01 - El correo de un sitio con la marca de otro
+
+**Qué pasó.** El Send Email Hook componía siempre el correo de parla. Quien
+creaba una cuenta en examia recibía "Confirma tu cuenta de parla", con el
+logotipo y el pie de parla.
+
+**Por qué está mal.** Un correo con una marca que no es la del sitio donde
+acabas de registrarte se lee como phishing, que es justo lo contrario de lo que
+tiene que transmitir el correo que pide confirmar una dirección.
+
+**Qué se hace.** El hook deduce el sitio del host de `redirect_to` y usa su
+marca, sus colores y sus textos. Cuando se añada un sitio con cuentas a la zona,
+se añade también su entrada en `sitios.ts`; si falta, cae en parla y el fallo
+vuelve.

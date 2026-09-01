@@ -39,7 +39,9 @@ const APLICAR = process.argv.includes("--aplicar");
 
 const SMTP = {
   host: "smtp-relay.brevo.com",
-  port: 587,
+  // Cadena, no número: la API de Supabase rechaza el entero con
+  // "expected string, received number".
+  port: "587",
   user: "aa2fb2001@smtp-brevo.com",
   // El remitente que ve quien recibe. Tiene que ser un dominio verificado en
   // Brevo; si no lo está, Brevo acepta la conexión y rechaza el envío, que es
@@ -66,9 +68,27 @@ const SITIOS = [
  * mal cuando lo que falta es una entrada en esta lista.
  */
 const REDIRECCIONES = [
-  ...SITIOS.flatMap((s) => [`${s}/**`, `${s}/auth/callback`]),
+  ...SITIOS.flatMap((s) => [
+    `${s}/**`,
+    `${s}/auth/callback`,
+    /*
+     * La entrada que parece redundante y no lo es.
+     *
+     * Los sitios piden volver a `/auth/callback?next=/panel`, con query. El
+     * patron `/**` NO la cubre: los comodines de esta lista casan segmentos de
+     * ruta, y el `?` no lo es. Sin esta linea Supabase descarta el destino
+     * pedido y usa `site_url` en su lugar, asi que el enlace del correo de
+     * CUALQUIER sitio aterrizaba en parla.
+     *
+     * Y el sintoma enganya: el correo llega, el enlace funciona y la cuenta
+     * queda confirmada. Solo que en el sitio equivocado.
+     */
+    `${s}/auth/callback**`,
+  ]),
   "https://*-revkelos-projects.vercel.app/**",
+  "https://*-revkelos-projects.vercel.app/auth/callback**",
   "http://localhost:3000/**",
+  "http://localhost:3000/auth/callback**",
 ];
 
 if (!TOKEN) {
@@ -106,6 +126,21 @@ console.log(`  URL del sitio:     ${actual.site_url}`);
 console.log(`  redirecciones:     ${actual.uri_allow_list || "(ninguna)"}`);
 
 const cambios = {
+  /*
+   * La URL del sitio, que estaba en `http://127.0.0.1:3000`.
+   *
+   * No es un detalle de configuración: Supabase la usa como destino por
+   * defecto de los enlaces del correo cuando no hay `redirectTo`, o cuando el
+   * que se pide no está en la lista de permitidas. Con localhost ahí, cada
+   * enlace de confirmación y de recuperación de la zona llevaba a una
+   * dirección que solo existe en la máquina de quien la escribió. El correo
+   * salía, llegaba, y el enlace no iba a ninguna parte.
+   *
+   * Se pone parla porque es el sitio con cuentas más antiguo y el que más
+   * gente usa: si algún enlace vuelve a caer en el valor por defecto, que
+   * caiga en un sitio real.
+   */
+  site_url: 'https://parla.kgstudio.top',
   smtp_host: SMTP.host,
   smtp_port: SMTP.port,
   smtp_user: SMTP.user,
