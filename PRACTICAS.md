@@ -105,12 +105,13 @@ y cada uno tiene el suyo:
 
 | Esquema | Proyecto | Cómo lo consulta |
 | --- | --- | --- |
-| `public` | parla | PostgREST (`supabase.from(...)`) |
+| `parla` | parla | PostgREST (`supabase.from(...)`) |
 | `exams` | examia | Postgres directo (`pg`) |
-| `core` + `rentals` | arriendos | Postgres directo |
+| `arriendos` | arriendos | PostgREST |
 | `autoreel` | autoreel | Postgres directo |
 | `pagobot` | pagobot | Postgres directo |
 | `auth` | la identidad, compartida por todos | Supabase Auth |
+| `public` | **nadie**: solo la extensión btree_gist | - |
 
 **Un proyecto nuevo crea su esquema y no toca `public`.** Sus migraciones viven
 en `db/migrations/` del propio repo y se aplican con su `db:push`, que registra
@@ -122,17 +123,24 @@ Para no calificar cada consulta a mano, el esquema se fija en el `search_path`
 de la conexión (ver `autoreel/db/conexion.mjs`). `public` se deja detrás en la
 lista, porque ahí viven las extensiones.
 
-#### Por qué parla está en `public` y ahí se queda
+#### Cuando el proyecto habla por PostgREST
 
-Es la excepción, y conviene entender el motivo antes de "arreglarla". parla es
-el único que habla por PostgREST, en 43 sitios, y PostgREST solo expone
-`public` salvo que se cambie un ajuste que es del proyecto entero. Moverlo
-significa tocar ese ajuste compartido, mover las tablas y reescribir los 43
-sitios, todo sobre la aplicación con más usuarios reales de la zona.
+PostgREST solo expone `public` salvo que se le diga otra cosa, y por eso parla y
+arriendos empezaron fuera de su sitio. Mover un proyecto así cuesta poco si el
+esquema se declara **en el cliente**:
 
-El beneficio sería cosmético: la separación ya la da el hecho de que nadie más
-escribe en `public`. Así que la regla queda al revés de como suena: `public` es
-de parla, y quien llegue después se hace su esquema.
+```ts
+createClient(url, key, { db: { schema: 'parla' } })
+```
+
+Así los `.from(...)` repartidos por la app no se tocan: eran más de cuarenta en
+parla. Lo que sí hay que hacer aparte, y sin ello no funciona nada:
+
+1. Exponer el esquema en la API (`db_schema` de PostgREST).
+2. `grant usage on schema` a `anon`, `authenticated` y `service_role`. Sin lo
+   primero PostgREST contesta `Invalid schema`; sin lo segundo,
+   `permission denied`, y `service_role` salta RLS pero no los permisos de
+   Postgres.
 
 ### Quién manda los correos: el hook, no Supabase
 
@@ -555,3 +563,49 @@ Una entrada que no conecta nada pero parece que sí es peor que no tenerla.
 **Qué se hace.** La lista de sitios de `scripts/configurar-correo.mjs` incluye
 solo a los que de verdad comparten esa identidad. Si un proyecto vive en otro
 Supabase, se dice dónde, en vez de listarlo aquí por si acaso.
+
+### 2026-09-01 - Cambiar la configuración antes de confirmar la migración
+
+**Qué pasó.** Al mover parla a su esquema, la migración falló y revirtió sola
+-bien-, pero la configuración de PostgREST ya se había cambiado para apuntar al
+esquema nuevo, que por el rollback no existía. parla se quedó sirviendo contra
+un esquema inexistente hasta que se revirtió a mano.
+
+**Por qué está mal.** La transacción protege la base, no lo de fuera. Un
+`PATCH` a la API de configuración no participa de ese rollback, así que un
+fallo dentro de la transacción dejó el sistema en un estado que ninguna de las
+dos mitades había previsto.
+
+**Qué se hace.** Primero la migración, luego se comprueba que aplicó, y solo
+entonces se toca lo de fuera: la configuración de la API y el despliegue. El
+orden inverso solo parece más rápido.
+
+### 2026-09-01 - `CREATE FUNCTION` resuelve los tipos con el search_path de quien lo ejecuta
+
+**Qué pasó.** Al recrear las funciones de parla en el esquema nuevo, todas
+fallaron con `type user_role does not exist`, aunque el tipo se acababa de
+mover a ese mismo esquema y la función declaraba
+`SET search_path TO 'parla', 'public'`.
+
+**Por qué está mal.** Ese `SET search_path` de la función aplica cuando la
+función **se ejecuta**, no cuando se crea. Los tipos de la firma se resuelven
+al crearla, contra el `search_path` de la sesión que lanza el `CREATE`.
+
+**Qué se hace.** `set local search_path = <esquema>, public` en la sesión de la
+migración, antes de crear funciones que usen tipos propios.
+
+### 2026-09-01 - Mover un esquema no arregla lo que está escrito como texto
+
+**Qué pasó.** `ALTER ... SET SCHEMA` conserva datos, índices, claves foráneas,
+políticas y triggers, porque Postgres guarda esas referencias por OID. Pero
+las funciones que fijaban `search_path` y escribían `rentals.settings` o
+`public.profiles` en el cuerpo siguieron apuntando a esquemas que ya no
+existían.
+
+**Por qué está mal.** Sobreviven al ALTER sin protestar y fallan después, al
+ejecutarse. En arriendos era la que da el consecutivo de facturas, y su fallo
+es silencioso por diseño: devuelve null y la factura sale sin número.
+
+**Qué se hace.** Antes de mover un esquema, se revisan los cuerpos de sus
+funciones buscando nombres de esquema escritos a mano, y se recrean. Y después
+se ejecuta una de cada tipo, no solo se cuenta que las tablas llegaron.
