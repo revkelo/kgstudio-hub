@@ -250,3 +250,33 @@ funciones del motor, y el parser se atragantó con el primer `;`.
 cadenas -con sus escapes- y comentarios, y se tira lo que venga detrás. Un
 escáner, nunca `eval` ni `new Function`: el archivo lo sube un usuario, y
 ejecutarlo en el servidor sería darle la máquina.
+
+### 2026-08-31 - Una rama de la interfaz que solo existia en un modo
+
+**Qué pasó.** En el runner de `examia`, marcar una opción en una pregunta de
+varias respuestas solo guardaba la selección en el estado de React. Lo que la
+mandaba al servidor era el botón "Comprobar", y ese botón solo se pintaba en
+modo práctica. En simulacro no existía, así que la respuesta se quedaba en el
+navegador y la pregunta se entregaba en blanco.
+
+**Por qué está mal.** El código leía bien: "las de varias respuestas no se
+corrigen hasta pulsar Comprobar" es correcto para práctica, y el `return`
+parecía inofensivo. Nadie lo probó en el otro modo, que es justo donde el
+botón no está.
+
+**Qué se hace.** Cuando una acción dependa del modo, se recorre el flujo
+completo en **cada** modo, no solo en el que se estaba escribiendo. Y si una
+rama termina en `return` sin guardar, hay que preguntarse quién guarda
+entonces, y si ese quién existe siempre.
+
+### 2026-08-31 - Escribir sin acentos otra vez, con la regla ya escrita
+
+**Qué pasó.** Al reescribir el lanzador de `examia` salieron "presion",
+"estas listo", "Cuantas", "salio", "posicion" y ocho más, en texto que ve el
+usuario. La regla llevaba escrita en este mismo archivo desde el mismo día.
+
+**Por qué está mal.** Tener la regla escrita no sirve de nada si no se lee
+antes de escribir, y menos cuando se genera un bloque grande de una vez.
+
+**Qué se hace.** Al terminar un archivo con texto en español, se pasa un grep
+por las palabras que suelen perder la tilde antes de dar nada por hecho.
