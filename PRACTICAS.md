@@ -98,6 +98,42 @@ secreto del proyecto. Cambiar la configuración de correo no le afecta.
 `monetiq` va aparte: apunta a otro proyecto de Supabase, con su propia
 configuración.
 
+### Un esquema por proyecto
+
+La base es compartida. Lo que mantiene separados a los proyectos es el esquema,
+y cada uno tiene el suyo:
+
+| Esquema | Proyecto | Cómo lo consulta |
+| --- | --- | --- |
+| `public` | parla | PostgREST (`supabase.from(...)`) |
+| `exams` | examia | Postgres directo (`pg`) |
+| `core` + `rentals` | arriendos | Postgres directo |
+| `autoreel` | autoreel | Postgres directo |
+| `pagobot` | pagobot | Postgres directo |
+| `auth` | la identidad, compartida por todos | Supabase Auth |
+
+**Un proyecto nuevo crea su esquema y no toca `public`.** Sus migraciones viven
+en `db/migrations/` del propio repo y se aplican con su `db:push`, que registra
+lo aplicado en `<esquema>.schema_migrations`. Nunca con `supabase config push`:
+ese empuja el config entero y pisa la configuración de los demás, cosa que ya
+pasó una vez.
+
+Para no calificar cada consulta a mano, el esquema se fija en el `search_path`
+de la conexión (ver `autoreel/db/conexion.mjs`). `public` se deja detrás en la
+lista, porque ahí viven las extensiones.
+
+#### Por qué parla está en `public` y ahí se queda
+
+Es la excepción, y conviene entender el motivo antes de "arreglarla". parla es
+el único que habla por PostgREST, en 43 sitios, y PostgREST solo expone
+`public` salvo que se cambie un ajuste que es del proyecto entero. Moverlo
+significa tocar ese ajuste compartido, mover las tablas y reescribir los 43
+sitios, todo sobre la aplicación con más usuarios reales de la zona.
+
+El beneficio sería cosmético: la separación ya la da el hecho de que nadie más
+escribe en `public`. Así que la regla queda al revés de como suena: `public` es
+de parla, y quien llegue después se hace su esquema.
+
 ### Quién manda los correos: el hook, no Supabase
 
 El proyecto tiene activado un **Send Email Hook** que apunta a
@@ -505,3 +541,17 @@ tiene que transmitir el correo que pide confirmar una dirección.
 marca, sus colores y sus textos. Cuando se añada un sitio con cuentas a la zona,
 se añade también su entrada en `sitios.ts`; si falta, cae en parla y el fallo
 vuelve.
+
+### 2026-09-01 - monetiq listado en un proyecto al que no pertenece
+
+**Qué pasó.** La configuración de correo de `supabase-crimson-drum` declaraba
+`monetiq.kgstudio.top` entre las URLs de retorno permitidas. monetiq no usa ese
+proyecto: tiene el suyo, con su propio `auth.users`.
+
+**Por qué está mal.** No rompía nada, y por eso es peligroso: hacía creer que
+monetiq quedaba cubierto por esa configuración de correo cuando no lo estaba.
+Una entrada que no conecta nada pero parece que sí es peor que no tenerla.
+
+**Qué se hace.** La lista de sitios de `scripts/configurar-correo.mjs` incluye
+solo a los que de verdad comparten esa identidad. Si un proyecto vive en otro
+Supabase, se dice dónde, en vez de listarlo aquí por si acaso.

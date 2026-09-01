@@ -50,13 +50,23 @@ const SMTP = {
   senderName: "kgstudio",
 };
 
-/** Los sitios de la zona que usan esta identidad. */
+/**
+ * Los sitios que usan ESTA identidad.
+ *
+ * monetiq no está y no es un olvido: vive en otro proyecto de Supabase, con su
+ * propio `auth.users` y su propia configuración de correo. Tenerlo aquí no lo
+ * conectaba a nada; solo hacía creer que estaba cubierto por esta
+ * configuración cuando no lo estaba, que es peor que no listarlo.
+ *
+ * arriendos sí está, aunque entra por PIN y no manda correos de autenticación:
+ * comparte el proyecto, y si algún día añade acceso por correo, la URL de
+ * retorno ya está permitida.
+ */
 const SITIOS = [
   "https://parla.kgstudio.top",
   "https://examia.kgstudio.top",
   "https://autoreel.kgstudio.top",
   "https://arriendos.kgstudio.top",
-  "https://monetiq.kgstudio.top",
 ];
 
 /*
