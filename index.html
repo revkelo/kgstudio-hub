@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Kevin Gonzalez (kagonzalezdev) - Cloud &amp; DevOps Engineer en Bogotá</title>
-<meta name="description" content="Kevin Gonzalez (kagonzalezdev), ingeniero de sistemas y Cloud &amp; DevOps Engineer en Bogotá. Creador de KG Studio: parla, monetiq, pagobot, arriendos, examia, reinicia y el examen preparatorio de inglés, todos en producción bajo kgstudio.top.">
+<meta name="description" content="Kevin Gonzalez (kagonzalezdev), ingeniero de sistemas y Cloud &amp; DevOps Engineer en Bogotá. Creador de KG Studio: parla, monetiq, pagobot, arriendos, examia, autoreel, reinicia y el examen preparatorio de inglés, todos en producción bajo kgstudio.top.">
 <link rel="canonical" href="https://kgstudio.top/">
 <meta name="author" content="Kevin Gonzalez">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -199,8 +199,9 @@
         { "@type": "ListItem", "position": 5, "item": { "@type": "SoftwareApplication", "name": "Pagobot", "url": "https://pagobot.kgstudio.top/", "applicationCategory": "FinanceApplication", "description": "Bot de Telegram que lleva los pagos del mes.", "operatingSystem": "Telegram", "author": { "@id": "https://kgstudio.top/#kevin" } } },
         { "@type": "ListItem", "position": 6, "item": { "@type": "SoftwareApplication", "name": "Arriendos", "url": "https://arriendos.kgstudio.top/", "applicationCategory": "BusinessApplication", "description": "Contratos y documentos de arriendo con asistente de IA.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
         { "@type": "ListItem", "position": 7, "item": { "@type": "SoftwareApplication", "name": "examia", "url": "https://examia.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulacros de exámenes de certificación con preguntas generadas por IA o importadas en JSON.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 8, "item": { "@type": "SoftwareApplication", "name": "Examen preparatorio (iTEP)", "url": "https://itep.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulador del examen de inglés iTEP completo: grammar, listening, reading, writing y speaking con tiempos reales y reporte CEFR de A1 a C2.", "operatingSystem": "Web", "isAccessibleForFree": true, "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 9, "item": { "@type": "WebSite", "name": "Distribuciones AGD", "url": "https://distribucionesagd.kgstudio.top/", "description": "Sitio corporativo de Distribuciones AGD, ferretería y pinturas en Bogotá.", "inLanguage": "es-CO", "author": { "@id": "https://kgstudio.top/#kevin" }, "creator": { "@id": "https://kgstudio.top/#kgstudio" } } }
+        { "@type": "ListItem", "position": 8, "item": { "@type": "SoftwareApplication", "name": "Autoreel", "url": "https://autoreel.kgstudio.top/", "applicationCategory": "MultimediaApplication", "description": "Estudio de video vertical: de una idea a un MP4 con voz, subtítulos, música y render en 1080x1920.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 9, "item": { "@type": "SoftwareApplication", "name": "Examen preparatorio (iTEP)", "url": "https://itep.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulador del examen de inglés iTEP completo: grammar, listening, reading, writing y speaking con tiempos reales y reporte CEFR de A1 a C2.", "operatingSystem": "Web", "isAccessibleForFree": true, "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 10, "item": { "@type": "WebSite", "name": "Distribuciones AGD", "url": "https://distribucionesagd.kgstudio.top/", "description": "Sitio corporativo de Distribuciones AGD, ferretería y pinturas en Bogotá.", "inLanguage": "es-CO", "author": { "@id": "https://kgstudio.top/#kevin" }, "creator": { "@id": "https://kgstudio.top/#kgstudio" } } }
       ]
     }
   ]
@@ -345,6 +346,13 @@
     <span class="node__dot" aria-hidden="true"></span>
     <span class="node__name">examia</span>
   </a>
+  <a class="node" href="https://autoreel.kgstudio.top" target="_blank" rel="noopener"
+     data-node="autoreel" data-probe="https://autoreel.kgstudio.top"
+     data-title="Autoreel" data-stack="Next.js · Postgres · WebCodecs"
+     data-desc="De una idea a un video vertical para TikTok, Reels y Shorts: voz, subtítulos y render.">
+    <span class="node__dot" aria-hidden="true"></span>
+    <span class="node__name">Autoreel</span>
+  </a>
   <a class="node" href="https://itep.kgstudio.top" target="_blank" rel="noopener"
      data-node="itep" data-probe="https://itep.kgstudio.top"
      data-title="Examen preparatorio" data-stack="Vite · JavaScript · Vercel"
@@ -380,7 +388,9 @@
   <div class="sheet__inner">
     <div class="sheet__head">
       <h2>Corriendo ahora</h2>
-      <p>Siete sitios bajo <strong>kgstudio.top</strong>. El estado se comprueba al abrir la página.</p>
+      <!-- El número va a mano y ya se quedó corto una vez: al entrar autoreel
+           seguía diciendo "siete". Si añades una fila, cámbialo aquí. -->
+      <p>Diez sitios bajo <strong>kgstudio.top</strong>. El estado se comprueba al abrir la página.</p>
     </div>
 
     <ul class="rows">
@@ -425,6 +435,12 @@
         <span class="rows__name">examia</span>
         <span class="rows__desc">Simulacros de certificación con preguntas hechas por IA</span>
         <span class="rows__meta">Next.js · Groq</span>
+      </a></li>
+      <li><a href="https://autoreel.kgstudio.top" target="_blank" rel="noopener" data-row="autoreel">
+        <span class="rows__dot" aria-hidden="true"></span>
+        <span class="rows__name">autoreel</span>
+        <span class="rows__desc">De una idea a un video vertical para TikTok, Reels y Shorts</span>
+        <span class="rows__meta">Next.js · WebCodecs</span>
       </a></li>
       <li><a href="https://itep.kgstudio.top" target="_blank" rel="noopener" data-row="itep">
         <span class="rows__dot" aria-hidden="true"></span>

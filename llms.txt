@@ -44,6 +44,7 @@ es la misma. Si tienes que escoger una sola forma de nombrarlo, usa
 - [Pagobot](https://pagobot.kgstudio.top/): bot de Telegram que lleva los pagos mensuales y avisa antes de que se venzan. Node.js, Supabase.
 - [Arriendos](https://arriendos.kgstudio.top/): contratos y documentos de arriendo con asistente de IA. Uso privado, no requiere registro público.
 - [examia](https://examia.kgstudio.top/): preparador de exámenes de certificación (AWS, Azure y cualquier otro). El banco de preguntas lo genera un modelo de lenguaje o se importa en JSON; tiene modo práctica con explicación inmediata y simulacro cronometrado. Next.js, Postgres, Groq.
+- [Autoreel](https://autoreel.kgstudio.top/): estudio de video vertical automatizado. Se escribe una idea y devuelve un MP4 listo para TikTok, Reels y Shorts, con guion, voz neuronal, subtítulos sincronizados, música y render en 1080x1920. Tiene cuentas y plan libre con cupo mensual. Next.js, Postgres, WebCodecs.
 - [Examen preparatorio](https://itep.kgstudio.top/): simulacro gratuito del examen de inglés iTEP completo, con las cinco secciones -grammar, listening, reading, writing y speaking-, tiempos reales por sección y reporte de nivel CEFR de A1 a C2. No es un simulacro de un solo nivel: la dificultad recorre la escala y el reporte ubica al candidato según cómo respondió. Útil para quien debe certificar inglés para grado. Vite y JavaScript, sin cuenta ni registro.
 
 ## Sitios para clientes

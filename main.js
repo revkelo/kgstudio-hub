@@ -52,17 +52,22 @@ const SIDE = window.matchMedia('(min-width: 64rem), (min-width: 40rem) and (max-
  * Los radios se reparten, no se estiran: al entrar cuerpos nuevos por fuera,
  * la cámara -que encuadra la órbita externa- se aleja para que quepan y los
  * de dentro se quedan en un puñado de píxeles. Reajustando toda la escala,
- * el sistema se ve igual de lleno con ocho que con seis.
+ * el sistema se ve igual de lleno con nueve que con seis.
+ *
+ * Al entrar `autoreel` se recolocaron los nueve en vez de colgarlo por fuera:
+ * la órbita externa sigue en 15.9 y los huecos se apretaron un poco. Si algún
+ * día entra el décimo, se vuelve a repartir igual.
  */
 const BODIES = [
   { id: 'parla',     radius:  4.4, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
-  { id: 'monetiq',   radius:  5.9, tilt: -0.24, speed: 0.094, phase: 1.4, size: 0.40 },
-  { id: 'reinicia',  radius:  7.4, tilt:  0.42, speed: 0.072, phase: 2.9, size: 0.36 },
-  { id: 'pagobot',   radius:  8.9, tilt: -0.34, speed: 0.056, phase: 4.3, size: 0.34 },
-  { id: 'arriendos', radius: 10.5, tilt:  0.20, speed: 0.044, phase: 5.6, size: 0.33 },
-  { id: 'examia',    radius: 12.2, tilt:  0.34, speed: 0.038, phase: 3.4, size: 0.33 },
-  { id: 'itep',      radius: 14.0, tilt: -0.28, speed: 0.033, phase: 0.8, size: 0.32 },
-  { id: 'agd',       radius: 15.9, tilt: -0.16, speed: 0.029, phase: 2.1, size: 0.31 },
+  { id: 'monetiq',   radius:  5.7, tilt: -0.24, speed: 0.096, phase: 1.4, size: 0.40 },
+  { id: 'reinicia',  radius:  7.0, tilt:  0.42, speed: 0.076, phase: 2.9, size: 0.36 },
+  { id: 'pagobot',   radius:  8.4, tilt: -0.34, speed: 0.060, phase: 4.3, size: 0.34 },
+  { id: 'arriendos', radius:  9.8, tilt:  0.20, speed: 0.048, phase: 5.6, size: 0.33 },
+  { id: 'examia',    radius: 11.2, tilt:  0.34, speed: 0.040, phase: 3.4, size: 0.33 },
+  { id: 'autoreel',  radius: 12.7, tilt: -0.38, speed: 0.035, phase: 4.9, size: 0.33 },
+  { id: 'itep',      radius: 14.3, tilt: -0.28, speed: 0.031, phase: 0.8, size: 0.32 },
+  { id: 'agd',       radius: 15.9, tilt: -0.16, speed: 0.028, phase: 2.1, size: 0.31 },
 ];
 
 const OUTER = 15.9;
