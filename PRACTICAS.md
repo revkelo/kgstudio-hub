@@ -280,3 +280,23 @@ antes de escribir, y menos cuando se genera un bloque grande de una vez.
 
 **Qué se hace.** Al terminar un archivo con texto en español, se pasa un grep
 por las palabras que suelen perder la tilde antes de dar nada por hecho.
+
+### 2026-08-31 - Un dominio de marcador de posición que llegó a producción
+
+**Qué pasó.** El portafolio construía todo su SEO a partir de
+`process.env.NEXT_PUBLIC_SITE_URL ?? "https://revkelo.dev"`. Esa variable no
+estaba puesta en Vercel, así que producción servía el `canonical`, el `og:url`,
+el `og:image`, el sitemap entero y los tres `@id` del JSON-LD apuntando a
+`revkelo.dev`. Ese dominio **no resuelve**.
+
+**Por qué está mal.** Es el peor fallo de SEO posible y no se ve mirando la
+página: un `canonical` a otro dominio le dice a Google que la página buena es
+una copia, así que la buena deja de indexarse. El sitemap listaba URLs de otro
+host, y un sitemap que declara URLs ajenas se descarta entero. Y la imagen de
+las tarjetas de WhatsApp y LinkedIn apuntaba a un servidor que no contesta.
+
+**Qué se hace.** Un valor por defecto es lo que se va a desplegar, así que
+nunca es un marcador de posición: se pone el dominio real, y la variable de
+entorno queda para sobreescribirlo, no para hacerlo funcionar. Y antes de dar
+por bueno el SEO de un sitio, se pide el HTML **de producción** con `curl` y se
+lee el `canonical` que sirve de verdad, en vez de leer el código y suponer.
