@@ -701,3 +701,59 @@ se marca sola. Cuando un porcentaje sale muchísimo más bajo de lo que se ve en
 la captura, el sospechoso es la medida y no el dibujo. Aquí el blanco se busca
 por "claro y sin color" -mínimo alto, poca diferencia entre canales- y el listón
 se sube a un valor que fallaría de verdad si las líneas desaparecieran.
+
+### 2026-09-02 - Un acento grave dentro de una plantilla de cadena
+
+Al comentar un `shader` de GLSL, que vive dentro de una plantilla de cadena de
+JavaScript, se escribió `` `h` `` para citar una variable. Ese acento grave
+cierra la plantilla a media línea, y el archivo dejó de compilar con un
+`Expected ',', got 'ident'` que apuntaba al comentario y no al motivo.
+
+**Lo grave no fue el error, fue no leerlo.** La salida de la compilación se pasó
+por un `grep -c` que devolvió `2`, y ese `2` se dio por ruido en vez de mirarlo.
+Con el `build` roto se lanzó igualmente un despliegue.
+
+**Qué se hace.** Dentro de una plantilla de cadena no se citan cosas con acentos
+graves; se usan comillas o nada. Y la salida de una compilación se lee, no se
+cuenta: un contador convierte un fallo en un número que parece inofensivo.
+
+### 2026-09-02 - El cielo salía negro y la niebla del mismo color salía azul
+
+El cielo de la carrera es una esfera con un `ShaderMaterial` escrito a mano. Se
+veía casi negro, aunque su color y el de la niebla eran exactamente el mismo
+número. La niebla sí salía azul.
+
+Three.js entrega los colores de los `uniforms` en espacio lineal y solo añade la
+conversión de salida a sRGB a los materiales de la librería. A un
+`ShaderMaterial` propio no se la añade nadie: el valor lineal se pinta tal cual
+y aparece mucho más oscuro que su código. La pista lo enseñaba servido en
+bandeja, porque el mismo color pintado por los dos caminos daba dos colores.
+
+**Qué se hace.** Todo `ShaderMaterial` que escriba un color termina con
+`#include <colorspace_fragment>`. Y cuando el mismo valor se ve distinto en dos
+sitios, el sospechoso es la conversión, no el valor.
+
+### 2026-09-02 - Un suavizado convertido a ojo movió la cámara a otro sitio
+
+El suavizado de la cámara pasaba de "multiplicar por 0.24 cada cuadro" a una
+forma que no depende de los cuadros. La constante nueva se puso a ojo, `2e-5`, y
+resultó ser tres veces más lenta: la cámara se quedaba tan atrás que en las
+curvas se ponía al costado del coche y se veía el lateral en vez de la pista.
+
+La cuenta era de una línea. Si por cuadro queda sin recorrer `1 - 0.24` y hay
+sesenta cuadros, tras un segundo queda `0.76^60`, o sea `5e-8`.
+
+**Qué se hace.** Cuando se cambia la forma de un parámetro que ya estaba
+ajustado, el valor nuevo se saca de la conversión y se comprueba que reproduce
+el viejo en el caso conocido. Cambiar la unidad y volver a ajustar a ojo tira el
+ajuste anterior sin decirlo.
+
+### 2026-09-02 - Medir el juego en headless era medir el render por software
+
+La comprobación de tirones daba números malísimos y constantes. En `headless` el
+navegador dibuja por software: siempre sale lento, vaya el juego como vaya.
+
+**Qué se hace.** El rendimiento se mide con ventana de verdad, que es lo que usa
+la GPU, y se mira el **percentil 99** de los tiempos entre cuadros, no la media:
+un juego que va a 60 y se para 200 ms una vez por segundo tiene una media
+estupenda y se siente fatal. Lo que se nota es el peor cuadro.
