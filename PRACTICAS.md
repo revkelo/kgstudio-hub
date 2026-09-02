@@ -672,3 +672,32 @@ con los redondos que uno elige sin pensar: un múltiplo exacto es justo el caso
 que no se da nunca en producción. Y cuando el aislamiento contradice a la
 realidad, la respuesta no es seguir cambiando cosas: es instrumentar el entorno
 donde falla y leer los números.
+
+### 2026-09-02 - Una comprobación que medía ceros sobre un lienzo WebGL
+
+Al pasar la carrera de examia a Three.js, la comprobación automática dijo que el
+lienzo pintaba 0% de asfalto. El juego se veía perfectamente en pantalla.
+
+`readPixels` sobre un lienzo WebGL devuelve ceros: el buffer de dibujo se vacía
+al componer el cuadro, salvo que se pida `preserveDrawingBuffer`, que cuesta
+rendimiento y no se va a activar solo para poder medir. La comprobación no
+estaba mirando el juego, estaba mirando un buffer ya vaciado.
+
+**Qué se hace.** Se mide sobre una captura de pantalla, que es un PNG normal y
+se lee con un canvas 2D. Es además lo que se quiere comprobar: lo que el usuario
+acaba viendo, no lo que hay en un buffer intermedio.
+
+### 2026-09-02 - Un umbral de color que hacía pasar la prueba sin mirar nada
+
+En esa misma comprobación, "las líneas blancas se dibujan" pasaba con un 0,02%
+de píxeles: unos cien en toda la pantalla. Pasaba porque el listón era `> 0`.
+
+La causa: se buscaba el blanco por su valor de origen, `0xf4f7fa`, pero la luz
+de la escena lo oscurece hasta un gris claro que ya no cae dentro de la
+tolerancia. Se estaba contando el ruido del antialiasing, no las líneas.
+
+**Qué se hace.** Un umbral de `> 0` no es una comprobación, es una casilla que
+se marca sola. Cuando un porcentaje sale muchísimo más bajo de lo que se ve en
+la captura, el sospechoso es la medida y no el dibujo. Aquí el blanco se busca
+por "claro y sin color" -mínimo alto, poca diferencia entre canales- y el listón
+se sube a un valor que fallaría de verdad si las líneas desaparecieran.
