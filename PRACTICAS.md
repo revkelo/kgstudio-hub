@@ -645,3 +645,30 @@ cinco: 978 KB.
 3. Antes de cualquier sesión que escriba en producción, se corre el respaldo.
    Con Supabase en plan gratuito no hay red debajo: el volcado a JSON es la
    única copia que existe.
+
+### 2026-09-02 - Un banco de pruebas que no reproducia el fallo
+
+**Qué pasó.** La carretera del modo carrera de examia no se dibujaba: se veía
+el cielo y la hierba, y nada más. Para aislarlo se montó el mismo renderizador
+en una página suelta y ahí funcionaba perfecto, con la misma matemática y los
+mismos colores. Se cambiaron la paleta, el primer trapecio, la escala de las
+curvas y el límite lateral, y ninguno era la causa.
+
+Lo que lo resolvió fue dejar de razonar y hacer que el propio juego dijera qué
+calculaba: un diagnóstico temporal en producción que exponía la posición de los
+primeros segmentos. El primero tenía `z = -110`, o sea que estaba **detrás de la
+cámara**. Con z negativo la escala se invierte, la `y` sale negativa, y como una
+`y` negativa también cumple "menor que el alto del lienzo", se tomaba como
+primer segmento visible; desde esa referencia imposible todos los demás
+quedaban descartados.
+
+**Por qué el banco de pruebas no lo vio.** Se le pasó una posición que era
+múltiplo exacto del largo de segmento, y ahí `z` empieza en 1. El fallo solo
+aparece cuando la posición cae en mitad de un segmento, que es lo que ocurre
+siempre en movimiento.
+
+**Qué se hace.** Un banco de pruebas se alimenta con valores del caso real, no
+con los redondos que uno elige sin pensar: un múltiplo exacto es justo el caso
+que no se da nunca en producción. Y cuando el aislamiento contradice a la
+realidad, la respuesta no es seguir cambiando cosas: es instrumentar el entorno
+donde falla y leer los números.
