@@ -757,3 +757,24 @@ navegador dibuja por software: siempre sale lento, vaya el juego como vaya.
 la GPU, y se mira el **percentil 99** de los tiempos entre cuadros, no la media:
 un juego que va a 60 y se para 200 ms una vez por segundo tiene una media
 estupenda y se siente fatal. Lo que se nota es el peor cuadro.
+
+### 2026-09-02 - Una velocidad estimada contra la propia predicción
+
+En la carrera con amigos, cada jugador avisa por dónde va cada dos segundos y
+medio, y entre avisos se le sigue moviendo a la velocidad que se le estima. La
+velocidad se calculaba restando el aviso nuevo menos `tObjetivo`.
+
+`tObjetivo` es la posición predicha, o sea que ya llevaba sumada la predicción
+anterior. Restar contra él no mide lo rápido que va el amigo: mide **cuánto se
+equivocó la predicción**. Y ahí está lo perverso: cuanto mejor acertaba, más
+cerca de cero salía el avance medido, más cerca de cero se ponía la velocidad
+nueva, y el coche acababa **parándose en seco justo cuando todo iba bien**.
+
+Costó verlo porque el síntoma era al revés de lo que uno busca: se probaron
+primero los casos raros -reinicios, avisos desordenados- cuando el que fallaba
+era el caso perfecto.
+
+**Qué se hace.** Una medida se toma siempre contra el dato en crudo que llegó,
+nunca contra un valor derivado de la propia estimación. Si el resultado de un
+cálculo entra en su propia entrada, ya no se está midiendo el mundo. Y cuando
+un fallo aparece "cuando todo va bien", el sospechoso es una realimentación.
