@@ -917,3 +917,85 @@ por espera es redescubrir el mismo fallo en cada paso.
 distintos, se escala el reloj **entero** una vez y se documenta la razón. Y las
 medidas de rendimiento no se juzgan sin GPU: se imprimen y se saltan, porque ahí
 se estaría midiendo el render por software.
+
+### 2026-09-03 - Una lista negra de rutas nace abierta
+
+**Qué pasó.** Al añadir invitados a `examia` -entrar a una sala con un código,
+sin cuenta- había que impedirles usar el resto de la app. El primer impulso fue
+enumerar lo prohibido: `/crear`, `/carrera`, `/cuenta`.
+
+**Por qué está mal.** Con una lista negra, **cada pantalla nueva nace abierta** y
+solo se cierra si alguien se acuerda de añadirla. El olvido no falla, no avisa y
+no se ve: simplemente un invitado puede entrar donde no debe, y nadie lo nota
+hasta que pasa algo.
+
+**Qué se hace.** Lista de lo permitido, nunca de lo prohibido. Así una pantalla
+nueva nace cerrada y hay que abrirla a propósito. Y la comprobación va en dos
+capas: el proxy corta rápido leyendo la marca del token (barata, firmada), y la
+pantalla decide de verdad consultando la base, porque un metadato de token es
+cómodo pero no es una autoridad.
+
+### 2026-09-03 - Concatenar el nombre de una columna en el SQL
+
+**Qué pasó.** `actualizarSet` de `examia` armaba el `update` recorriendo las
+claves del objeto que le pasaran: `campos.push(\`${clave} = $${n}\`)`. El valor
+iba parametrizado, pero el NOMBRE de la columna no puede ir como parámetro, así
+que se concatenaba tal cual.
+
+**Por qué está mal.** Hoy el único llamador construye un objeto literal con
+claves fijas y no es explotable. Pero es una función pública del dominio, y el
+día que alguien la llame con `Object.fromEntries(formData)` -que es lo natural de
+escribir- pasa a ser inyección de SQL directa desde un formulario. La mina la
+pone quien escribe la función, no quien la pisa.
+
+**Y el tipo de TypeScript no protege:** desaparece al compilar y no ve llegar un
+objeto armado en tiempo de ejecución.
+
+**Qué se hace.** Cuando algo que no es un valor entra en una consulta -nombre de
+columna, orden, dirección- se comprueba contra una lista blanca escrita a mano,
+en la función y no en el llamador. Se revisó el resto del repo: los `limit`
+concatenados están acotados numéricamente.
+
+### 2026-09-03 - Un límite numérico que no era un número
+
+**Qué pasó.** Dos consultas de `examia` construían `limit ${Math.min(500,
+Math.round(cantidad))}` con un valor venido de un formulario. Con texto en el
+campo, `Number(...)` da `NaN`, y `Math.min(500, NaN)` sigue siendo `NaN`: salía
+`limit NaN` y Postgres devolvía un error delante del usuario.
+
+**Por qué está mal.** No es una inyección -no hay forma de colar texto- pero se
+dispara escribiendo cualquier cosa en un campo, que es lo primero que hace quien
+prueba una app.
+
+**Qué se hace.** Acotar no es sanear. Si un número va a concatenarse en una
+consulta, primero `Number.isFinite` y luego los topes; en ese orden.
+
+### 2026-09-03 - Comparar colores por igualdad cuando el problema es el parecido
+
+**Qué pasó.** En la carrera de `examia`, un rival era de un verde azulado
+(`0x4ec9b0`) y el jugador aguamarina (`0x16d9d4`). A cuarenta metros y con luz de
+atardecer eran el mismo coche, así que en un adelantamiento se perdía de vista el
+propio. Medido después: 80 de distancia en RGB. El azul claro de otro rival,
+igual.
+
+**Por qué está mal.** Los colores no estaban repetidos, así que cualquier
+comprobación de "que no haya dos iguales" pasaba. Y a ojo, en una paleta escrita
+en hexadecimal, `0x4ec9b0` y `0x16d9d4` no se parecen en nada.
+
+**Qué se hace.** Las paletas donde el color ES la identidad de algo se comprueban
+por **distancia**, no por igualdad, y con una prueba automática. En `examia` hay
+dos, y el umbral está medido contra los casos que fallaban.
+
+### 2026-09-03 - Colocar cosas "lejos" de una figura cerrada, otra vez
+
+**Qué pasó.** Ya estaba anotado el 2026-09-02 y volvió a morder al llenar el
+escenario: al repartir árboles y edificios por zonas, se midió otra vez la
+distancia contra la muestra de la que colgaba cada objeto.
+
+**Por qué está mal.** Lo mismo que la vez anterior: en un circuito cerrado, estar
+lejos de ESTE tramo no impide caer encima del de al lado.
+
+**Qué se hace.** La comprobación contra el trazado entero se escribió como una
+función (`despejado(punto, guarda)`) y todo lo que se coloca pasa por ella. La
+regla anotada no evitó repetir el fallo; la función sí, porque no hay forma de
+colocar algo sin llamarla.
