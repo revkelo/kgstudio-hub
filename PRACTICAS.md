@@ -1062,3 +1062,68 @@ sale en una revisión rápida.
 **Qué se hace.** Un botón junto a texto flexible lleva `shrink-0` y
 `whitespace-nowrap`. Y al revisar una pantalla se mira **el botón**, no solo si
 la página cabe: una prueba de desbordamiento horizontal no detecta esto.
+
+### 2026-09-03 - Un menú plano que no contaba de qué iba la app
+
+**Qué pasó.** La barra de `examia` con sesión ponía cinco enlaces al mismo
+nivel: Inicio, Salas, Carrera, Bancos y Perfil. Ninguno marcaba dónde estabas,
+y dos pares de ellos eran la misma cosa vista de dos formas -Salas y Carrera
+son jugar; Bancos y Crear son estudiar-. El tablero, encima, ofrecía tres
+atajos distintos de los cinco del menú.
+
+**Por qué está mal.** Un menú es la única explicación de la app que se lee
+antes de usarla. Con cinco destinos sin jerarquía hay que usarla un rato para
+descubrir lo que debería decir de entrada, y cada pantalla nueva se coloca a
+ojo: la que no encaja en ninguna categoría acaba siendo un sexto enlace, y a la
+siguiente son siete.
+
+**Qué se hace.** Se decide en qué **pocas cosas** consiste el producto -en
+examia son dos: estudiar y jugar con alguien- y esas son la navegación. Lo
+demás cuelga de una de ellas o no existe. El tablero enseña las mismas puertas
+que la barra, para que la estructura se aprenda una sola vez. Y el sitio donde
+estás se marca (`aria-current`), que es lo que ningún `build` detecta: sale de
+comparar la ruta en el cliente, así que un pilar mal declarado compila,
+despliega y deja al usuario sin saber en qué mitad de la app está.
+
+### 2026-09-03 - Una prueba atada al rótulo de una sección
+
+**Qué pasó.** Al reorganizar el tablero de `examia`, el arnés `test:juego`
+falló en `check(/Jugar ahora/i.test(tablero), 'las tres formas de jugar están
+en el tablero')`. La comprobación miraba el rótulo de encima de las tarjetas,
+no las tarjetas.
+
+**Por qué está mal.** Un rótulo es la parte más volátil de una pantalla: se
+reescribe en cualquier pasada de redacción, y la prueba entonces falla sin que
+nada se haya roto o -peor- sigue pasando porque el rótulo sobrevivió a las
+tarjetas que se quitaron.
+
+**Qué se hace.** Se comprueba lo que la pantalla tiene que **ofrecer** -los
+nombres de los destinos, el botón, el enlace- y no el texto decorativo que los
+encabeza. Cuando la prueba falla por un cambio deliberado, se actualiza en el
+mismo commit y se escribe al lado por qué cambió lo que se espera.
+
+### 2026-09-03 - El gesto de la marca, repetido hasta volverse fondo
+
+**Qué pasó.** La portada de `examia` tenía once secciones y las once estaban
+separadas por el mismo recurso: la línea de corte con su rótulo en versalitas.
+Esa línea es la marca del sitio -es el logo, es el mínimo de aprobación y es la
+meta de la carrera, las tres cosas a la vez-.
+
+**Por qué está mal.** Un gesto que aparece en todas partes deja de señalar
+nada. Repetido once veces dejó de leerse como la firma de la marca y pasó a
+leerse como papel pintado, así que la página perdió a la vez el recurso y el
+significado. De paso, ninguna sección pesaba más que otra: "exportable en JSON"
+tenía el mismo tratamiento que la premisa entera del producto.
+
+**Qué se hace.** El gesto de marca se usa **una vez por página**, en el sitio
+donde la página gira. En la portada nueva es la bisagra entre las dos mitades:
+encima la partida, debajo el examen que se paga. El ritmo entre secciones lo da
+el espacio y un cambio de suelo -un panel con el fondo un escalón más claro-,
+no un separador repetido.
+
+Junto con eso se fueron los otros tres tics que hacen que una página se lea como
+plantilla, y que conviene revisar en cualquier sitio de la zona: el rótulo en
+versalitas encima de cada titular, las flechas pegadas al texto de los enlaces
+(`Ver el catálogo →`) y las cadenas de datos unidas por puntos medios
+(`Sin registro · sin tarjeta · 8 pruebas gratis`). Lo que dicen ya lo dice el
+titular o el párrafo de al lado.
