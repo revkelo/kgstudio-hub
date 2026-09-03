@@ -778,3 +778,72 @@ era el caso perfecto.
 nunca contra un valor derivado de la propia estimación. Si el resultado de un
 cálculo entra en su propia entrada, ya no se está midiendo el mundo. Y cuando
 un fallo aparece "cuando todo va bien", el sospechoso es una realimentación.
+
+### 2026-09-02 - Un sondeo que avisaba antes de que hubiera algo que avisar
+
+**Qué pasó.** La pantalla de carrera en sala de `examia` le contaba al servidor
+por dónde iba el coche desde el momento en que se abría, aunque nadie hubiera
+pulsado Arrancar. Ese aviso escribe `race_updated_at`, que es justo la marca con
+la que el servidor decide quién sigue vivo en la pista, y la carrera solo se
+cierra cuando ya no queda nadie vivo. Alguien que abría la pestaña y se iba a
+hacer otra cosa dejaba la partida abierta para siempre, y con ella el marcador
+final de todos los demás.
+
+**Por qué está mal.** El servidor tenía la regla bien escrita -"quien nunca
+avisó no está jugando"- y el cliente la desactivaba avisando desde el minuto
+cero. Cuando una regla del servidor depende de que el cliente calle, no es una
+regla: es un acuerdo, y los acuerdos se rompen solos al tocar el cliente.
+
+**Qué se hace.** Mientras no se ha arrancado se PREGUNTA (`GET`), no se avisa
+(`POST`). Y en general: antes de mandar un latido, preguntarse qué decide el
+servidor con él, porque abrir una pantalla no es lo mismo que estar jugando.
+
+### 2026-09-02 - Texto que describía una regla del juego que ya estaba muerta
+
+**Qué pasó.** La portada del modo carrera prometía que "cuanta más gasolina te
+quede al responder, más vale el acierto". Esa regla se había cambiado hacía
+tiempo: ahora la parada es siempre con el depósito a cero, así que el margen
+valía cero SIEMPRE y lo que se premia es acertar a la primera. El código estaba
+bien y hasta lo explicaba en un comentario; el texto que lee el jugador contaba
+otro juego.
+
+**Por qué está mal.** Es peor que no explicar nada: enseña una estrategia que no
+existe, y quien la sigue juega peor y no entiende por qué.
+
+**Qué se hace.** Cuando se cambia una regla de negocio -puntaje, límite, tarifa,
+condición-, se busca la regla vieja por sus palabras en todo el repo antes de
+cerrar el cambio. El comentario junto al código no basta: el usuario no lo lee.
+
+### 2026-09-02 - Un arnés de pruebas roto que nadie notó porque fallaba pronto
+
+**Qué pasó.** `probar-navegador.mjs` de `examia` -la prueba de humo que recorre
+la app entera con un navegador- esperaba entrar directo al crear la cuenta. Al
+encenderse la confirmación por correo en el proyecto de Supabase, el registro
+pasó a llevar a "revisa tu correo" y el arnés se quedaba clavado en el paso dos.
+Los otros doce pasos llevaban tiempo sin ejecutarse.
+
+**Por qué está mal.** Un arnés que falla siempre deja de mirarse, y a partir de
+ahí es peor que no tenerlo: da la sensación de que hay red debajo.
+
+**Qué se hace.** Cuando un arnés falla, se arregla en el mismo momento aunque el
+fallo no sea del cambio que se está haciendo. Y las pruebas que dependen de un
+ajuste del proyecto compartido -confirmación de correo, plantillas, URLs de
+retorno- contemplan los dos estados en vez de dar uno por hecho, igual que ya
+hace el código de registro.
+
+### 2026-09-02 - Un HUD de juego que no cabía en un teléfono
+
+**Qué pasó.** La cabecera del modo carrera ponía tres bloques en una fila con
+`justify-between`. Solo el de gasolina medía 160 px; los tres sumaban más de
+390, así que en un móvil la velocidad quedaba fuera de la pantalla. Y el
+marcador con los nombres estaba directamente escondido con `hidden sm:block`,
+que en el modo con amigos es esconder lo único que se quiere mirar.
+
+**Por qué está mal.** Una superposición sobre un lienzo no tiene el `body` que
+la avise: no desborda la página, se sale del cuadro y ya. Ninguna prueba de
+"desplazamiento horizontal" lo detecta.
+
+**Qué se hace.** Las superposiciones de pantalla completa se miran a 390 px como
+cualquier otra pantalla, y lo que se esconda en móvil tiene que ser algo que
+sobre ahí, no algo que estorbe al programar. En `examia` la comprobación vive en
+`scripts/verificar-juego.mjs`.
