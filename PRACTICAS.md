@@ -999,3 +999,66 @@ lejos de ESTE tramo no impide caer encima del de al lado.
 función (`despejado(punto, guarda)`) y todo lo que se coloca pasa por ella. La
 regla anotada no evitó repetir el fallo; la función sí, porque no hay forma de
 colocar algo sin llamarla.
+
+### 2026-09-03 - Suavizar dos cosas distintas con la misma constante
+
+**Qué pasó.** La inclinación del coche en la carrera de `examia` era
+`peralte + volante * k`, todo junto y suavizado de una vez. Se veía raro y no
+había forma de arreglarlo tocando el número: subiéndolo, el peralte se pasaba;
+bajándolo, la carrocería no se movía.
+
+**Por qué está mal.** Eran dos cosas con ritmos opuestos metidas en una
+variable. El peralte es **el mundo** y el coche tiene que seguirlo al instante,
+porque va apoyado en él; el balanceo es **la suspensión** y tiene que llegar
+tarde, porque una carrocería tarda en tumbarse. Un solo suavizado no puede ser
+rápido y lento a la vez, así que las dos quedaban mal a la vez.
+
+**Qué se hace.** Cuando dos aportes tienen constantes de tiempo distintas, van
+en variables distintas aunque acaben sumándose en el mismo sitio. Y si un valor
+"no se arregla tocando el número", el problema no es el número: es que hay dos
+cosas ahí dentro.
+
+### 2026-09-03 - Orientar con `lookAt` algo que va apoyado en una superficie
+
+**Qué pasó.** El mismo coche se orientaba con `lookAt` y luego se le sumaba el
+peralte con un `rotateZ`.
+
+**Por qué está mal.** `lookAt` alinea contra la vertical del **mundo**. En una
+curva peraltada que además sube, el coche quedaba torcido respecto al asfalto
+que pisaba. El giro extra tapa el error en llano y lo deja a la vista en cuanto
+hay pendiente y peralte a la vez, que es justo donde se mira.
+
+**Qué se hace.** Lo que va apoyado en una superficie se orienta con la **base**
+de esa superficie -su tangente, su normal y su lateral- y no con la vertical del
+mundo. En `examia` los coches rivales ya lo hacían bien: el proyecto se
+contradecía a sí mismo, que es la señal de que uno de los dos está mal.
+
+### 2026-09-03 - `FAQPage` con respuestas que no están en la página
+
+**Qué pasó.** Al añadir datos estructurados de preguntas frecuentes a `examia`,
+el primer impulso fue declararlas solo en el JSON-LD, que es donde las lee
+Google.
+
+**Por qué está mal.** Google exige que el contenido de un `FAQPage` esté visible
+en la página. Declarar respuestas que el visitante no puede leer es una de las
+cosas que penaliza explícitamente, así que el dato estructurado pasa de ayudar a
+restar.
+
+**Qué se hace.** Todo dato estructurado se declara **y** se pinta. Cuando el
+texto vive en dos sitios -el grafo y el HTML- los dos llevan un comentario que
+avisa de que el otro existe, porque si no, el día que alguien retoque uno solo
+la penalización llega sin que nadie sepa de dónde.
+
+### 2026-09-03 - Un botón dentro de un flex sin `shrink-0`
+
+**Qué pasó.** El botón "Generar simulacro" compartía un contenedor flex con una
+línea de texto larga. El flex lo encogió hasta partir el texto en dos líneas
+dentro de una pastilla estrecha.
+
+**Por qué está mal.** Se lee como un fallo de maquetación, y lo es. Además pasa
+solo en el ancho concreto donde el texto de al lado ocupa lo justo, así que no
+sale en una revisión rápida.
+
+**Qué se hace.** Un botón junto a texto flexible lleva `shrink-0` y
+`whitespace-nowrap`. Y al revisar una pantalla se mira **el botón**, no solo si
+la página cabe: una prueba de desbordamiento horizontal no detecta esto.
