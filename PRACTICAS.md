@@ -847,3 +847,73 @@ la avise: no desborda la página, se sale del cuadro y ya. Ninguna prueba de
 cualquier otra pantalla, y lo que se esconda en móvil tiene que ser algo que
 sobre ahí, no algo que estorbe al programar. En `examia` la comprobación vive en
 `scripts/verificar-juego.mjs`.
+
+### 2026-09-03 - `lookAt` apunta el +Z, y el modelo miraba a -Z
+
+**Qué pasó.** El coche del jugador en la carrera de `examia` corría marcha
+atrás: alerón delantero de cara a la cámara y pilotos traseros apuntando al
+horizonte. Se orientaba con `objeto.lookAt(posicion + tangente)`, y el
+monoplaza está modelado con el morro en -Z.
+
+**Por qué está mal.** `Object3D.lookAt` apunta el eje **+Z** al objetivo. Solo
+las cámaras miran por -Z, que es de donde viene la confusión. Los coches
+rivales del mismo archivo ya lo tenían bien -arman su base con la tangente
+NEGADA- así que el proyecto se contradecía a sí mismo y nadie lo vio.
+
+**Por qué costó verlo.** El coche es casi simétrico de lejos y la cámara va
+siempre detrás: nunca se ve de perfil. Compilaba, corría a 120 cuadros y las
+pruebas pasaban.
+
+**Qué se hace.** Cuando dos sitios del mismo repo orientan la misma malla, se
+comparan antes de dar por bueno el que se está escribiendo. Y de un cambio
+visual se mira una captura, que es lo único que lo habría enseñado.
+
+### 2026-09-03 - Medir una distancia contra el trozo equivocado
+
+**Qué pasó.** Los edificios del escenario estaban a doce metros del arcén y
+tapaban el horizonte. Se mandaron "lejos" -a ciento cinco metros- y seguían
+saliendo encima de la pista.
+
+**Por qué está mal.** Es un circuito **cerrado**. El trazado entero cabe en
+trescientos por seiscientos metros, así que "ciento cincuenta metros al lado de
+este tramo" aterriza justo sobre otro tramo. La distancia se estaba midiendo
+contra la muestra de la que colgaba cada edificio, y eso no dice nada sobre si
+estorba: hay que medirla contra **toda** la pista.
+
+**Qué se hace.** Cuando algo se coloca "lejos de X" y X es una figura cerrada,
+la distancia se mide contra la figura entera, no contra el punto del que cuelga.
+En `examia` es un centro y un radio para lo alto, y una comprobación contra una
+muestra de cada diez para lo bajo.
+
+### 2026-09-03 - Un arnés que solo corría en la máquina de quien lo escribió
+
+**Qué pasó.** `verificar-carrera.mjs` hablaba con la API de gestión de Supabase
+usando `SB_TOKEN`, un token personal que no está en el entorno del proyecto ni
+lo trae `vercel env pull`.
+
+**Por qué está mal.** Un arnés que no arranca en otra máquina no es una prueba
+del proyecto, es una nota personal. Y no falla diciendo "falta un token": falla
+con un error de red raro en la primera consulta.
+
+**Qué se hace.** Las pruebas usan lo que ya usa la app -aquí `POSTGRES_URL` por
+Postgres directo, como `verificar-juego.mjs`- y nunca credenciales que solo
+existen en un portátil. Si hace falta una llave especial, el arnés lo dice y
+para, en vez de reventar por dentro.
+
+### 2026-09-03 - Esperas de reloj para medir tiempo de juego
+
+**Qué pasó.** Al correr el arnés de la carrera sin ventana, fallaban "la
+pregunta aparece al agotarse la gasolina" y "pulsar espacio enciende el turbo".
+No había ningún fallo: el bucle limita el delta a 0.05 s por cuadro -para que
+una pestaña dormida no teletransporte el coche al despertar- y dibujando por
+software se va a diez cuadros por segundo, así que el juego avanza **medio
+segundo por cada segundo de reloj**.
+
+**Por qué está mal.** Se arregló primero la espera del turbo, y entonces falló
+la de la gasolina; arreglada esa, habría fallado la siguiente. Parchear espera
+por espera es redescubrir el mismo fallo en cada paso.
+
+**Qué se hace.** Cuando el reloj del arnés y el del juego corren a ritmos
+distintos, se escala el reloj **entero** una vez y se documenta la razón. Y las
+medidas de rendimiento no se juzgan sin GPU: se imprimen y se saltan, porque ahí
+se estaría midiendo el render por software.
