@@ -1127,3 +1127,44 @@ versalitas encima de cada titular, las flechas pegadas al texto de los enlaces
 (`Ver el catálogo →`) y las cadenas de datos unidas por puntos medios
 (`Sin registro · sin tarjeta · 8 pruebas gratis`). Lo que dicen ya lo dice el
 titular o el párrafo de al lado.
+
+### 2026-09-03 - `loading="lazy"` en el contenido principal
+
+**Qué pasó.** La portada de `examia` abre con una pared de 49 insignias de
+certificación: es lo primero que se ve y lo que contesta la única pregunta que
+trae quien llega, que es si su examen está. La mitad de la pared salía en
+blanco durante los primeros segundos.
+
+**Por qué costó encontrarlo.** Las imágenes SÍ acababan cargando, así que todo
+lo que se midió decía que estaba bien: las 49 URLs respondían 200, ninguna
+petición fallaba, y `naturalWidth` era mayor que cero en todas al comprobarlo
+unos segundos después. Se persiguió durante tres intentos como si fuera un
+problema de contraste -se cambió el fondo de la celda dos veces- porque el
+síntoma era idéntico: celdas vacías.
+
+**Por qué está mal.** `lazy` está para lo que hay debajo del pliegue. Puesto en
+el contenido principal retrasa exactamente lo que decide si alguien se queda, y
+no lo detecta ninguna comprobación de red porque no es un fallo de red: es una
+carrera contra el momento en que la persona mira.
+
+**Qué se hace.** Lo que está arriba se pide `eager` y con `fetchPriority`
+alto; `lazy` solo por debajo del pliegue. Y la prueba no comprueba que la
+imagen exista, comprueba que **esté pintada al abrir**: cuántas de las que hay
+tienen `complete && naturalWidth > 1` sin darle tiempo extra.
+
+### 2026-09-03 - Arte de terceros sobre un fondo que no es el suyo
+
+**Qué pasó.** Las insignias de Credly -que son de AWS, Microsoft, la CNCF, no
+nuestras- vienen de dos mundos: las de GitHub o CompTIA son casi negras sobre
+transparente y las de Google Cloud o Cisco son casi blancas. Sobre la pizarra
+oscura de examia desaparecían las primeras; al probar con blanco puro
+desaparecieron las segundas, veintiuna de cuarenta y nueve.
+
+**Por qué está mal.** No hay un fondo que salve a las dos familias, y cuando la
+solución es ponerle una placa detrás a cada imagen, lo que está mal es el
+fondo. Un sitio cuyo contenido principal es material ajeno tiene que elegir el
+suelo que ese material espera, no al revés.
+
+**Qué se hace.** El suelo del sitio pasó a ser papel claro, y la celda de la
+pared es un **gris medio**: es el único valor donde se ven tanto el arte oscuro
+como el blanco. La elegida sube a blanco, que de paso es lo que la distingue.
