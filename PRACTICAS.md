@@ -1168,3 +1168,79 @@ suelo que ese material espera, no al revés.
 **Qué se hace.** El suelo del sitio pasó a ser papel claro, y la celda de la
 pared es un **gris medio**: es el único valor donde se ven tanto el arte oscuro
 como el blanco. La elegida sube a blanco, que de paso es lo que la distingue.
+
+### 2026-09-04 - Un grupo por agente en `robots.txt` no hereda del comodín
+
+**Qué pasó.** El `robots.txt` de examia tenía un grupo `User-Agent: *` con diez
+`Disallow` -`/api/`, `/salas`, `/crear`, `/cuenta`…- y debajo, un grupo por cada
+rastreador de IA con un `Allow: /` a secas, con el comentario "los buscadores
+con IA leen llms.txt antes que el HTML" al lado.
+
+**Por qué está mal.** Un rastreador elige **el grupo más específico que le
+aplica y descarta todos los demás**. GPTBot, ClaudeBot y PerplexityBot leían
+solo su grupo, así que el `Allow: /` les abría entera la parte con sesión: justo
+lo contrario de lo que decía la lista de arriba. Y no se ve leyendo el archivo,
+porque las dos mitades por separado dicen lo correcto.
+
+**Qué se hace.** La lista de rutas privadas se declara **una vez** y se reparte
+a todos los grupos, el comodín incluido. Nombrar a un agente aparte solo sirve
+para darle un trato distinto; si el trato es el mismo más un matiz, el matiz no
+se escribe borrando el resto. Y se comprueba pidiendo el `robots.txt` servido,
+no leyendo el código que lo genera.
+
+### 2026-09-04 - `lastmod` puesto con la hora de la consulta
+
+**Qué pasó.** El sitemap de examia generaba `lastModified: new Date()` para las
+87 URLs: cada vez que se pedía, las 83 fichas del catálogo juraban haber
+cambiado en ese instante.
+
+**Por qué está mal.** Es el mismo fallo que el `lastmod` congelado de AGD, por
+el otro extremo. Una fecha vieja pide que el buscador no vuelva; una fecha que
+siempre es "ahora mismo" le enseña a no mirar el campo, y entonces se pierde
+también para las páginas que sí cambiaron. Un dato que siempre dice lo mismo no
+es un dato.
+
+**Qué se hace.** Una constante de fecha por cada cosa que puede cambiar, y
+declarada **donde viven los datos que fecha**: `CATALOGO_ACTUALIZADO` está en
+`certificaciones.ts`, al lado de las 83 fichas, para que se toque en el mismo
+commit que las cambia. En el archivo del sitemap se olvidaría.
+
+### 2026-09-04 - Una placa cuadrada estirada por su contenedor
+
+**Qué pasó.** El icono de las dos puertas del tablero de examia iba dentro de un
+`<span className="inline-flex rounded-xl bg-acento-suave p-2.5">`. En una
+tarjeta en columna salía como una **banda azul de punta a punta** con el icono
+perdido a la izquierda, y era lo primero que se veía al entrar con cuenta.
+
+**Por qué está mal.** `inline-flex` dice cómo se colocan los hijos del elemento,
+no cómo lo colocan a él: dentro de un `flex-col`, el hijo se estira a lo ancho
+porque `align-items` vale `stretch`. Leído en el código parece una placa
+cuadrada, y compila y despliega sin quejarse.
+
+**Qué se hace.** Todo hijo de un contenedor flex que tenga que conservar su
+tamaño lleva `self-start` (o `self-center`). Es el mismo par que el `shrink-0`
+del botón junto a texto flexible: dentro de un flex, un elemento no mide lo que
+mide su contenido salvo que se diga.
+
+### 2026-09-04 - La reforma de la portada no llegó a la aplicación
+
+**Qué pasó.** El 3 de septiembre se quitaron de la portada de examia los tres
+tics que hacen que una página se lea como plantilla: el rótulo en versalitas
+encima de cada titular, las flechas pegadas al texto de los enlaces y las
+cadenas de datos unidas por puntos medios. La aplicación -tablero, Estudiar,
+Jugar, la ficha de un banco, el perfil- se quedó con los tres. Entrar con cuenta
+llevaba a una pantalla escrita con las maneras que la portada acababa de
+abandonar.
+
+**Por qué está mal.** Una decisión de estilo que se aplica en una pantalla es un
+retoque; aplicada en todas es el sistema visual. Mientras convivan las dos, cada
+pantalla nueva se escribe copiando la que el autor tenga más cerca, y la
+diferencia se ensancha en vez de cerrarse. Además, la parte que quedó vieja es
+la que ve quien ya pagó con su registro.
+
+**Qué se hace.** Un cambio de criterio visual se termina en la misma pasada en
+todas las pantallas, o no se hace. La forma práctica de que se termine es que el
+criterio viva en **una pieza** -aquí, un componente de sección y un marco de
+acceso compartidos- en vez de en quince pantallas que lo repiten. Y el criterio
+se escribe en el `AGENTS.md` del repo: si solo está en la cabeza de quien lo
+decidió, la pantalla dieciséis vuelve a empezar.
