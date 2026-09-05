@@ -1244,3 +1244,55 @@ criterio viva en **una pieza** -aquí, un componente de sección y un marco de
 acceso compartidos- en vez de en quince pantallas que lo repiten. Y el criterio
 se escribe en el `AGENTS.md` del repo: si solo está en la cabeza de quien lo
 decidió, la pantalla dieciséis vuelve a empezar.
+
+### 2026-09-05 - El comentario decía que los contrastes estaban medidos
+
+**Qué pasó.** La cabecera de `globals.css` de examia afirmaba que "todos los
+tokens de texto pasan de 4.5x" sobre el papel y sobre la superficie blanca.
+Midiéndolos: `apagado` daba 4.21x sobre el papel, `logro` 4.13x sobre la
+superficie alta y `aviso` 4.22x. Y la nota se olvidaba del tercer suelo, el
+gris de `superficie-alta`, que es justo donde peor van los tres.
+
+**Por qué está mal.** Un comentario que afirma una medida vale como la medida:
+nadie vuelve a comprobar lo que ya está escrito con un número al lado. `apagado`
+es el gris de los pies de figura, el del pie de la portada y el de los datos de
+las tarjetas -o sea, la mitad del texto pequeño del sitio-, y `logro` acaba en
+la pastilla de nivel y en el puesto del marcador sobre fondos claros.
+
+**Qué se hace.** El comentario que afirma un contraste lleva el número y los
+suelos contra los que se midió, y son **todos** los suelos que la paleta pinta,
+no los dos más obvios. Aquí bajaron `apagado` a 0.52, `logro` a 0.53 y `aviso`
+a 0.52 en la L de oklch: el tono no se mueve, el mínimo pasa a 4.55x.
+
+### 2026-09-05 - La etiqueta de la línea recortada sobre el suelo equivocado
+
+**Qué pasó.** `.corte[data-corte]::after` tapa el trazo detrás de su número con
+un rectángulo, y ese rectángulo iba pintado con `var(--color-fondo)`, el papel.
+La única línea con número del sitio vive dentro de una tarjeta **blanca** -el
+panel del examen elegido en la portada-, así que el "72% para aprobar" salía
+con una placa gris a su espalda sobre el blanco.
+
+**Por qué está mal.** Un pseudoelemento no sabe sobre qué lo van a poner. Fijar
+ahí el color del suelo funciona hasta la primera vez que la pieza se usa dentro
+de otra cosa, y entonces falla en silencio: compila, y solo se ve mirando la
+pantalla.
+
+**Qué se hace.** El suelo se declara desde fuera y el pseudoelemento lo lee, con
+el papel como valor por defecto: `var(--corte-suelo, var(--color-fondo))`.
+`.tarjeta` y `.tarjeta-accion` lo declaran solas; una superficie blanca hecha
+con utilidades sueltas añade `sobre-superficie`.
+
+### 2026-09-05 - Un catálogo de 83 que decía 82 en dos sitios
+
+**Qué pasó.** La portada de examia decía "el catálogo tiene las 82 con su
+temario" y la descripción de `/certificaciones` decía "Simulacros para 82
+certificaciones", mientras el resto de la página contaba 83 leyendo
+`CERTIFICACIONES.length`. Dos frases escritas a mano el día que eran 82.
+
+**Por qué está mal.** Es "un dato, dos lugares" otra vez, y del lado peor: una
+de las dos frases es la descripción que sale en el resultado de búsqueda, donde
+la cifra que no cuadra con la página es lo primero que resta confianza.
+
+**Qué se hace.** Una cifra que se puede contar no se escribe: se cuenta. Si el
+texto tiene que decir cuántas cosas hay, sale de la lista de cosas, y la
+descripción de la página se interpola como cualquier otra cadena.
