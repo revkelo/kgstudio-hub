@@ -1522,3 +1522,39 @@ servicio, y qué pasa en la hora en que el equipo no está con su dueño. Un
 sitio que explica algo técnico gana más con una foto de eso que con una
 ilustración, pero al revés también: el dibujo del corte nombra las piezas, que
 es lo que la foto no puede hacer. Van juntos, no uno en lugar del otro.
+
+### 2026-09-08 - Borrar el final de un comentario CSS y tumbar la hoja entera
+
+**Qué pasó.** Al quitar la seccion de la tarjeta de `reinicia` sobraron unos
+comentarios que describian reglas ya borradas, y se limpiaron con expresiones
+regulares. Una de ellas casaba el final de un comentario de varias lineas y
+dejaba viva la primera:
+
+```
+  /* Suelta, la tarjeta se estiraría a todo el ancho y perdería la escala de
+}
+```
+
+Ese `/*` sin su `*/` se come todo lo que viene detras. La hoja seguia siendo
+CSS valido para el navegador, que simplemente ignoro las 150 lineas
+siguientes: la seccion nueva salia con la altura de su contenido en vez de
+seis pantallas, y las capas del dibujo aparecian todas a la vez.
+
+**Por qué costó verlo.** No hay error en la consola ni recurso roto, porque no
+falta ningun archivo: la hoja carga entera y con 200. El sintoma fue que unos
+estilos recien escritos "no se aplicaban", que es justo lo que hace pensar en
+un selector mal puesto y no en algo que paso trescientas lineas antes. Se
+perdio un rato buscando en el sitio equivocado.
+
+**Qué se hace.** Un comentario no se borra por trozos: o se quita entero o se
+deja. Y despues de tocar una hoja de estilos a mano se cuentan los pares, que
+cuesta una linea:
+
+```
+abre /*  = N   cierra */ = N
+llaves { = M   llaves } = M
+```
+
+Si los dos numeros de una fila no coinciden, hay CSS muerto aunque la pagina
+cargue. Vale lo mismo para las llaves: una de menos se traga el resto del
+archivo igual de callada.
