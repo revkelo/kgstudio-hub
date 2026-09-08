@@ -1296,3 +1296,229 @@ la cifra que no cuadra con la página es lo primero que resta confianza.
 **Qué se hace.** Una cifra que se puede contar no se escribe: se cuenta. Si el
 texto tiene que decir cuántas cosas hay, sale de la lista de cosas, y la
 descripción de la página se interpola como cualquier otra cadena.
+
+### 2026-09-05 - Un bloque rediseñado por fuera y por dentro no
+
+**Qué pasó.** La portada de `itep` se rehízo entera con su propio lenguaje
+-papel gris verdoso, rojo de hoja de respuestas, tres tipografías- y el
+desplegable de los doce tiempos verbales se quedó con las clases del examen que
+había antes: tarjetas azul claro, títulos azules y explicaciones en verde
+azulado, servidas por `styles.css`. El `summary` sí se había restilado, así que
+plegado se veía perfecto.
+
+**Por qué está mal.** Era el único bloque de la página que parecía de otro
+sitio, y solo se ve abriéndolo. Ninguna prueba lo miraba, y sus reglas
+`.verb-tense-*` y `.vt-*` seguían cargando aunque ya no las usara nadie más.
+
+**Qué se hace.** Cuando se rediseña una pantalla, se abre **todo** lo que está
+plegado antes de darla por buena: un `details`, una pestaña, un panel que solo
+aparece tras pulsar. Y al cambiar el lenguaje visual de una pantalla se busca
+qué clases del diseño viejo siguen usándose dentro, en vez de fiarse de que el
+contenedor ya tiene las nuevas.
+
+### 2026-09-05 - Una tarjeta de compartir dibujada a mano, con cifras que el examen desmiente
+
+**Qué pasó.** El `og.png` de `itep` -la imagen que sale al pegar el enlace en
+WhatsApp, LinkedIn o X- listaba las cinco secciones con sus minutos y decía
+"Listening 20 min" y "Speaking 5 min". El examen dice 6 y 4. Estaba dibujada a
+mano una vez y nadie la volvió a mirar.
+
+**Por qué está mal.** El enlace circula entre estudiantes por grupos de clase,
+así que esa imagen es lo primero que ve alguien del sitio, antes que el título
+y antes que la página. Y es el peor sitio para un dato falso, porque nadie lo
+compara con nada: no hay una segunda cifra al lado que lo contradiga.
+
+**Qué se hace.** La tarjeta se genera, no se dibuja: `scripts/generar-og.mjs`
+saca los minutos de `public/data/exam-data.json` y `npm run og` la rehace.
+En general, una imagen que muestra datos del producto se construye desde la
+misma fuente que el producto, igual que ya se hace con el texto. Si eso no es
+posible, no lleva datos.
+
+### 2026-09-08 - Una portada y su aplicacion vestidas como dos productos
+
+**Qué pasó.** La portada de `itep` era un cuadernillo de papel: fondo gris
+azulado, tinta navy, botones de esquina recta y un lápiz rojo para señalar. Al
+pulsar "Start exam mode" aparecía otra cosa: campo azul de pared a pared,
+tarjetas celestes de esquina muy redonda, pastillas y amarillo. Ni un color, ni
+un radio, ni una tipografía en común.
+
+**Por qué está mal.** Nadie decidió esa frontera: la portada se escribió
+después y con otro criterio. Quien llega se cree que el simulador es la página
+que está viendo, y al entrar aterriza en un sitio que no reconoce. Y no falla
+nada: las dos mitades compilan, pasan las pruebas y se ven bien por separado.
+Por separado es exactamente como se habían mirado siempre.
+
+**Qué se hace.** Manda la pantalla donde se pasa el tiempo, no la que se
+escribió al final: aquí el examen, que es donde se está una hora. La portada se
+llevó a su campo azul, sus tarjetas y sus pastillas, y el examen adoptó la
+tipografía de la portada, que era la mitad del salto. Cuando dos pantallas del
+mismo producto se diseñan en momentos distintos, se abren las dos a la vez y se
+comparan; leer una sola no enseña nunca que son dos.
+
+### 2026-09-08 - Una lista de precios que las preguntas frecuentes desmentían
+
+**Qué pasó.** `reinicia` tenía tres precios en las tarjetas de servicio, dos
+más tachados en la jornada, un `priceRange` y tres `priceSpecification` en el
+JSON-LD, y los mismos importes impresos en el reverso de la tarjeta de
+contacto. Cuatro secciones más abajo, la pregunta "¿Cuánto cuesta?" respondía
+"no pongo una lista que después no se cumpla".
+
+**Por qué está mal.** Las dos cosas eran ciertas cuando se escribieron y nadie
+las leyó juntas. Un precio en el JSON-LD además no es decorativo: Google lo
+publica en el resultado de búsqueda, así que la cifra vieja sigue viva mucho
+después de bajarla de la página.
+
+**Qué se hace.** El importe vive en tres sitios -la página, el `llms.txt` y el
+schema- más el reverso de la tarjeta, que se imprime. Se quitan los cuatro o no
+se quita ninguno. Y al cambiar una condición comercial, se busca por sus
+palabras en todo el repo antes de cerrar: la contradicción estaba escrita en el
+mismo archivo.
+
+### 2026-09-08 - Dos `twitter:card` en la misma cabecera
+
+**Qué pasó.** `reinicia` declaraba `twitter:card` como `summary_large_image` y
+cuatro líneas más abajo lo volvía a declarar como `summary`. Gana el segundo,
+así que el enlace se compartía con la tarjeta pequeña teniendo un `og.png` de
+1200x630 hecho para la grande.
+
+**Por qué está mal.** No se ve desde el sitio, no rompe nada y las dos líneas
+leídas por separado son correctas. Solo se nota pegando el enlace en WhatsApp,
+que es justo lo que no se hace al terminar de escribir el `<head>`.
+
+**Qué se hace.** Una etiqueta `meta` con el mismo nombre no se repite nunca. Al
+tocar la cabecera, se cuenta: `grep -c 'twitter:card'` tiene que dar 1.
+
+### 2026-09-08 - Etiquetas dentro de un SVG que encogen con el dibujo
+
+**Qué pasó.** El corte del portátil de `reinicia` lleva los nombres de las
+piezas escritos dentro del SVG. A 1280 px se leen; a 390 px el dibujo se
+escala a un tercio y las letras bajaban a unos ocho píxeles.
+
+**Por qué está mal.** El primer impulso es subirles el tamaño, y no sirve: el
+hueco donde caben se escala igual, así que unas letras más grandes se pisan
+entre ellas en vez de leerse.
+
+**Qué se hace.** En estrecho las llamadas se ocultan y quien nombra las piezas
+es el pie de la figura y la lista de al lado, que son texto de verdad y se
+adaptan. El `<title>` y el `<desc>` del SVG se quedan, así que quien lo oye con
+un lector de pantalla no pierde nada.
+
+### 2026-09-08 - Una llave de API a un paso de publicarse, en una variable `VITE_`
+
+**Qué pasó.** `itep` llamaba a la API de Groq desde el propio navegador, con la
+llave leída de `import.meta.env.VITE_GROQ_API_KEY`, en tres sitios: transcribir
+la grabación de Speaking y evaluar Speaking y Writing.
+
+**Por qué está mal.** Vite sustituye en el paquete que descarga el visitante
+**toda** variable que empiece por `VITE_`, con su valor literal. La llave nunca
+se filtró por un motivo incómodo: la variable no estaba puesta en ninguna parte,
+así que las tres funciones salían por un `if (!key) return` y no evaluaban nada.
+O sea que la trampa seguía armada y el único gesto natural para "arreglar
+Speaking" -ponerla en Vercel- era justo el que publicaba la llave.
+
+**Qué se hace.** Una llave de terceros no se lee nunca desde código de cliente,
+y en Vite eso quiere decir que **no lleva el prefijo `VITE_`**: sin prefijo no
+llega al paquete. En un sitio estático se pone delante una función de servidor
+-en Vercel basta una carpeta `api/`- y el navegador habla con ella, como ya
+hacen parla, examia y monetiq con sus rutas. `test/calificacion.test.mjs` lo
+comprueba con un grep sobre `src/` y sobre el paquete construido.
+
+### 2026-09-08 - Una nota de respaldo que puntuaba el gesto, no la respuesta
+
+**Qué pasó.** Cuando no había nota del modelo, `itep` calculaba Writing y
+Speaking con una "nota de avance": 72 sobre 100 por haber grabado las dos
+consignas, y 72 por llegar al mínimo de palabras. Esos puntos entraban enteros
+en la banda CEFR del informe. Como la llave nunca estuvo puesta, ese respaldo no
+era un respaldo: era el único camino, siempre. Sesenta segundos de silencio
+valían igual que una respuesta perfecta, y dos de las cinco secciones se
+regalaban.
+
+**Por qué está mal.** El sitio promete una banda "based on how you actually
+answered", y estaba dando el 40 por ciento de ella por apretar un botón. Además
+el informe decía "No Speaking feedback available" en la misma página donde ya
+había contado esos puntos: la contradicción estaba impresa y nadie la leyó junta.
+
+**Qué se hace.** Si no se puede medir, no se puntúa: la sección sale como *Not
+scored*, la banda se reparte entre las que sí se midieron, y el informe dice
+cuántas cubre y por qué faltan las otras. Un valor de respaldo que se activa
+cuando algo falla tiene que verse distinto de una medición de verdad; si se
+mezcla con las buenas, el fallo deja de existir para quien lee el resultado.
+
+### 2026-09-08 - Calificar la pronunciación leyendo una transcripción
+
+**Qué pasó.** La rúbrica que se le mandaba al modelo pedía, entre otras notas,
+una de `pronunciation`. Lo único que recibía el modelo era el texto de la
+transcripción. El informe la imprimía junto a las que sí se miden, con el mismo
+aspecto.
+
+**Por qué está mal.** No es una nota mala, es una nota de algo que nadie
+escuchó. Y puesta al lado de gramática y vocabulario no hay forma de distinguir
+la que sale de un dato de la que sale de la nada.
+
+**Qué se hace.** Se le pide al modelo solo lo que puede juzgar con lo que se le
+dio, y se le dice explícitamente que no valore pronunciación ni acento. En
+general: antes de añadir una casilla a un informe, mirar qué entra de verdad en
+la función que la calcula.
+
+### 2026-09-08 - Un `.env.local` con los valores puestos a `[SENSITIVE]`
+
+**Qué pasó.** Al buscar una llave de Groq para probar, `examia/.env.local` tenía
+`GROQ_API_KEY=[SENSITIVE]`, la cadena literal. `autoreel/.env.local` estaba
+igual, pero entero: la URL de Supabase, la de Postgres y las llaves, los once
+caracteres de `[SENSITIVE]` en todas. Por eso autoreel no arrancaba, con un
+`Invalid supabaseUrl` que no decía nada de esto.
+
+**Por qué está mal.** Es lo que queda al pegar en un archivo la salida de una
+herramienta que censura los secretos al imprimirlos. Y no falla como falta un
+valor: falla como un valor incorrecto, que es mucho más difícil de leer -una
+llave de once caracteres pasa cualquier comprobación de "¿hay llave?" y muere
+después con un 401.
+
+**Qué se hace.** Un `.env.local` se rehace con `vercel env pull`, no copiando de
+una consola. Y una comprobación de credencial mira algo más que si está vacía:
+que empiece por su prefijo (`gsk_`, `https://`) y que tenga la longitud que
+tiene.
+
+### 2026-09-08 - El servidor de desarrollo no servía lo que sí sirve producción
+
+**Qué pasó.** Las funciones de `api/` las publica Vercel sola, pero el servidor
+de Vite no sabe nada de esa carpeta: en local `/api/...` devolvía el
+`index.html`. Speaking se habría comportado distinto en la máquina de quien lo
+escribe y en producción.
+
+**Por qué está mal.** Es la peor asimetría posible, porque el sitio donde se
+prueba es el que miente. Y no avisa: `fetch('/api/estado')` recibe un 200 con
+HTML dentro y `res.json()` revienta con un error de parseo que apunta a
+cualquier lado menos a la causa.
+
+**Qué se hace.** Un complemento en `vite.config.js` monta los mismos archivos de
+`api/` como middleware, importándolos, sin una segunda copia de la lógica. Si la
+plataforma añade algo que el servidor de desarrollo no tiene, se le añade, en
+vez de comprobarlo solo después de desplegar.
+
+### 2026-09-08 - Una foto de un banco de imagenes se descarga, no se enlaza
+
+Al ilustrar `reinicia` con fotos de Unsplash, lo cómodo era pegar la URL de
+`images.unsplash.com` en el `src`. Tres razones para no hacerlo, y valen para
+cualquier sitio de la zona:
+
+1. Es una petición a un dominio de un tercero que se entera de quién visita el
+   sitio, sin que el visitante lo haya elegido.
+2. Es un enlace que se rompe el día que ese banco cambie de reglas, de formato
+   de URL o retire la foto, y se rompe en silencio: queda un hueco.
+3. Se pierde el control del tamaño y del formato que se sirve.
+
+**Qué se hace.** Se descargan a `img/` del propio repo, al ancho que de verdad
+se va a mostrar, y se comprueba la licencia antes (la de Unsplash permite uso
+comercial y no exige atribución; otras sí la exigen, y entonces va en el pie o
+en el README). Cada `<img>` lleva `width` y `height` para que el navegador
+reserve el hueco y la página no dé el salto al cargar, `loading="lazy"` si no
+está en la primera pantalla, y un `alt` que describa lo que se ve en vez de
+repetir el titular que tiene al lado.
+
+Y una foto solo entra si hace un trabajo que el texto no hacía. En reinicia
+fueron tres: cómo se ve un equipo por dentro, que hay unas manos detrás del
+servicio, y qué pasa en la hora en que el equipo no está con su dueño. Un
+sitio que explica algo técnico gana más con una foto de eso que con una
+ilustración, pero al revés también: el dibujo del corte nombra las piezas, que
+es lo que la foto no puede hacer. Van juntos, no uno en lugar del otro.
