@@ -1558,3 +1558,82 @@ llaves { = M   llaves } = M
 Si los dos numeros de una fila no coinciden, hay CSS muerto aunque la pagina
 cargue. Vale lo mismo para las llaves: una de menos se traga el resto del
 archivo igual de callada.
+
+### 2026-09-13 - Mudar un esquema y dejar atrás todo lo que lo nombra
+
+**Qué pasó.** El 2026-09-01 los dos esquemas de `arriendos` -`core` y
+`rentals`- se fundieron en uno solo, `arriendos`. La aplicación se actualizó
+entera y quedó funcionando. Lo que rodea a la aplicación no:
+
+- El respaldo nocturno hacía `pg_dump --schema=core --schema=rentals`. Llevaba
+  doce noches saliendo con `pg_dump: error: no matching schemas were found`.
+  Doce días sin un solo respaldo, en un proyecto de Supabase en plan libre que
+  no tiene recuperación a un punto en el tiempo.
+- `supabase/config.toml` seguía exponiendo `core` y `rentals` en la API. El
+  proyecto en la nube sí expone `arriendos`, así que nada se notaba; pero el
+  primer `supabase config push` habría dejado a PostgREST sin el esquema y
+  tumbado la aplicación completa.
+- Los 18 scripts de `scripts/` construían el cliente con el esquema viejo: el
+  arnés de pruebas y el respaldo manual reventaban en la primera línea.
+- `npm run db:types` generaba los tipos de dos esquemas inexistentes.
+
+**Por qué costó verlo.** Porque la aplicación andaba. Un cambio de esquema se
+siente terminado cuando la pantalla responde, y la pantalla es justo la parte
+que sí se había migrado. Lo demás -el cron de respaldo, un archivo de
+configuración que solo actúa cuando alguien lo empuja, los scripts que uno
+corre cada tantas semanas- no tiene quien lo mire a diario.
+
+Peor: la comprobación que existía para gritar esto se quedó callada. El script
+que compara el respaldo restaurado contra producción lista las tablas a mano y,
+si una no existe en producción, la ignora y sigue. Con los nombres viejos no
+encontró ninguna, ignoró las dieciocho, y terminó en verde sobre nada.
+
+**Qué se hace.** Renombrar un esquema no es un `ALTER`: es un barrido por todo
+lo que escribe su nombre.
+
+```
+grep -rn "nombre_viejo" . --exclude-dir=node_modules --exclude-dir=.next
+```
+
+Se revisa lo que sale, línea por línea, y se separa lo que es un nombre de
+esquema de lo que solo se parece: en este repo la columna `project` vale
+`'rentals'` y los buckets se llaman `rentals-photos`; ninguno de los dos se
+toca. Y lo que hay que mirar aunque el `grep` no lo cante: `.github/workflows`,
+`supabase/config.toml`, los scripts de `package.json` y los documentos.
+
+Una comprobación que puede ignorar todo lo que mira necesita un suelo: si no
+comprobó nada, falla. Ahora `comparar-respaldo.mjs` lo dice.
+
+### 2026-09-13 - Pruebas que caducan solas: el reloj y los techos fijos
+
+**Qué pasó.** Con el arnés de `arriendos` corriendo otra vez, tres pruebas
+fallaban sin que el producto tuviera nada roto:
+
+- `probar-mora-visible` armaba la fecha de vencimiento con `setUTCDate`, y la
+  aplicación cuenta los días de atraso en hora de Bogotá. Entre las 7 p.m. y la
+  medianoche -cuando en UTC ya es el día siguiente- la prueba daba la factura
+  por vencida un día antes que la aplicación y esperaba unos $657 más de mora.
+  `probar-facturacion` tenía lo mismo con el día de hoy: el último día del mes
+  se le adelantaba el periodo entero.
+- `probar-formularios` exigía que, tras pagar el canon completo, el saldo
+  quedara «por debajo de $20.000» de mora, contra una factura de fecha fija.
+  Esa mora crece unos $592 por día: el techo se pasó solo el 2026-09-13.
+
+**Por qué costó verlo.** Porque no falla cuando se escribe. Una prueba con
+`< 20000` pasa el día que se escribe y durante semanas; y una que depende de la
+hora pasa toda la mañana. Cuando por fin falla, falla sin que nadie haya tocado
+nada cerca, que es cuando menos ganas hay de creerle. Así se aprende a ignorar
+un rojo.
+
+**Qué se hace.** Si el código de producción decide algo con el reloj o con una
+zona horaria, la prueba usa la misma fuente, no una parecida:
+
+```js
+// La app: todayIn('America/Bogota')
+const hoy = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' })
+```
+
+Y un valor que cambia con el calendario no se compara contra un número
+escogido a ojo: se vuelve a calcular con la misma fórmula que usa la
+aplicación, y se compara por igualdad. Si la fórmula está mal, la prueba lo
+dice el mismo día; si está bien, no vuelve a fallar sola.
