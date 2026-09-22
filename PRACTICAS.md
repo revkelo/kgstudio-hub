@@ -2501,3 +2501,22 @@ Una regla que se cumple sola hoy es una regla que se rompe sola mañana.
 rutas privadas -que no hereda del comodín, ver el 2026-09-04- y la lista se
 declara una sola vez en una constante. Comprobado pidiendo el `robots.txt`
 servido, no leyendo el código que lo genera.
+
+### 2026-09-22 - Trabajo terminado viviendo en una preview
+
+**Qué pasó.** monetiq-web trabaja en `dev`, que es la rama por defecto del
+repo, pero Vercel publica su producción desde `main`. Así que cada push a `dev`
+levantaba una preview y se daba por publicado. Cuando se miró, `main` estaba
+tres commits atrás y dos de ellos eran de SEO, de 21 días antes: el sitio de
+verdad llevaba tres semanas sin nada de aquello.
+
+**Por qué no se vio antes.** Porque el push sale bien, Vercel construye, el
+despliegue queda `Ready` y el correo dice que todo fue bien. La palabra
+"Preview" está en la lista de despliegues, que es justo donde no mira nadie
+después de un push que no dio error.
+
+**Qué se hace.** En cualquier repo cuya rama por defecto no sea la de
+producción, se empuja a las dos: `git push origin dev:main`. Y un cambio no se
+da por publicado porque el push saliera bien, sino **pidiendo la URL de
+producción** y viendo el cambio en la respuesta. Es la misma regla de siempre
+-no vale con que compile- aplicada al despliegue.
