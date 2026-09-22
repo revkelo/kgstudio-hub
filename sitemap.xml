@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Una sola página: el hub. Los subdominios no van aquí — un sitemap solo puede
+  Una sola página: el hub. Los subdominios no van aquí - un sitemap solo puede
   declarar URLs de su propio host, así que cada sitio de la zona lleva el suyo.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
@@ -12,7 +12,7 @@
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://kgstudio.top/photo.jpg</image:loc>
-      <image:title>Kevin Gonzalez — kagonzalezdev</image:title>
+      <image:title>Kevin Gonzalez - kagonzalezdev</image:title>
     </image:image>
   </url>
 </urlset>

@@ -1637,3 +1637,867 @@ Y un valor que cambia con el calendario no se compara contra un número
 escogido a ojo: se vuelve a calcular con la misma fórmula que usa la
 aplicación, y se compara por igualdad. Si la fórmula está mal, la prueba lo
 dice el mismo día; si está bien, no vuelve a fallar sola.
+
+### 2026-09-14 - La misma marca en dos colores, según dónde la mires
+
+examia cambió de piel el 3 de septiembre: de pizarra oscura con aguamarina y
+oro a papel claro con azul y naranja. Se repintó la aplicación entera y se
+quedaron fuera las dos piezas que no se ven navegando:
+
+- `src/app/icon.svg`, el favicon, seguía en ámbar `#f2b54a`. La app dibujaba
+  el mismo símbolo en azul. Una marca en dos colores a la vez.
+- `src/app/opengraph-image.tsx`, la imagen de compartir, seguía siendo el
+  skin anterior **entero**: fondo azul noche, logo aguamarina, primer puesto
+  en ámbar, y encima un titular distinto al de la portada.
+
+Lo segundo es lo caro. La imagen de compartir es lo primero que ve alguien
+que todavía no ha entrado: en un chat se veía un producto oscuro y al pulsar
+se abría uno claro, con otra frase. Dos promesas para un clic.
+
+**Por qué se escapó.** Las dos viven fuera del CSS. El repintado se hizo
+cambiando tokens en `globals.css`, y todo lo que lee tokens cambió solo. El
+favicon y la imagen de compartir llevan los colores **escritos a mano**,
+porque el navegador pinta el uno fuera de la página y satori la otra fuera
+del CSS. Nada las arrastró, y navegando no se ven: el favicon es una pestaña
+y la otra no tiene URL en el menú.
+
+**Qué se hace.** Un cambio de piel no está hecho hasta que se abren a mano
+las tres piezas que no leen tokens, y en todo repo de la zona son las mismas:
+
+```
+/icon.svg  ·  /opengraph-image  ·  /apple-icon (si lo hay)
+```
+
+Se abren en el navegador, no se dan por buenas. Y donde haya un color escrito
+a mano se anota de qué token sale, para que la próxima vez se sepa qué mirar:
+
+```
+#283fdb = acento · #f1f4f8 = fondo · #f68622 = logro-vivo
+```
+
+### 2026-09-14 - Satori no dibuja los arcos de un SVG
+
+La imagen de compartir de examia se genera con `next/og`, que por debajo es
+satori. El logo nuevo es un sello: dos medias circunferencias trazadas con
+arcos (`A 9.3 9.3 0 0 1 …`). Satori dibuja `path`, así que el código compila,
+la ruta devuelve 200 y la imagen sale. Con el logo convertido en un disco
+relleno con un aro encima.
+
+Meterlo en un `<img>` con el SVG en un data URI **tampoco** funciona: el mismo
+disco.
+
+**Qué se hace.** Dentro de `ImageResponse` no se dibuja con arcos. Lo que
+satori rasteriza igual que un navegador son cajas: `border`, `border-radius`,
+`background`. Un círculo es un `div` con radio, y media circunferencia es un
+`div` con el borde de un lado en `none`. Cuando el símbolo existe en los dos
+sitios se escribe la equivalencia al lado, porque son dos dibujos del mismo
+logo y se cambian juntos.
+
+Y sobre todo: **esta imagen se mira renderizada, siempre**. Es el caso puro de
+"compilar no es funcionar", con el agravante de que no aparece en ninguna
+pantalla de la app. Se abre `http://localhost:3100/opengraph-image`.
+
+### 2026-09-14 - El middleware le cierra la puerta a los archivos que piden las máquinas
+
+Tercera vez en examia, con una pieza distinta cada vez. El `matcher` del proxy
+excluye lo que no necesita sesión, y lo que no está en esa lista se manda a
+`/entrar` con un 307:
+
+1. `robots.txt` y `sitemap.xml`: Google no podía leerlos, y cada enlace
+   compartido salía sin imagen porque la tarjeta pedía una redirección.
+2. `carrera.webm`: el vídeo de la portada se quedaba en negro para todo el que
+   llegaba sin cuenta, o sea para todo el que llega.
+3. `apple-icon`: iOS pedía el icono de la pantalla de inicio y recibía el HTML
+   del formulario de acceso.
+
+**La regla que las tres veces faltó.** Todo archivo que pide una máquina y no
+una persona va en la lista de exclusiones. Y hay una familia entera que se
+escapa del filtro por extensión porque **no tiene extensión en la URL**: la que
+genera el framework desde las rutas, `opengraph-image`, `apple-icon`,
+`twitter-image`, `manifest`. Se parecen a la ruta de una página y el matcher las
+trata como tal. Un `icon.svg` se salva de casualidad, por el `.svg`.
+
+**Cómo se comprueba**, porque ninguna de las tres se vio navegando por el sitio:
+
+```bash
+for r in /robots.txt /sitemap.xml /llms.txt /opengraph-image /apple-icon; do
+  curl -s -o /dev/null -w "$r %{http_code} %{content_type}\n" "http://localhost:3100$r"
+done
+```
+
+Tienen que contestar **200 y su tipo**, no 307. Va al final de cualquier cambio
+en el middleware y al añadir cualquier ruta generada.
+
+### 2026-09-14 - Las mismas preguntas frecuentes escritas tres veces
+
+En examia estaban en la portada (lo que se lee), en el `FAQPage` del JSON-LD
+(lo que Google puede sacar en el resultado) y en `llms.txt` (lo que leen los
+rastreadores de IA). Con una nota en el código que pedía cambiar las tres a la
+vez, que es lo que se escribe cuando ya se sabe que va a fallar.
+
+Para cuando se unificaron, habían divergido: una daba la cifra real del
+catálogo y otra decía "más de 80"; una nombraba ISC2 y PMI entre los
+proveedores y la otra no. Y lo mismo con el número de certificaciones, escrito
+a mano en cinco sitios de la cabecera mientras el cuerpo de la página lo
+calculaba: el `<meta>` contradecía al HTML que describe.
+
+**Por qué es peor que un descuido de estilo.** Un `FAQPage` que declara
+respuestas que no aparecen en el HTML es justo lo que Google penaliza, así que
+la copia desalineada no es fea: es un riesgo. Y `llms.txt` lo leen los
+asistentes **antes** que el HTML, así que su versión es la que se repite cuando
+alguien pregunta por el sitio.
+
+**Qué se hace.** Un texto que aparece en dos superficies vive en un módulo y lo
+importan las dos. Una cifra que describe una colección se calcula de la
+colección, nunca se teclea. Y si una lista se copia -el catálogo entero estaba
+escrito a mano en `llms.txt`-, ese archivo deja de ser estático y pasa a
+generarse: en Next, una carpeta `llms.txt/` con un `route.ts` sirve en
+`/llms.txt`. Ojo con borrar el de `public/`: lo estático gana a la ruta y la
+nueva no se serviría nunca.
+
+### 2026-09-14 - El hero prometía un orden y la página entregaba el contrario
+
+El subtítulo de la portada de examia dice, en los primeros diez segundos:
+
+> «...de ahí salen las preguntas: para estudiar solo, para retar a alguien con
+> un código o para correr respondiendo.»
+
+Tres modos, en ese orden. La página los contaba al revés: primero la carrera en
+3D, luego las salas, y el simulacro con reloj -lo que la mayoría viene a
+buscar- el quinto bloque, detrás de un vídeo de coches. Encima era el único de
+los tres sin `id`, así que ni se podía enlazar ni salía en el índice lateral.
+
+**Por qué importa más de lo que parece.** Una frase de apertura que enumera es
+un índice: fija el orden en que el lector espera las cosas. Si la página lo
+incumple, quien llega buscando lo primero de la lista tiene que atravesar lo
+que menos le interesa para encontrarlo, y lo más raro -un circuito en 3D- se
+lee antes de que nada explique para qué sirve el sitio.
+
+**Qué se hace.** Cuando el titular o la entradilla enumeran, el orden de la
+enumeración es el orden de las secciones. Y toda sección que se cuenta lleva
+`id` y entrada en el índice: si no está en el índice, para quien lo usa no
+existe.
+
+**El efecto secundario que hay que revisar al reordenar.** Mover bloques rompe
+las referencias del texto. Dos frases apuntaban hacia atrás y pasaron a apuntar
+hacia delante:
+
+- «La línea que hay que cruzar aquí es la misma que es la meta de la carrera»,
+  escrita cuando la carrera ya se había visto. Ahora lleva «más abajo».
+- «Y ese banco se juega con quien quieras»: su antecedente estaba en la sección
+  que iba justo antes, y al cambiarla el «ese» se quedó sin referente.
+
+Después de reordenar se lee la página entera seguida, buscando cada «ese»,
+«aquí», «arriba», «como decíamos» y «el de antes».
+
+### 2026-09-14 - Un `FAQPage` en el layout raíz se declara en todas las páginas
+
+examia tenía dos. Uno en el grafo de `layout.tsx` y otro dentro de la sección
+«¿Y esto de certificarse qué es?», los dos en la portada.
+
+Lo del layout es lo grave: **el layout raíz se renderiza en todas las
+pantallas**, así que el grafo prometía las preguntas frecuentes en
+`/certificaciones`, en `/formato` y en cada una de las ochenta y tantas fichas
+del catálogo, donde ese texto no aparece por ningún lado. Declarar respuestas
+que no están en el HTML es justo la condición de la penalización, y estaba
+ocurriendo en casi todas las URLs del sitio en vez de en ninguna.
+
+**Qué va en el layout raíz y qué no.** Solo lo que es verdad en **todas** las
+páginas: quién es el sitio, qué aplicación es, de quién es. Un `FAQPage`, un
+`Product`, un `Article` o un `BreadcrumbList` describen **una** página y se
+emiten desde esa página.
+
+Se comprueba contando, no leyendo el código:
+
+```bash
+curl -s localhost:3100/ | grep -c '"@type":"FAQPage"'                        # 1
+curl -s localhost:3100/certificaciones/aws-cloud-practitioner | grep -c FAQPage  # 0
+```
+
+### 2026-09-14 - Una portada que enseña qué se puede hacer y no cómo se hace
+
+La portada de examia contaba muy bien los tres modos de juego -solo, con
+amigos, corriendo- y no contaba en ningún sitio **cómo se llega hasta ahí**: de
+dónde salen las preguntas, si hay que escribirlas a mano, qué hace falta tener
+antes de poder retar a nadie. Se pasaba del muro de insignias al vídeo de
+coches.
+
+Quien ya conoce el producto rellena ese hueco solo, y por eso no se ve al
+revisarla: el que la escribe siempre sabe cómo funciona. Quien llega de un
+buscador ve un catálogo, un marcador y un circuito en 3D, y no sabe qué
+tendría que hacer él.
+
+Lo mismo con lo que tranquiliza. Que es gratis, que no pide tarjeta y que los
+invitados no se registran estaba contestado **solo en las preguntas
+frecuentes**, al final de una página muy larga. Son las tres dudas que deciden
+si alguien sigue leyendo, y se contestaban después de haberle pedido que
+siguiera.
+
+**Qué lleva una portada de la zona, además de lo que ya está escrito arriba:**
+
+- Un bloque de **cómo funciona en tres pasos**, después de la prueba o la
+  demostración y antes del detalle. Es la pieza más acogedora que hay, y de
+  paso sirve de índice de lo que viene debajo si el último paso nombra las
+  secciones siguientes en su orden.
+- Lo que **quita el miedo, arriba**: precio, si pide tarjeta, si hay que
+  registrarse. Nunca solo en las preguntas frecuentes.
+- Frases **cortas** en lo primero que se lee. La entradilla de examia era una
+  sola de 33 palabras con dos subordinadas.
+
+**Un detalle de la pastilla.** `.pastilla` es monoespaciada porque está pensada
+para un dato. Una frase entera metida dentro se lee como un trozo de código, no
+como algo que tranquiliza, y en un teléfono de 390 px tres frases ocupan tres
+líneas justo encima de lo que hay que tocar. Dos o tres palabras por pastilla.
+
+### 2026-09-14 - Dos destinos del índice puestos uno al lado del otro
+
+**Qué pasó.** Al rehacer la portada de `examia` los dos bloques de preguntas
+-"Qué es certificarse" y "Preguntas sobre examia"- se pusieron en dos columnas
+de la misma fila, para que ocuparan menos. Los dos son destinos del índice
+lateral, y el segundo dejó de encenderse: la barra marca dónde estás mirando
+qué sección se está viendo, y dos bloques que empiezan a la misma altura están
+siempre visibles los dos a la vez.
+
+**Por qué está mal.** No es un fallo del observador ni del CSS: es que la
+pregunta "¿en cuál de los dos estoy?" no tiene respuesta. Nunca hay un momento
+en que se esté en uno y no en el otro. Cualquier desempate que se invente ahí
+-el primero del DOM, el más alto, el más grande- es una respuesta arbitraria a
+una pregunta mal planteada.
+
+**Qué se hace.** Si el índice promete dos destinos, tienen que ser **dos sitios
+distintos de la página**, uno debajo del otro. Uno al lado del otro no son dos
+sitios: son uno. Y se comprueba con el navegador, haciendo `scrollIntoView` de
+cada ancla y mirando qué enlace lleva `aria-current`: todas o ninguna.
+
+### 2026-09-14 - El gesto de la marca, girado y medio transparente
+
+**Qué pasó.** El resultado del reto de la portada de `examia` marca el mínimo de
+aprobación sobre una barra de puntaje. Se puso reutilizando `.corte` -la firma
+del sitio, un trazo ámbar discontinuo- girado noventa grados, de un píxel de
+ancho y con la opacidad del 55% que trae la clase. En la captura de revisión
+simplemente no estaba: el corte del 72% no se veía por ningún lado.
+
+**Por qué está mal.** Por dos cosas a la vez. La primera, que un trazo
+discontinuo al 55% sobre un píxel de ancho no se ve, y eso no lo detecta ningún
+`build`: compila, despliega, y el dato que da sentido a la pantalla no está.
+La segunda, que aunque se hubiera visto estaría mal: una versión girada y medio
+transparente de la firma no es la firma, es una raya que se le parece, y eso ya
+se anotó una vez en este mismo repo.
+
+**Qué se hace.** La firma se usa donde es la firma -una vez por página- y donde
+hace falta marcar un eje se dibuja una marca de eje: trazo sólido, opaco, y con
+su número al lado. Y todo lo que pinta un dato se mira en una captura antes de
+darlo por bueno, no solo en el código.
+
+### 2026-09-14 - Un formateador sin la configuración de la casa
+
+**Qué pasó.** Para dejar limpio el sangrado de unos componentes de `examia` se
+ejecutó `npx prettier --write` sobre cuatro archivos. El repo no tiene
+`.prettierrc`, así que prettier aplicó sus valores por defecto -comillas dobles
+y punto y coma al final- y reescribió los cuatro archivos enteros en un estilo
+que no es el del resto del código. `eslint` y `tsc` pasaron igual: nada de eso
+es un error, solo es otro estilo.
+
+**Por qué está mal.** Un formateador sin configuración no respeta el estilo del
+proyecto: lo sustituye por el suyo. Y como toca cada línea, el diff deja de
+decir qué se cambió de verdad: cuatro archivos aparecen reescritos enteros
+cuando lo único que se quería era mover un comentario de sitio.
+
+**Qué se hace.** Antes de ejecutar un formateador se mira si el repo tiene
+configuración. Si no la tiene, el estilo se saca del código que ya está escrito
+y se le pasan las opciones a mano -aquí `--no-semi --single-quote
+--print-width 100`-. Y después se comprueba: abrir un archivo formateado y
+compararlo con uno que no se tocó es un segundo y caza esto entero.
+
+**Mejor todavía:** si la única razón para formatear es un bloque que quedó mal
+indentado, se arregla ese bloque a mano y no se pasa nada por el resto.
+
+### 2026-09-14 - Un `next dev` de horas sirviendo una hoja de Tailwind vieja
+
+**Qué pasó.** Al dar más aire a la portada de `examia` se cambiaron los
+espaciados del hero a `pt-14 sm:pt-24`. En la captura de revisión el titular
+salía pegado al borde de arriba, cortado. El código era correcto: la clase
+estaba en el marcado, `tsc` y `eslint` pasaban, y el componente era el que se
+estaba mirando.
+
+Medido en el navegador, `getComputedStyle(cabecera).paddingTop` daba `0px`. Y
+bajando la hoja que servía el dev, `.pt-14` y `.sm\:pt-24` **no existían en
+ella**: seguían las utilidades de la versión anterior del archivo. El servidor
+llevaba horas levantado y su capa de Tailwind se había quedado atrás.
+
+**Por qué está mal.** Porque el fallo se disfraza de error de diseño. Lo que se
+ve es "el espaciado no funciona", y la reacción natural es cambiar el valor,
+probar otra clase o meter un estilo en línea: tres cambios para arreglar algo
+que no estaba roto. Y peor: **todas las capturas tomadas contra ese servidor
+son mentira**, así que la revisión visual de esa sesión no vale.
+
+**Cómo se reconoce.** La clase está en el HTML, el valor calculado es el de
+por defecto, y la utilidad no aparece en la hoja servida. Dos comprobaciones de
+diez segundos:
+
+```
+getComputedStyle(el).paddingTop        // dice 0px con la clase puesta
+curl <la hoja .css del dev> | grep pt-14   // no está
+```
+
+**Qué se hace.** Cuando un cambio de espaciado, color o tamaño "no hace nada",
+antes de tocar el valor se **mide**, y si la utilidad no está en la hoja se
+reinicia el servidor con `rm -rf .next`. Y las capturas de revisión se toman
+contra un servidor recién levantado, no contra uno que lleva toda la sesión
+encendido.
+
+### 2026-09-14 - Medir un contraste parseando `getComputedStyle` con una regex
+
+**Qué pasó.** La portada de `examia` estrenó una banda negra de cierre, y para
+comprobar que el texto encima cumplía se midió el contraste en el navegador
+sacando los colores con `getComputedStyle` y leyendo los números con
+`match(/[\d.]+/g)`. Salió `titular 1.48x` y `párrafo 1.01x`: valores
+imposibles, porque el titular era blanco sobre casi negro.
+
+**Por qué está mal.** El tema de la zona está escrito en `oklch`, así que el
+navegador devuelve los colores computados en `lab(8.22 0.15 -8.03)`. Una regex
+de números lee eso como si fueran R, G y B y da basura. Lo peligroso es que
+**no falla: devuelve un número**, y un número con dos decimales se copia a un
+comentario y se queda ahí como si estuviera medido. Es el mismo fallo que ya
+está anotado -"el comentario decía que los contrastes estaban medidos"- pero un
+paso más adentro.
+
+**Qué se hace.** El contraste se mide **pintando**, no parseando. Un lienzo de
+un píxel: se rellena con el color de fondo, se rellena encima con el del texto
+-que así resuelve su alfa y su espacio de color solo- y se lee el píxel. Eso da
+sRGB de verdad, que es lo que ve el ojo, sea cual sea la notación del tema.
+
+```js
+const g = document.createElement('canvas').getContext('2d')
+g.fillStyle = fondo;  g.fillRect(0, 0, 1, 1)
+g.fillStyle = tinta;  g.fillRect(0, 0, 1, 1)
+const [r, v, a] = g.getImageData(0, 0, 1, 1).data
+```
+
+**La regla general:** cuando una medición da un valor que contradice lo que se
+ve en la pantalla, el sospechoso es la medición, no la pantalla.
+
+### 2026-09-14 - Una prueba atada al nivel del encabezado, no al rótulo
+
+**Qué pasó.** Ya está anotado que una prueba no se ata al rótulo de una
+sección. Esta vez se ató a su **nivel**: el arnés de la portada de `examia`
+comprobaba que cambiar de insignia cambia el examen leyendo
+`#tu-examen h3`. Al meter partes en el documento, los apartados bajaron de `h2`
+a `h3` y el nombre del examen de `h3` a `h4`. La prueba siguió encontrando un
+`h3` -el titular del apartado- y falló diciendo que el examen no cambiaba,
+cuando cambiaba perfectamente.
+
+**Por qué está mal.** Es el mismo fallo de antes con otra ropa. `h3` no es el
+nombre de nada: es dónde cae ese texto en la jerarquía de hoy, y la jerarquía se
+mueve cada vez que se reorganiza la página. Peor que fallar sería lo contrario:
+que siguiera pasando porque quedó **algún** `h3` en ese apartado, y entonces la
+prueba deja de comprobar lo que dice comprobar.
+
+**Qué se hace.** El elemento que una prueba necesita señalar lleva su propio
+gancho -`data-ficha="nombre"`- y la prueba se agarra a eso. Un `data-*` no
+cambia al reescribir un titular ni al reordenar el documento, y deja escrito en
+el marcado que ese nodo lo mira alguien más. Ni el texto ni la etiqueta HTML
+sirven para eso: los dos son presentación.
+
+### 2026-09-15 - `overflow-hidden` recortando contenido y una comprobación que decía que todo iba bien
+
+**Qué pasó.** La portada de `examia` lleva reglas y bandas que se salen del
+respiro lateral de `<main>` con márgenes negativos, y para que eso no saque una
+barra de desplazamiento horizontal `<main>` tiene `overflow-hidden`. La
+comprobación de responsive era `scrollWidth - clientWidth`, y daba **0 px en
+los tres anchos que se miraban**.
+
+Daba cero porque `overflow-hidden` no evita el desbordamiento: lo **recorta**.
+En un teléfono de 390 px el titular y la entradilla salían 28 px fuera y se
+cortaban por la derecha; a exactamente 1024 px, la URL `examia.kgstudio.top/jugar`
+-una sola palabra de 25 caracteres que no parte- reventaba su columna y se
+comía 13 px. Se veía en la captura, pero la cifra decía que no pasaba nada y la
+cifra ganó.
+
+**Por qué está mal.** Una comprobación que devuelve un número tranquilizador
+sobre algo que está roto es peor que no tener comprobación: apaga la sospecha.
+Y el fallo aparece **solo en anchos concretos** -a 390 sí, a 430 no, a 1024 sí,
+a 1280 no- así que mirar dos tamaños no lo encuentra.
+
+**Qué se hace.** Dos cosas.
+
+Medir lo que de verdad importa: recorrer los elementos y quedarse con los que
+tienen `getBoundingClientRect().right` mayor que el borde del contenedor. Eso
+sí ve lo recortado, y se barre en **una docena de anchos**, incluidos los
+límites exactos de los puntos de ruptura (639/640, 767/768, 1023/1024), que es
+donde una rejilla cambia de forma y algo deja de caber.
+
+Y arreglarlo en la causa, que casi siempre es una de estas dos:
+
+- **Un hijo de rejilla o de flex sin `min-w-0`.** El mínimo automático de una
+  pista es el contenido mínimo de lo que lleva dentro, así que un campo, una
+  tabla o una palabra larga la empujan más allá del contenedor. `min-w-0` es
+  lo que le da permiso para encoger.
+- **Una palabra que no parte** -una URL, un código, un identificador-.
+  `break-words` en el elemento que la contiene.
+
+### 2026-09-15 - Un `aria-label` tapando justo el dato que hacía falta
+
+**Qué pasó.** Las opciones del reto de la portada de `examia` llevaban
+`aria-label={`Opción ${letra}: ${texto}`}`. Al contestar, la correcta se marca
+con la palabra "correcta" y la que marcaste con "la tuya", dentro del mismo
+botón. Quien usa lector de pantalla recorría las cuatro opciones después de
+contestar y oía las cuatro **exactamente igual**: el `aria-label` sustituye al
+contenido entero, así que las dos palabras que decían lo único importante -qué
+era correcto y qué habías marcado- no se pronunciaban nunca.
+
+**Por qué está mal.** `aria-label` no añade: **reemplaza**. Poner uno "para que
+se lea mejor" congela el nombre accesible en el momento en que se escribió, y
+cualquier cosa que el componente pinte después dentro de ese elemento deja de
+existir para quien no ve la pantalla. Aquí el `aria-label` solo aportaba la
+letra -"a", "b"-, que es una muleta visual que nadie necesita oír.
+
+**Qué se hace.** El nombre accesible sale del contenido, y lo que es decoración
+se oculta con `aria-hidden` -la letra-. Un `aria-label` solo cuando no hay
+contenido que nombrar: un botón de solo icono, un campo sin etiqueta visible.
+
+**Y un detalle que se ve al comprobarlo:** dos `<span>` hermanos se concatenan
+**sin espacio** al calcular el nombre, así que salía
+"...perfil de instanciacorrecta". Se arregla con un nodo de texto de un espacio
+entre los dos. Esto no se ve leyendo el JSX: se ve leyendo el `textContent` del
+botón en el navegador.
+
+### 2026-09-15 - `eager` en 49 imágenes que ya no estaban arriba del pliegue
+
+**Qué pasó.** La pared de insignias de la portada de `examia` pedía sus 49
+imágenes con `loading="eager"` y `fetchPriority="high"`. Estaba bien puesto: la
+regla de la zona es que lo de arriba del pliegue se pide `eager`, y la pared era
+lo primero de la página.
+
+Después se le puso una cabecera delante. Medido en una pantalla de 1440x900, la
+pared arranca **691 px por debajo del pliegue**. La regla seguía escrita en el
+código, pero su premisa se había ido: quedaban 49 peticiones a un CDN ajeno
+marcadas como urgentes, disputándole el ancho de banda a lo único que sí se ve
+al entrar.
+
+**Por qué está mal.** Una optimización lleva dentro una suposición sobre el
+diseño -"esto se ve primero"-, y el diseño se mueve. Cuando se mueve, la
+optimización no se vuelve inútil: se vuelve **dañina**, porque sigue gastando el
+presupuesto de red en lo que ya no toca. Y no avisa: no hay error, no hay aviso
+de `build`, y la página se ve bien.
+
+**Qué se hace.** Al mover un bloque de sitio se revisa lo que dependía de dónde
+estaba. Y la pregunta se contesta midiendo, no de memoria:
+
+```js
+el.getBoundingClientRect().top - window.innerHeight   // < 0 está arriba del pliegue
+```
+
+**Un matiz que conviene saber:** quitar `eager` no quitó las peticiones. El
+umbral de carga diferida de Chromium cubre de sobra esos 691 px, así que las 49
+salen igual al cargar. Lo que cambia es que ya no van marcadas como urgentes.
+Conviene no vender como "49 peticiones menos" lo que es "49 peticiones que ya no
+adelantan a las importantes".
+
+### 2026-09-15 - Una pestaña de fondo dejando la carrera abierta para todos
+
+**Qué pasó.** En una carrera de sala, cada navegador avisa al servidor por dónde
+va su coche cada 2,5 segundos, y el servidor cierra la carrera cuando nadie sin
+cruzar la meta ha avisado en los últimos 45 segundos.
+
+El bucle de dibujo va con `requestAnimationFrame`, que el navegador **congela**
+al pasar la pestaña a segundo plano. El sondeo va con `setTimeout`, que **no se
+congela**. Así que una pestaña de fondo seguía mandando la misma posición una y
+otra vez, refrescando su marca de "sigo vivo" con un coche que llevaba parado
+diez minutos. Los demás cruzaban la meta y la carrera no se cerraba hasta que
+esa persona volvía a la pestaña o la cerraba.
+
+**Por qué está mal.** Es el mismo fallo que ya estaba anotado -"mirar no es
+correr", por quien abre la pantalla y no pulsa Arrancar- entrando por otra
+puerta. Y es difícil de ver porque **las dos mitades funcionan**: el juego
+avanza bien y el sondeo avisa bien; lo que falla es que dejan de estar de
+acuerdo cuando el navegador para una y no la otra.
+
+**Qué se hace.** Con la pestaña oculta se **lee sin avisar**: se sigue pidiendo
+por dónde van los demás, pero no se manda la posición propia, así que el
+silencio deja de bloquear a nadie y a los 45 segundos el servidor cierra. Al
+volver, el primer aviso devuelve el coche a la pista.
+
+**La regla general:** siempre que un temporizador y `requestAnimationFrame`
+lleven la misma cuenta, hay que decidir qué pasa cuando el navegador congela uno
+y no el otro. `document.hidden` es la pregunta, y hay que hacerla explícitamente
+en el temporizador.
+
+### 2026-09-15 - `setInterval` para sondear, y las respuestas llegando desordenadas
+
+**Qué pasó.** El marcador de una sala se refrescaba con
+`setInterval(tick, 4000)`. `setInterval` dispara pase lo que pase, sin esperar a
+que termine la petición anterior: con la red de un móvil en una sala -que es la
+única red que importa aquí- las peticiones se amontonan, varias quedan en vuelo
+a la vez y las respuestas pueden llegar desordenadas. Una respuesta vieja que
+llega después de una nueva repinta el marcador **hacia atrás**.
+
+La carrera, en el mismo repo, ya lo hacía bien con `setTimeout` encadenado.
+
+**Qué se hace.** Para sondear, `setTimeout` encadenado: se programa el siguiente
+cuando el anterior ha terminado. Nunca hay dos en vuelo y la última respuesta es
+siempre la más nueva. `setInterval` sirve para un reloj que no hace E/S -el
+contador de segundos de un examen-, no para pedir cosas por red.
+
+Y de paso, dos cosas que un sondeo tiene que llevar siempre:
+
+- **Parar con la pestaña oculta**, y mirar de inmediato al volver. Nadie está
+  viendo esa pantalla, y al otro lado hay un móvil gastando batería.
+- **Frenar cuando falla.** Sin espera creciente, un servidor caído recibe quince
+  peticiones por minuto y por persona justo cuando menos puede con ellas.
+
+### 2026-09-15 - Un criterio prometido en la portada que el producto no aplicaba
+
+**Qué pasó.** La portada de `examia` dice, con todas las letras: "cuando tres
+seguidos cruzan el corte es cuando se agenda el examen". Es el consejo más
+concreto de toda la página de venta. Dentro de la aplicación, **ese criterio no
+existía en ninguna parte**: la pantalla de un banco enseñaba una tabla de temas,
+una lista de intentos y un promedio, y dejaba el juicio al usuario.
+
+Y el archivo que debía responderlo, `estadisticas.ts`, abría literalmente
+diciendo "lo que responde la única pregunta que importa: ¿ya estoy listo para
+presentar?" para después no responderla: cuatro consultas de datos crudos y
+ninguna conclusión.
+
+**Por qué está mal.** Dos cosas distintas, y las dos cuestan.
+
+La primera es de producto: quien prepara una certificación no quiere una tabla,
+quiere saber si ya puede pagar los 150 dólares del examen. Enseñar datos y
+llamar a eso "estadísticas" es dejarle el trabajo difícil -el juicio- a quien
+menos preparado está para hacerlo, que es justamente quien todavía no sabe el
+tema.
+
+La segunda es de confianza: un criterio que se promete en la página de venta y
+no aparece en el producto es una promesa a medias. Quien llega por esa frase
+espera encontrársela dentro.
+
+**Qué se hace.** Cuando el texto comercial afirme una regla -"tres seguidos",
+"en menos de un minuto", "sin cuenta"-, esa regla se **implementa y se prueba**,
+o se quita del texto. No hay una tercera opción.
+
+Y el juicio vive en el dominio, no en la pantalla: es una decisión de producto y
+tiene que decir lo mismo se pinte donde se pinte. Con la parte pura separada de
+la consulta -entran los puntajes, sale el veredicto- se prueba la regla entera
+sin montar cuentas: qué pasa con una racha rota, con el corte exacto, con pocas
+muestras. Los casos que se equivocan no son los bonitos: son el suspenso
+reciente detrás de cuatro aprobados, que una implementación que cuente
+"aprobados" en vez de "seguidos desde el final" da por bueno.
+
+### 2026-09-16 - Una portada que empezaba con jerga y una orden
+
+**Qué pasó.** La portada de `examia` pasó a ser el producto funcionando en una
+sola pantalla, y lo primero que decía era **"Contéstale una a SAA-C03"**.
+
+Funcionaba perfectamente para quien ya conocía el sitio, que es exactamente
+quien no necesita la portada. A quien llega de un buscador le llegaban, en este
+orden: una orden en imperativo, una sigla que no significa nada y un control
+para elegir algo que no sabe qué es. Ni una frase que dijera qué es examia.
+
+**Por qué está mal.** "Enseñar el producto en vez de hablar de él" es una buena
+decisión, y al aplicarla se cayó en el extremo contrario: **cero contexto**.
+Probar algo antes de saber qué es no es una demo, es un examen sorpresa. Y el
+fallo no se ve desde dentro, porque quien diseña la pantalla ya sabe lo que
+hace cada cosa.
+
+**Qué se hace.** Lo mínimo que necesita alguien que llega de cero, y en este
+orden:
+
+1. **Una frase que diga qué es esto**, en castellano llano y sin nombres de
+   producto, antes de cualquier control.
+2. **Los pasos numerados** si hay más de uno. Dos números -"1 · ¿Qué preparas?",
+   "2 · Contéstale una"- quitan toda la duda sobre qué hacer y cuestan dos
+   líneas.
+3. **Ninguna sigla sola.** "SAA-C03" va siempre con su nombre completo y sus
+   datos al lado. Un código es una etiqueta para quien ya lo conoce y ruido
+   para todos los demás.
+
+**La comprobación que lo caza:** leer la pantalla entera imaginando que no se
+sabe nada del producto, y preguntarse si se entiende qué es y qué hay que hacer
+antes de tocar nada.
+
+### 2026-09-16 - Un arnés que gritaba donde no pasaba nada
+
+**Qué pasó.** El arnés `test:anchos` busca contenido que se sale de su
+contenedor, y empezó a marcar cuarenta insignias en cuatro anchos. No había
+nada roto: son una tira con `overflow-x: auto`, que se desplaza a lo ancho a
+propósito.
+
+**Por qué está mal.** El arnés existe para cazar contenido **recortado** -lo que
+se sale y no hay forma de ver-, y lo que vive dentro de un carrusel se sale y sí
+se llega a ello. Un arnés que grita donde no pasa nada se acaba ignorando, y
+entonces deja de servir también para lo que sí importa. Un falso positivo
+repetido cuesta más que no tener la comprobación.
+
+**Qué se hace.** Se excluye lo que cuelga de un ancestro con `overflow-x: auto`
+o `scroll`. La regla general: cuando una comprobación empiece a fallar en algo
+que es correcto, se afina la comprobación en el mismo momento; posponerlo es
+como se enseña a la gente a ignorar los avisos.
+
+### 2026-09-16 - Un arnés que defendía una decisión y no una promesa
+
+**Qué pasó.** La portada de `examia` se rehízo: era una sola pantalla sin
+scroll con el producto dentro, y volvió a crecer con secciones porque como
+página completa no contestaba las dos preguntas que deciden una portada -de
+dónde salen las preguntas, y por qué esto y no un test gratis cualquiera-.
+
+En el arnés había una comprobación que medía `scrollHeight <= innerHeight` con
+el comentario "una pantalla es una pantalla, es la premisa entera del diseño".
+Al reformar, esa comprobación falló sin que nada estuviera roto.
+
+**Por qué está mal.** Una comprobación puede atarse a lo que la página
+**promete** -que se entienda qué es antes de pedir nada, que se pueda tocar el
+producto, que diga que es gratis sin bajar- o a **cómo se decidió resolverlo
+esta vez** -que quepa en un alto de ventana-. Lo primero sobrevive a un
+rediseño y lo segundo lo estorba: la comprobación se convierte en un voto
+permanente a favor de una maquetación concreta, y el día que esa maquetación
+deja de servir, el arnés grita y quien reforma aprende a saltárselo.
+
+Es el mismo fallo que ya está anotado tres veces en este repo con otra ropa
+-una prueba atada al primer `h1`, otra al primer `p`, otra a la altura- y
+siempre acaba igual: se ignora el aviso.
+
+**Qué se hace.** Al escribir una comprobación de interfaz, preguntarse si lo
+que mide seguiría siendo verdad en un rediseño que resolviera lo mismo de otra
+forma. Si la respuesta es no, se mide otra cosa. Aquí las tres de altura se
+cambiaron por: que existan las secciones que la portada promete, que "es
+gratis, no pide tarjeta" caiga dentro de la primera pantalla medido en píxeles,
+y que en algún sitio se diga de dónde salen las preguntas.
+
+**Y lo que la reforma arregló, que es lo de siempre:** enseñar el producto en
+vez de hablar de él es buena decisión, pero un producto sin contexto no
+convence de nada. La portada nueva toca primero -la pregunta contestable sigue
+siendo lo primero que se ve- y explica después, en tres pasos, de dónde sale el
+banco. Toda portada de la zona lleva ese bloque, y esta lo había perdido.
+
+### 2026-09-16 - Un atajo en tiempo real que no atajaba, y nadie se enteraba
+
+**Qué pasó.** Se añadió a las salas de `examia` un "timbre": un aviso por
+Supabase Realtime que suena cuando el anfitrión arranca la partida, para que las
+pantallas de los demás no tengan que esperar a su siguiente sondeo. El marcador
+lo escucha y, al oírlo, va y pregunta.
+
+Funcionaba en el papel y no funcionaba en la pantalla. `createBrowserClient` de
+`@supabase/ssr` devuelve **siempre el mismo cliente**, y un cliente de Supabase
+no admite dos canales suscritos al mismo tema: el que escuchaba abría
+`sala:ABC12` y el que tocaba abría otro `sala:ABC12`, y esa segunda suscripción
+se quedaba esperando para siempre. En la pantalla de la sala, donde el anfitrión
+escucha y toca a la vez, el timbre no sonaba nunca.
+
+**Por qué no se vio.** Porque no se rompió nada. No hubo excepción, no hubo nada
+en la consola, y la partida arrancaba bien para todos: el sondeo hacía su
+trabajo, como lo hacía antes de existir el timbre. Un atajo que falla en
+silencio detrás de un camino que funciona es invisible por definición.
+
+Se vio midiendo, y solo midiendo: el aviso le llegaba al invitado exactamente
+cuando tocaba el siguiente sondeo, ni un milisegundo antes. Y ni siquiera eso
+bastó a la primera, porque con el sondeo a segundo y medio los dos números se
+parecen demasiado. Hubo que **subir el sondeo a 30 segundos** y volver a medir:
+si el aviso sigue llegando en 3 y no en 24, el atajo existe.
+
+**La regla.** Una optimización que se apoya en el camino lento como red de
+seguridad **no se puede dar por buena porque la pantalla salga bien**. La
+pantalla va a salir bien igual. Hay que medir que el atajo atajó, y para
+medirlo hay que dejar el camino lento tan lento que no se pueda confundir con
+el rápido.
+
+**Y lo que la medición enseñó de paso, que era lo importante.** Puestos a
+cronometrar, salieron los números de verdad: verificar el token contra Supabase
+cuesta **183 ms** y una consulta a Postgres **81 ms**. O sea que la ruta del
+marcador, que hacía cinco viajes por sondeo, gastaba medio segundo para
+devolver algo que cambia dos veces por minuto, y ese era el motivo real por el
+que el sondeo no podía bajar de cuatro segundos: no era el número correcto, era
+lo que aguantaba la cuenta.
+
+Antes de cambiar el transporte -websockets, SSE, long polling- hay que mirar lo
+que cuesta cada viaje. Casi siempre el problema no es cada cuánto se pregunta,
+es lo que se hace en cada pregunta.
+
+### 2026-09-16 - Tres comprobaciones que pasaban por la razon equivocada
+
+**Qué pasó.** Al escribir el arnés del informe de clase de `examia` -una
+profesora, dos alumnos por código, un repaso- tres comprobaciones seguidas
+dieron verde sin medir lo que decían medir:
+
+1. **"El tema peor sale primero"**, escrita nombrando el tema: *Subredes antes
+   que Redes*. Pero la sala reparte las preguntas con `order by random()`, así
+   que cuál acaba peor depende de la partida. Fallaba y pasaba en ejecuciones
+   seguidas sin tocar una línea.
+2. **El mismo orden, ya sin nombres**, leyendo los porcentajes del texto de
+   cada fila. `textContent` pega los nodos sin espacios: "2 de 2" seguido de
+   "50.0%" devuelve **250**. La comprobación comparaba 250 con 250 y daba
+   verde.
+3. **"La profesora no sale como alumna"**, buscando su correo en la pantalla.
+   Siempre fallaba, y no por el informe: la barra lateral enseña el nombre de
+   la cuenta, así que el correo está ahí de todas formas.
+
+**Por qué está mal.** Las tres son la misma familia y la de en medio es la
+peligrosa: un arnés que falla se arregla, pero uno que **pasa por la razón
+equivocada** se queda ahí dando confianza falsa durante meses. Las tres se
+apoyaban en la presentación -el nombre del dato, el texto de la fila, el texto
+de la página- en vez de en un asidero puesto para ellas.
+
+**Qué se hace.** Lo que este repo ya hacía con `data-examen` en la portada, y
+que hubo que aprender otra vez: **un atributo propio para lo que se comprueba**.
+`data-tema` con `data-porcentaje` en cada fila, `data-alumnos` en cada fila de
+la tabla, y el arnés lee atributos y no texto. Y el escenario se hace
+determinista: la alumna contesta **según el tema que ve en pantalla**, no según
+la posición de la pregunta, así que un tema acaba al 0% y el otro al 100% salga
+el barajado que salga.
+
+**La pregunta que las caza:** ¿esta comprobación podría dar verde estando el
+producto roto? Si la respuesta no es un no rotundo, no mide nada.
+
+### 2026-09-16 - El profesor salia en su propio informe como un alumno que no hizo nada
+
+**Qué pasó.** El informe de clase listaba a **quien montó la sala** entre los
+alumnos: con cero respuestas, con su correo por nombre, y contando además en
+"entraron a la sala" y en "no contestaron nada". Una profesora que proyecta el
+código y se queda mirando -que es lo que hace un profesor- leía que un alumno
+de su clase no había hecho nada, y ese alumno era ella.
+
+**Por qué no se vio antes.** Porque no se ve leyendo el código ni pasando las
+pruebas: todo estaba bien calculado. Se ve **mirando la pantalla con datos que
+se parezcan a los de verdad**, y por eso el informe se pintó con cinco alumnos
+de nombres reales y resultados distintos en vez de con dos filas de prueba. Con
+dos filas no habría llamado la atención.
+
+**Qué se hace.** No se quita siempre al dueño, porque en una sala entre amigos
+quien la monta también juega y su fila es tan suya como las demás. La condición
+es **haber jugado**, no ser dueño: se quita la fila solo si es el dueño y no
+contestó nada.
+
+**Y la regla de fondo:** una pantalla nueva se mira con el contenido que va a
+tener en uso, no con el mínimo que hace falta para que compile. Cinco nombres y
+resultados variados enseñan lo que dos filas de "Ana" y "Bruno" esconden.
+
+
+### 2026-09-22 - Las rayas largas sobrevivieron dentro de los `sitemap.xml`
+
+**Qué pasó.** La limpieza del 2026-08-31 dejó dos: el `<image:title>` del hub
+decía "Kevin Gonzalez — kagonzalezdev" y el de Distribuciones AGD,
+"Distribuciones AGD — pinturas y ferretería en Bogotá".
+
+**Por qué está mal.** Un `image:title` es contenido servido y es de los pocos
+textos de la zona que Google lee palabra por palabra. Y el barrido se hizo sobre
+HTML, JS y TSX, así que el `.xml` no entró en la búsqueda: la regla no falló, la
+lista de extensiones sí.
+
+**Qué se hace.** El barrido de rayas largas incluye `.xml`, `.txt` y `.json`
+además del código. Lo que se sirve al público no se filtra por extensión.
+
+### 2026-09-22 - Un sitio de la zona publicado sin `llms.txt`
+
+**Qué pasó.** `parla.kgstudio.top/llms.txt` devolvía 404. Tenía `robots.txt`,
+`sitemap.xml`, canonical, Open Graph y el `@graph` con el `@id` del hub: todo
+menos la pieza que leen los buscadores con IA.
+
+**Por qué está mal.** La tabla de "lo mínimo antes de considerarse publicado"
+lista siete piezas y cumplir seis no es cumplirla. El `llms.txt` es además el
+único sitio donde parla puede decir en prosa que interpreta y no responde, que
+es lo que lo distingue de un traductor.
+
+**Qué se hace.** Antes de dar por publicado un sitio se piden las cuatro rutas a
+producción -`/`, `/robots.txt`, `/sitemap.xml`, `/llms.txt`- y se miran los
+códigos. Compilar no es publicar, y "estaba en el repo" no es "responde".
+
+### 2026-09-22 - El portafolio describía a la persona en vez de citarla
+
+**Qué pasó.** El JSON-LD del portafolio declaraba su propio
+`portafolio.kgstudio.top/#person` con cargo, estudios, dirección, `knowsAbout` y
+un `worksFor` que además contradecía al del hub. Y en el comentario de al lado
+estaba escrita la regla que incumplía: "el resto de sitios citan su `@id` en vez
+de volver a describirla".
+
+**Por qué está mal.** Dos fichas de la misma persona con `@id` distintos son dos
+personas para un buscador, que es justo lo que el grafo de entidades existe para
+evitar. Y son dos sitios donde corregir el mismo dato el día que cambie.
+
+**Qué se hace.** El nodo `Person` de cualquier sitio de la zona lleva
+`"@id": "https://kgstudio.top/#kevin"` y solo lo justo para entenderse suelto:
+nombre, alias, url y cargo. Lo demás vive en el hub. Un comentario que enuncia
+una regla no la cumple: se comprueba con `grep 'kgstudio.top/#kevin'` sobre el
+HTML servido, que es donde se ve.
+
+### 2026-09-22 - `lastmod` con `new Date()`, con la regla ya escrita
+
+**Qué pasó.** El fallo del 2026-09-04 se corrigió en examia, monetiq y autoreel,
+pero portafolio y parla siguieron fechando sus URLs con la hora de la petición.
+El portafolio además listaba cinco anclas (`/#about`, `/#stack`...) como URLs
+propias.
+
+**Por qué está mal.** Lo primero ya está explicado arriba. Lo segundo es la
+misma página declarada seis veces: un buscador recorta el fragmento y se queda
+con la portada.
+
+**Qué se hace.** Cuando una entrada del registro se corrige, se corrige en
+**todos** los repos a la vez y se deja constancia de cuáles se miraron. Arreglar
+el sitio donde se descubrió y dar el fallo por cerrado es lo que hizo falta
+volver a arreglar hoy.
+
+### 2026-09-22 - El README del hub explicaba una interfaz que ya no existía
+
+**Qué pasó.** Describía un índice de nombres en `<ul class="index">` con
+`data-text`, donde una copia naranja se despliega al confirmar el estado. La
+página es desde hace tiempo un sistema orbital en Three.js con `<a class="node">`
+y `<ul class="rows">`, y el estado lo marca un punto. La tabla de sitios de la
+zona iba por cinco de once.
+
+**Por qué está mal.** Es lo primero que se lee antes de tocar el repo, y un
+ejemplo de "cómo agregar un sitio" copiado de ahí produce marcado que la página
+ignora en silencio.
+
+**Qué se hace.** El README se revisa en el mismo commit que cambia la estructura
+que describe. Un ejemplo de marcado se copia del `index.html` de verdad, no se
+escribe de memoria.
+
+### 2026-09-22 - Un `og:image` declarado y un archivo que no existía
+
+**Qué pasó.** El layout de monetiq declaraba
+`images: [{ url: '/og-image.png', width: 1200, height: 630 }]` y ese PNG no
+estaba en `public/`. La etiqueta salía perfecta en el HTML, con sus medidas y
+su `alt`, y `https://monetiq.kgstudio.top/og-image.png` contestaba 404: cada
+enlace compartido en WhatsApp o LinkedIn salía como una tarjeta gris.
+
+**Por qué no se vio antes.** Porque revisar el SEO leyendo el HTML lo da por
+bueno: la etiqueta está, las medidas están, el `twitter:card` es el que toca.
+El fallo está al otro lado de la URL, y solo aparece pidiéndola.
+
+**Qué se hace.** La imagen de compartir se genera con `opengraph-image.tsx`,
+que es la convención de archivo de Next: si el archivo no está, no compila.
+Una ruta escrita a mano en el metadata no avisa de nada. Y en cualquier
+revisión de SEO, el `og:image` no se lee: se pide, y se mira que conteste 200
+con un `content-type` de imagen.
+
+### 2026-09-22 - Tres marcas distintas para el mismo producto
+
+**Qué pasó.** MonetIQ tenía el `favicon.ico` de la plantilla de Next -un
+triángulo blanco sobre un círculo negro-, los cinco iconos de la PWA con una
+**F** verde, de cuando el producto se llamaba de otra manera, y en la barra del
+sitio y del tablero una **M** verde. Tres marcas a la vez, según dónde mires.
+
+**Por qué no se vio antes.** Porque un PNG no se revisa en un diff. El código
+que los referencia estaba perfecto; lo que estaba mal era el dibujo de dentro,
+y eso solo se ve abriendo el archivo o instalando la aplicación.
+
+**Qué se hace.** Los iconos se generan con un script -`npm run iconos`, que
+dibuja el SVG y lo rasteriza con sharp- en vez de subirse a mano. Así el dibujo
+vive en texto, se lee en la revisión y cambiar la marca es cambiar una
+constante. La letra va como trazo y no como `<text>`, porque un `<text>` depende
+de las fuentes de la máquina que corre el script y el mismo comando daría
+iconos distintos en otro computador.
+
+### 2026-09-22 - Cumplir una regla por accidente sigue siendo no cumplirla
+
+**Qué pasó.** El `robots.ts` de parla no nombraba a ningún rastreador de IA.
+No perdía nada -el comodín les abría lo mismo-, así que al revisar "¿entran
+GPTBot y ClaudeBot?" la respuesta era que sí y la casilla quedaba marcada.
+
+**Por qué está mal.** Lo que la tabla pide es que estén **nombrados**, y no
+por gusto: el día que el grupo `*` se restrinja, un sitio que los nombra sigue
+dándoles paso y uno que no, se los lleva por delante sin que nadie lo decida.
+Una regla que se cumple sola hoy es una regla que se rompe sola mañana.
+
+**Qué se hace.** Los cuatro agentes se nombran, cada grupo repite la lista de
+rutas privadas -que no hereda del comodín, ver el 2026-09-04- y la lista se
+declara una sola vez en una constante. Comprobado pidiendo el `robots.txt`
+servido, no leyendo el código que lo genera.

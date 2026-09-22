@@ -1,4 +1,4 @@
-# KG Studio — hub
+# KG Studio - hub
 
 Página principal de <https://kgstudio.top>.
 
@@ -12,7 +12,8 @@ viven la trayectoria, la experiencia, el stack y el catálogo de proyectos. Si u
 sección de esta página empieza a repetir eso, sobra: se borra y se deja el enlace.
 
 Sitio estático puro (HTML + CSS + JS, sin build) desplegado en Vercel. Cada push a
-`main` publica en producción.
+`main` publica en producción. Three.js entra por `importmap` desde jsDelivr, así
+que sigue sin haber `npm install` ni paso de compilación.
 
 ## Identidad
 
@@ -28,7 +29,7 @@ Los tokens salen del portafolio para que los dos sitios se lean como uno solo:
 Tipografías: **Space Grotesk** para display, **Inter** para texto, mono del sistema
 para etiquetas.
 
-La escala está declarada de una vez en `:root` — siete pasos, cada uno con un trabajo
+La escala está declarada de una vez en `:root`: siete pasos, cada uno con un trabajo
 asignado. Si necesitas un tamaño nuevo, ajusta la escala; no escribas un `clamp()`
 suelto en una regla:
 
@@ -44,30 +45,50 @@ Lo mismo con el ritmo vertical: todas las secciones llevan `.band`, que aplica
 
 ## La idea de la página
 
-**El índice en vivo.** Cada nombre de subdominio está escrito dos veces: el texto base
-en gris y una copia naranja recortada a ancho cero por CSS. Cuando la comprobación
-confirma que el servidor responde, la copia se despliega de izquierda a derecha. El
-pintado *es* el health check, no una animación decorativa.
+**La zona como sistema orbital.** Un núcleo, que es el dominio raíz, y un cuerpo en
+órbita por cada subdominio. Se recorre arrastrando, con la rueda, con WASD, con Tab
+o tocando un cuerpo; al señalar uno, el panel de la izquierda cuenta qué es y con
+qué está hecho. Quien prefiera leer tiene el botón "Prefiero una lista", que cambia
+a la tabla de `<ul class="rows">`.
 
-Para agregar un sitio basta con una entrada más en `<ul class="index">`:
+**El encendido es la comprobación de estado.** `main.js` recorre todo lo que declare
+`data-probe`, lo pide con `fetch` en modo `no-cors` y, si el servidor responde, le
+pone `data-state="live"`: el punto del cuerpo y el de su fila se prenden naranja a la
+vez. No hay animación decorativa de por medio; lo que se ve encendido es lo que
+contestó.
+
+Si un sitio no responde se queda apagado, nunca en rojo - un problema de red del
+visitante no debería desmentir un sitio que está bien.
+
+Las etiquetas de los cuerpos son enlaces de verdad, con teclado y legibles por un
+rastreador que no ejecuta WebGL. Por eso cada sitio está escrito dos veces en el
+HTML: como cuerpo en `<div class="labels">` y como fila en `<ul class="rows">`.
+
+Para agregar un sitio hacen falta las dos, con el mismo `data-node` y `data-row`
+para que compartan el estado:
 
 ```html
-<li class="entry">
-  <a class="entry__link" href="https://nuevo.kgstudio.top" target="_blank" rel="noopener"
-     data-probe="https://nuevo.kgstudio.top">
-    <span class="entry__name" data-text="nuevo">nuevo</span>
-    <span class="entry__aside">
-      <span class="entry__desc">Una línea de qué es</span>
-      <span class="entry__meta">Stack · Hosting</span>
-    </span>
-  </a>
-</li>
+<!-- el cuerpo, en .labels -->
+<a class="node" href="https://nuevo.kgstudio.top" target="_blank" rel="noopener"
+   data-node="nuevo" data-probe="https://nuevo.kgstudio.top"
+   data-title="Nuevo" data-stack="Stack · Hosting"
+   data-desc="Una línea de qué es, la que lee el panel.">
+  <span class="node__dot" aria-hidden="true"></span>
+  <span class="node__name">Nuevo</span>
+</a>
+
+<!-- la fila, en .rows -->
+<li><a href="https://nuevo.kgstudio.top" target="_blank" rel="noopener" data-row="nuevo">
+  <span class="rows__dot" aria-hidden="true"></span>
+  <span class="rows__name">nuevo</span>
+  <span class="rows__desc">Una línea de qué es</span>
+  <span class="rows__meta">Stack · Hosting</span>
+</a></li>
 ```
 
-`data-text` debe repetir exactamente el texto visible: es lo que se pinta encima.
-
-Si un sitio no responde el nombre se queda gris, nunca en rojo — un problema de red del
-visitante no debería desmentir un sitio que está bien.
+Y tres cosas más que se olvidan: el `ItemList` del `@graph`, la entrada en
+`llms.txt` y el número escrito a mano en "Corriendo ahora", que ya se quedó corto
+una vez.
 
 ## SEO y entidad
 
@@ -96,7 +117,10 @@ los tres textos; si uno difiere, no une la ficha del mapa con el sitio.
 
 ### Pendientes que no se resuelven desde el código
 
-- Verificar `kgstudio.top` en Google Search Console y enviar el sitemap.
+- Enviar el sitemap en Google Search Console. La propiedad de dominio ya está
+  verificada: el 2026-09-22 se añadió el TXT `google-site-verification=...` a la
+  raíz en el DNS de Vercel (`vercel dns ls kgstudio.top`), que cubre el hub y
+  todos los subdominios de una vez.
 - En la ficha de Google Business, poner `https://kgstudio.top/` como sitio web.
 - Falta `hasMap`. El `sameAs` ya apunta a la entidad por su MID
   (`/g/11zds2s_mr`, el identificador que Google le dio a la ficha), pero un
@@ -111,7 +135,8 @@ los tres textos; si uno difiere, no une la ficha del mapa con el sitio.
 | --- | --- |
 | `index.html` | Quién, índice en vivo, rutas, contacto |
 | `styles.css` | Escala, tokens y estilos, con modo oscuro por `prefers-color-scheme` |
-| `main.js` | Comprobación de estado y año del pie |
+| `main.js` | El sistema orbital en Three.js, la comprobación de estado y el año del pie |
+| `scripts/` | Utilidades de la zona: `configurar-correo.mjs` y `respaldo.mjs` |
 | `photo.jpg` | Retrato, también usado como `og:image` |
 | `robots.txt` | Rastreo abierto, incluidos los bots de IA, y ruta del sitemap |
 | `sitemap.xml` | La única URL del host |
@@ -129,10 +154,16 @@ python -m http.server 8000
 | --- | --- | --- |
 | `kgstudio.top` + `www.` | Este hub | `kgstudio-hub` |
 | `portafolio.` | Portafolio personal | `portafolio` |
-| `parla.` | Intérprete en vivo ES⇄EN | `parla` |
+| `parla.` | Intérprete médico en vivo ES⇄EN | `parla` |
+| `monetiq.` | Finanzas personales con IA | `monetiq-web` |
 | `reinicia.` + `pc.` | Mantenimiento de computadores | `kgstudio-soporte` |
+| `pagobot.` | Bot de pagos en Telegram (la web es solo la API) | `pagobot` |
 | `arriendos.` | Gestión de arriendos (privado) | `arriendos` |
+| `examia.` | Bancos de preguntas y simulacros con IA | `examia` |
+| `autoreel.` | Estudio de video vertical automatizado | `autoreel` |
+| `itep.` | Simulador del examen de inglés iTEP | `itep` |
+| `distribucionesagd.` | Sitio de cliente: ferretería y pinturas | `distribuciones-agd` |
 
 El DNS también vive en Vercel y hay un registro comodín `*`, así que un subdominio
 nuevo solo necesita asignarse a su proyecto. Ojo: asignar el dominio **no** lo apunta al
-deployment — hay que desplegar después, o queda en 404.
+deployment - hay que desplegar después, o queda en 404.
