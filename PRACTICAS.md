@@ -2553,3 +2553,50 @@ plantilla anterior.
 de cliente son contenido público de cara al cliente, no notas internas: se
 escriben en español, con acentos, sin rayas largas, y se revisan en el mismo
 commit que cambia lo que describen. Si el sitio se rehace, el README se rehace.
+
+### 2026-09-22 - Pedir un resultado enriquecido que la página no puede sostener
+
+**Qué pasó.** Search Console dio ocho elementos no válidos en Distribuciones
+AGD -"debe especificarse offers, review o aggregateRating"- y al revisar el
+resto de la zona salían siete más en el hub por lo mismo. Eran categorías de
+ferretería marcadas como `Product` y los diez productos del índice marcados
+como `SoftwareApplication`.
+
+**Por qué está mal.** Cada uno de esos tipos es una promesa: `Product` promete
+la ficha de un producto con precio, valoración o reseña; `SoftwareApplication`
+promete la tarjeta de una aplicación con su precio y su puntuación. Si la
+página no tiene con qué cumplirla, la tarjeta no sale igual, y encima el
+informe queda con errores fijos que tapan uno de verdad el día que aparezca.
+
+**Qué se hace.** Se escoge el tipo por lo que la página **es**, no por el
+resultado que se quiere:
+
+| La página | El tipo |
+| --- | --- |
+| Un catálogo de familias, sin precios | `OfferCatalog` dentro de `OfferCatalog` |
+| Un índice que enlaza sitios | `WebSite` por entrada |
+| La página de una aplicación de verdad | `SoftwareApplication`, con su `offers` |
+
+Y la línea que separa los dos casos: en AGD el tipo era **falso** -una
+categoría no es un producto- y se cambia. En parla el tipo es **verdad** -es
+una aplicación- y se deja, aunque falte `aggregateRating` y Search Console lo
+avise. Un aviso de "no apta para la tarjeta" no baja posiciones. Lo que no se
+hace nunca es inventar una valoración para apagar el aviso: eso es una reseña
+falsa y es motivo de acción manual.
+
+### 2026-09-22 - Un `FAQPage` parafraseando lo que dice la página
+
+**Qué pasó.** Dos casos en la misma revisión. itep declaraba seis preguntas
+que no están en ninguna parte: ni en el bloque estático ni en la aplicación
+que lo reemplaza. reinicia declaraba cuatro de las cinco que sí se leen, y las
+declaraba **con otras palabras**: a "¿Cuánto cuesta?" le faltaba media frase, a
+"¿Dan garantía?" lo de los repuestos, y "¿Atienden Mac?" no estaba.
+
+**Por qué está mal.** Un `FAQPage` declara que esas preguntas y esas respuestas
+están en la página. Si no están, o están en otra versión, se le está contando
+a Google una página que el visitante no ve.
+
+**Qué se hace.** El texto del JSON-LD se **copia** del que pinta la página, sin
+resumir ni pulir. Si una pregunta no está en la página, no se declara; si se
+quiere declarar, se escribe primero en la página. La comprobación es mecánica:
+extraer las preguntas del HTML servido, extraerlas del JSON-LD y compararlas.
