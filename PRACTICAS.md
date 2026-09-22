@@ -2520,3 +2520,36 @@ producción, se empuja a las dos: `git push origin dev:main`. Y un cambio no se
 da por publicado porque el push saliera bien, sino **pidiendo la URL de
 producción** y viendo el cambio en la respuesta. Es la misma regla de siempre
 -no vale con que compile- aplicada al despliegue.
+
+### 2026-09-22 - El único enlace que Google seguía iba a la copia
+
+**Qué pasó.** Buscando "distribuciones agd" no salía el sitio por ninguna
+parte: el primer resultado de la marca era el repo de GitHub. Y el `homepage`
+de ese repo apuntaba a `distribuciones-agd.vercel.app`, la URL que Vercel
+asigna sola, no a `distribucionesagd.kgstudio.top`. El resultado mejor
+posicionado del negocio mandaba a una copia.
+
+**Por qué importa.** Un sitio nuevo en un subdominio no tiene autoridad
+ninguna; la gana por los enlaces que apuntan a él. GitHub reparte mucha, y la
+estaba repartiendo a la copia. El `canonical` evita que Google cuente dos
+sitios, pero no traslada el enlace: ese sigue contando para la URL enlazada.
+
+**Qué se hace.** Al publicar un sitio de la zona, el `homepage` del repo se
+pone en el dominio real, no en el `.vercel.app`. Y se comprueba que el sitio
+esté indexado de verdad con `site:<dominio>` en el buscador: la "prueba en
+tiempo real" de Search Console solo dice que la página **se podría** indexar,
+no que lo esté. Para saberlo está la pestaña "Índice de Google".
+
+### 2026-09-22 - La descripción del repo es un snippet de Google
+
+**Qué pasó.** Mientras el dominio no esté indexado, el repo es lo que sale
+cuando se busca la marca, y su descripción es el texto que Google enseña
+debajo. La de Distribuciones AGD hablaba de un "product carousel" retirado tres
+commits antes, iba en inglés, y llevaba raya larga. Los `topics` decían
+`bootstrap` y `jquery`, que ya no se usaban. El README describía entera la
+plantilla anterior.
+
+**Qué se hace.** La descripción, los `topics` y el README del repo de un sitio
+de cliente son contenido público de cara al cliente, no notas internas: se
+escriben en español, con acentos, sin rayas largas, y se revisan en el mismo
+commit que cambia lo que describen. Si el sitio se rehace, el README se rehace.
