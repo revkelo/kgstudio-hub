@@ -2600,3 +2600,38 @@ a Google una página que el visitante no ve.
 resumir ni pulir. Si una pregunta no está en la página, no se declara; si se
 quiere declarar, se escribe primero en la página. La comprobación es mecánica:
 extraer las preguntas del HTML servido, extraerlas del JSON-LD y compararlas.
+
+### 2026-09-22 - Un patrón sin anclar en `.vercelignore` se comió una página
+
+**Qué pasó.** `autoreel.kgstudio.top/docs` contestaba 404 con la página
+escrita, compilada y empujada. El build local la listaba (`○ /docs`), el
+despliegue quedaba Ready, la portada la enlazaba y el sitemap la declaraba. Y
+404.
+
+**Por qué.** `.vercelignore` usa la sintaxis de `.gitignore`, donde un patrón
+sin barra inicial matchea una carpeta con ese nombre **en cualquier nivel**. La
+línea `docs/`, puesta para no subir la documentación del repo, se llevaba
+también `src/app/docs/`.
+
+**Por qué cuesta tanto verlo.** Porque todo lo demás dice que está bien. No hay
+error de build, el despliegue es `Ready`, el código está en el repo y en local
+funciona. Lo único que falla es la URL, y el 404 viene de Vercel, no de Next,
+así que ni siquiera se parece a un problema de la aplicación. Se busca en el
+`next.config`, en el proxy y en la caché antes de sospechar de un archivo de
+nueve líneas que nadie mira desde que se escribió.
+
+**Lo que lo hace peor.** En el mismo archivo estaban `videos/` y `projects/`,
+que son las salidas del render en la máquina de desarrollo **y** los nombres de
+dos rutas reales de la aplicación: la biblioteca y los proyectos. Las dos piden
+sesión, y el proxy redirige a `/entrar` antes de que Next pueda contestar un
+404. Un 307 tapa perfectamente una página que no existe: el síntoma de que
+faltan es indistinguible del comportamiento normal.
+
+**Qué se hace.** Todo patrón de `.vercelignore` y `.dockerignore` va anclado a
+la raíz con barra inicial: `/docs/`, no `docs/`. Y antes de añadir una línea,
+comprobar que no existe una carpeta con ese nombre dentro de `src/app/`. Escrito
+en el propio archivo, que es donde se va a leer.
+
+**La regla de fondo, otra vez:** una página no está publicada porque compile y
+el despliegue diga Ready. Está publicada cuando se le pide la URL a producción
+y contesta 200.
