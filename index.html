@@ -60,6 +60,14 @@
 
   Si cambias un dato aquí, cámbialo también en la ficha de Google Business: el
   nombre, la dirección y el sitio web tienen que decir exactamente lo mismo.
+
+  La lista de productos va como `WebSite` y no como `SoftwareApplication`. Esto
+  último lo daba Search Console por elemento no válido -un `SoftwareApplication`
+  tiene que declarar `offers` y además `aggregateRating` o `review`-, y aquí no
+  hay valoraciones que declarar ni las va a haber por inventarlas. Esta página
+  tampoco es la ficha de ninguna aplicación: es un índice de los sitios de la
+  zona, y eso es exactamente lo que dice ahora. Cada producto describe lo que es
+  en su propia página.
 -->
 <script type="application/ld+json">
 {
@@ -190,17 +198,17 @@
       "@id": "https://kgstudio.top/#productos",
       "name": "Productos de Kevin Gonzalez en producción",
       "itemListOrder": "https://schema.org/ItemListUnordered",
-      "numberOfItems": 9,
+      "numberOfItems": 10,
       "itemListElement": [
-        { "@type": "ListItem", "position": 1, "item": { "@type": "WebSite", "name": "Portafolio de Kevin Gonzalez", "url": "https://portafolio.kgstudio.top/", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 2, "item": { "@type": "SoftwareApplication", "name": "Parla", "url": "https://parla.kgstudio.top/", "applicationCategory": "HealthApplication", "description": "Intérprete médico en vivo español ⇄ inglés.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 3, "item": { "@type": "SoftwareApplication", "name": "MonetIQ", "url": "https://monetiq.kgstudio.top/", "applicationCategory": "FinanceApplication", "description": "Finanzas personales con análisis de gastos por IA.", "operatingSystem": "Android, Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 1, "item": { "@type": "WebSite", "name": "Portafolio de Kevin Gonzalez", "url": "https://portafolio.kgstudio.top/", "description": "Trayectoria, experiencia y stack completo.", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 2, "item": { "@type": "WebSite", "name": "Parla", "url": "https://parla.kgstudio.top/", "description": "Intérprete médico en vivo español ⇄ inglés.", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 3, "item": { "@type": "WebSite", "name": "MonetIQ", "url": "https://monetiq.kgstudio.top/", "description": "Finanzas personales con análisis de gastos por IA.", "author": { "@id": "https://kgstudio.top/#kevin" } } },
         { "@type": "ListItem", "position": 4, "item": { "@type": "Service", "name": "Reinicia", "url": "https://reinicia.kgstudio.top/", "description": "Mantenimiento de computadores a domicilio en Bogotá.", "provider": { "@id": "https://kgstudio.top/#kgstudio" } } },
-        { "@type": "ListItem", "position": 5, "item": { "@type": "SoftwareApplication", "name": "Pagobot", "url": "https://pagobot.kgstudio.top/", "applicationCategory": "FinanceApplication", "description": "Bot de Telegram que lleva los pagos del mes.", "operatingSystem": "Telegram", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 6, "item": { "@type": "SoftwareApplication", "name": "Arriendos", "url": "https://arriendos.kgstudio.top/", "applicationCategory": "BusinessApplication", "description": "Contratos y documentos de arriendo con asistente de IA.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 7, "item": { "@type": "SoftwareApplication", "name": "examia", "url": "https://examia.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulacros de exámenes de certificación con preguntas generadas por IA o importadas en JSON.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 8, "item": { "@type": "SoftwareApplication", "name": "Autoreel", "url": "https://autoreel.kgstudio.top/", "applicationCategory": "MultimediaApplication", "description": "Estudio de video vertical: de una idea a un MP4 con voz, subtítulos, música y render en 1080x1920.", "operatingSystem": "Web", "author": { "@id": "https://kgstudio.top/#kevin" } } },
-        { "@type": "ListItem", "position": 9, "item": { "@type": "SoftwareApplication", "name": "Examen preparatorio (iTEP)", "url": "https://itep.kgstudio.top/", "applicationCategory": "EducationalApplication", "description": "Simulador del examen de inglés iTEP completo: grammar, listening, reading, writing y speaking con tiempos reales y reporte CEFR de A1 a C2.", "operatingSystem": "Web", "isAccessibleForFree": true, "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 5, "item": { "@type": "WebSite", "name": "Pagobot", "url": "https://pagobot.kgstudio.top/", "description": "Bot de Telegram que lleva los pagos del mes.", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 6, "item": { "@type": "WebSite", "name": "Arriendos", "url": "https://arriendos.kgstudio.top/", "description": "Contratos y documentos de arriendo con asistente de IA.", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 7, "item": { "@type": "WebSite", "name": "examia", "url": "https://examia.kgstudio.top/", "description": "Simulacros de exámenes de certificación con preguntas generadas por IA o importadas en JSON.", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 8, "item": { "@type": "WebSite", "name": "Autoreel", "url": "https://autoreel.kgstudio.top/", "description": "Estudio de video vertical: de una idea a un MP4 con voz, subtítulos, música y render en 1080x1920.", "author": { "@id": "https://kgstudio.top/#kevin" } } },
+        { "@type": "ListItem", "position": 9, "item": { "@type": "WebSite", "name": "Examen preparatorio (iTEP)", "url": "https://itep.kgstudio.top/", "description": "Simulador del examen de inglés iTEP completo: grammar, listening, reading, writing y speaking con tiempos reales y reporte CEFR de A1 a C2.", "isAccessibleForFree": true, "author": { "@id": "https://kgstudio.top/#kevin" } } },
         { "@type": "ListItem", "position": 10, "item": { "@type": "WebSite", "name": "Distribuciones AGD", "url": "https://distribucionesagd.kgstudio.top/", "description": "Sitio corporativo de Distribuciones AGD, ferretería y pinturas en Bogotá.", "inLanguage": "es-CO", "author": { "@id": "https://kgstudio.top/#kevin" }, "creator": { "@id": "https://kgstudio.top/#kgstudio" } } }
       ]
     }
