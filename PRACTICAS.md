@@ -2758,3 +2758,46 @@ cuenta `kgstudio`, la prueba del 2026-10-16 llegó a la bandeja principal de
 Gmail en menos de un minuto, sin pasar por spam. Si los correos vuelven a
 perderse, lo primero es mirar que ese remitente siga verificado en la cuenta
 cuya llave SMTP usan parla y ludoteca.
+
+### 2026-10-16 - Una frase que se enciende con IntersectionObserver y se queda encendida
+
+**Qué pasó.** En la landing de `ludoteca`, cada palabra de la frase grande se
+encendía con un IntersectionObserver al cruzar una línea a 60% de la pantalla.
+Bajando despacio funcionaba. Tras un salto (un ancla, volver atrás) se quedaban
+encendidas palabras que estaban por debajo de la línea.
+
+**Por qué.** El observer solo avisa cuando algo cruza el borde de la zona que
+vigila. Una palabra que pasa de "arriba, fuera de pantalla" a "debajo de la
+línea" no cruza nada en ese salto, así que conserva el estado viejo.
+
+**Qué se hace.** Si el estado depende de la posición, se mide la posición: un
+solo listener pasivo de scroll, limitado con `requestAnimationFrame` y activo
+solo mientras el bloque está en pantalla (eso sí lo decide el observer). La
+prueba incluye un salto a mitad del bloque, no solo bajar de corrido.
+
+### 2026-10-16 - El héroe invisible hasta que carga el JavaScript
+
+**Qué pasó.** El héroe de la misma landing usaba el componente de aparición al
+hacer scroll, que pinta en el servidor con `opacity-0` y se revela desde el
+cliente. Las capturas lo mostraban borroso un segundo largo después de cargar.
+
+**Por qué está mal.** Lo primero que se ve no puede depender del JavaScript:
+retrasa el LCP, y si el JS falla no aparece nunca. La aparición al hacer scroll
+es para lo que está debajo del pliegue.
+
+**Qué se hace.** Lo de arriba del pliegue entra con una animación solo de CSS
+(`@keyframes`), que corre desde el primer pintado.
+
+### 2026-10-16 - Un arnés que choca con sus propios límites de intentos
+
+**Qué pasó.** `ludoteca/scripts/verificar-cuentas.mjs` pasaba entero y, corrido
+otra vez enseguida, fallaba en el primer registro. El límite es de 5 registros
+por hora y por IP, y en local la IP siempre es la misma: la corrida anterior
+lo había gastado. El primer arreglo limpiaba la IP `local` y no sirvió, porque
+la IP real en local es `::1`.
+
+**Qué se hace.** El arnés borra al empezar los contadores por IP de la base
+local. Antes de limpiar algo por su valor, se mira qué valor tiene de verdad en
+la base. Y `prisma dev` se cae con la carga del arnés (admite una conexión a la
+vez): si aparece `ECONNREFUSED` en el puerto de la base, se levanta otra vez con
+`npx prisma dev --name ludoteca --detach` antes de buscar el fallo en el código.
