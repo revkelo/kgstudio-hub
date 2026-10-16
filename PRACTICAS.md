@@ -2752,3 +2752,9 @@ autenticado. El nombre visible sigue siendo el de cada sitio. Al mover una llave
 SMTP de cuenta se mueven con ella el dominio y los remitentes. Y una prueba de
 correo se da por buena cuando el correo aparece en el buzón, no cuando Brevo
 responde `250`.
+
+**Comprobado.** Con `no-responder@kgstudio.top` creado como remitente en la
+cuenta `kgstudio`, la prueba del 2026-10-16 llegó a la bandeja principal de
+Gmail en menos de un minuto, sin pasar por spam. Si los correos vuelven a
+perderse, lo primero es mirar que ese remitente siga verificado en la cuenta
+cuya llave SMTP usan parla y ludoteca.
