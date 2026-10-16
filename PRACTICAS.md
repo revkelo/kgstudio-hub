@@ -2801,3 +2801,29 @@ local. Antes de limpiar algo por su valor, se mira qué valor tiene de verdad en
 la base. Y `prisma dev` se cae con la carga del arnés (admite una conexión a la
 vez): si aparece `ECONNREFUSED` en el puerto de la base, se levanta otra vez con
 `npx prisma dev --name ludoteca --detach` antes de buscar el fallo en el código.
+
+### 2026-10-16 - Toda página compartida con el título de la portada
+
+**Qué pasó.** El layout de `ludoteca` declaraba `canonical: "/"` y un
+`openGraph` con la URL y el título de la portada. Las páginas ponían su propio
+`title` y `description`, pero no su `openGraph`. Next no mezcla ese objeto: si
+la página no trae el suyo, hereda el del layout entero. Compartir una ficha de
+juego mostraba "ludoteca - tu colección de Nintendo Switch" y la URL de la
+portada.
+
+**Qué se hace.** El layout no lleva canonical ni `og:url`. Cada página pública
+arma sus metadatos con un solo ayudante (`src/lib/seo.ts`) que pone título,
+descripción, canonical y vista previa juntos. Se comprueba pidiendo el HTML de
+cada ruta y leyendo `og:url` y `canonical`, no leyendo el código.
+
+### 2026-10-16 - El servidor de desarrollo con el cliente de Prisma viejo
+
+**Qué pasó.** Tras añadir una columna y correr `prisma generate`, el registro
+fallaba en local con "No pudimos enviar el correo". El servidor de desarrollo
+que ya estaba corriendo seguía con el cliente anterior, y el error de la
+columna desconocida quedaba tapado por el `catch` de la acción.
+
+**Qué se hace.** Después de `prisma generate` se reinicia el servidor de
+desarrollo. Y en Windows, detener el `npx next dev` no siempre cierra el
+proceso de Node que lanzó: antes de arrancar otro, se mira quién tiene el
+puerto (`Get-NetTCPConnection -LocalPort 3100`).
