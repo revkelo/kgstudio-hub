@@ -2827,3 +2827,17 @@ columna desconocida quedaba tapado por el `catch` de la acción.
 desarrollo. Y en Windows, detener el `npx next dev` no siempre cierra el
 proceso de Node que lanzó: antes de arrancar otro, se mira quién tiene el
 puerto (`Get-NetTCPConnection -LocalPort 3100`).
+
+### 2026-10-16 - El mismo desborde de grid, dos veces el mismo día
+
+**Qué pasó.** En la landing de `ludoteca`, primero el héroe y luego las filas
+de beneficios desbordaban a lo ancho en el teléfono (186 y 78 px). Las dos
+veces era un `grid` de una columna cuyo contenido tenía un texto con
+`truncate` o una fila de carátulas: la columna toma el ancho mínimo del
+contenido y ese mínimo era más ancho que la pantalla.
+
+**Qué se hace.** Las columnas de un grid que lleva texto truncado o filas que
+se deslizan van con `minmax(0,1fr)`, no con `1fr` ni con el valor por defecto:
+`grid-cols-[minmax(0,1fr)]` y `md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]`. Y
+los títulos de las columnas del pie no son encabezados: un `h2` repetido en
+cada página ensucia el esquema y choca con los títulos propios.
