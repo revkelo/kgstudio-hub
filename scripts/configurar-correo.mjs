@@ -46,7 +46,7 @@ const SMTP = {
   // El remitente que ve quien recibe. Tiene que ser un dominio verificado en
   // Brevo; si no lo está, Brevo acepta la conexión y rechaza el envío, que es
   // el fallo más difícil de diagnosticar de los tres.
-  senderEmail: process.env.BREVO_SENDER ?? "kgagudelo@gmail.com",
+  senderEmail: process.env.BREVO_SENDER ?? "no-responder@kgstudio.top",
   senderName: "kgstudio",
 };
 

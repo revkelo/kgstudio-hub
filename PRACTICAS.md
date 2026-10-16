@@ -2635,3 +2635,120 @@ en el propio archivo, que es donde se va a leer.
 **La regla de fondo, otra vez:** una página no está publicada porque compile y
 el despliegue diga Ready. Está publicada cuando se le pide la URL a producción
 y contesta 200.
+
+### 2026-10-04 - `objectFit` en `style` de un `<Video>` de @remotion/media
+
+**Qué pasó.** En el editor nuevo de autoreel, un clip de video con ajuste
+"Llenar" salía encajado, con franjas negras arriba y abajo, aunque el estilo
+decía `objectFit: 'cover'`.
+
+**Por qué está mal.** El `<Video>` de `@remotion/media` no pinta un `<video>`
+sino un canvas, e ignora `objectFit` dentro de `style`: solo avisa por consola
+y usa `contain`. El código se leía bien y compilaba; el fallo solo se vio
+mirando una captura del editor en marcha.
+
+**Qué se hace.** En `@remotion/media`, el ajuste va en la prop `objectFit`. Y
+un cambio en una composición de Remotion se da por bueno mirando un frame
+renderizado, no leyendo el JSX.
+
+### 2026-10-15 - Un formulario con `action` que borraba lo que se escribía después del error
+
+**Qué pasó.** El login de `ludoteca` usaba `<form action={accion}>` con
+`useActionState`. Tras una contraseña equivocada salía el error y, si se volvía
+a escribir enseguida (un gestor de contraseñas rellena al instante), el botón
+no hacía nada: ni petición ni aviso.
+
+**Por qué costó verlo.** React reinicia solo los formularios con `action`
+cuando termina la transición, y ese reinicio llegaba **después** de pintar el
+error. Borraba el campo justo después de escribirlo, `required` bloqueaba el
+envío en silencio y la página se veía normal. A mano, escribiendo despacio, no
+se reproduce. Lo encontró el recorrido con Playwright, leyendo
+`input.value` y `validity` justo antes y justo después del clic.
+
+**Qué se hace.** Un formulario que se reintenta en la misma pantalla (login,
+códigos) va con `onSubmit` + `startTransition` y no con `action`: así no hay
+reinicio automático que compita con quien escribe.
+
+### 2026-10-15 - `prisma dev` entrega la URL de `template1`
+
+**Qué pasó.** `npx prisma dev` imprimió una URL a la base `template1` y se usó
+tal cual. Al crear la segunda migración, `migrate dev` falló con "relation Game
+already exists": la base sombra nace copiando `template1`, que ya tenía las
+tablas.
+
+**Qué se hace.** Con `prisma dev` (PGlite) no hay base sombra que sirva:
+las migraciones nuevas se escriben con `migrate diff`, o a mano si son triviales,
+se aplican con `migrate deploy` y se comprueba que no quede deriva con
+`prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma`
+(tiene que decir "empty migration").
+
+### 2026-10-15 - Secretos de producción pisados por el `.env` local
+
+**Qué pasó.** Al configurar `ludoteca` en Vercel se generaron `CRON_SECRET`,
+`SESSION_SECRET` y `APP_PASSWORD` y se cargaron en el shell. Justo después se
+hizo `source .env` para tomar las credenciales de Twitch, y ese `.env` local
+también traía esas tres variables con valores de prueba (`cron-local`,
+`prueba-local`). Producción quedó con la contraseña de desarrollo, y la que se
+le dio a Kevin no servía.
+
+**Por qué costó verlo.** `vercel env pull` no devuelve los valores sensibles
+de producción: llegan como `[SENSITIVE]`, así que compararlos no sirve. Solo se
+vio porque el cron respondió 401 con el secreto "nuevo".
+
+**Qué se hace.** Al subir variables, cada una se lee por nombre de su fuente
+(`grep '^VAR=' archivo`), nunca cargando archivos enteros en el mismo shell. Y
+un secreto de producción se comprueba usándolo contra producción: el cron con
+`curl` y la contraseña entrando de verdad, con una contraseña inventada como
+control que tiene que fallar.
+
+### 2026-10-16 - Una fuente que responde desde el PC y no desde Vercel
+
+**Qué pasó.** La sección Homebrew de `ludoteca` lee GameBrew y Reddit. Desde el
+PC respondían 200; desde Vercel, 403, porque bloquean las IP de servidores en
+la nube. El primer aviso fue un "0 fichas" sin motivo y un mensaje que decía
+que la fuente "seguía mañana".
+
+**Qué se hace.** Una fuente externa se prueba **desde producción** antes de
+confiarle un cron, y cada fuente guarda el motivo de su fallo (`HTTP 403`,
+tiempo de espera), no solo un cero. Si un sitio bloquea a Vercel o tiene
+protección anti-bots (GBAtemp con Cloudflare), no se esquiva: se lee desde
+donde sí deja (`npm run homebrew` desde el PC) o se deja como enlace.
+
+### 2026-10-16 - `use cache` guardando un fallo por un día
+
+**Qué pasó.** La última versión de cada repositorio se leía de GitHub con
+`"use cache"` y `cacheLife("days")`. Un corte de red de un segundo devolvió
+`null`, y ese `null` quedó en caché un día: NFS Most Wanted salió sin versión
+con el repositorio funcionando.
+
+**Qué se hace.** La vida en caché depende del resultado: `cacheLife` se llama
+después de la consulta, "days" si hubo dato y "minutes" si no.
+
+### 2026-10-16 - `Date.now()` en una página con Cache Components
+
+**Qué pasó.** La sección "Lanzamientos recientes" del inicio calculaba la fecha
+con `Date.now()`. Next 16 lo rechaza durante el prerender ("unstable value"). El
+build pasó; lo cazó la consola del navegador en el recorrido con Playwright.
+
+**Qué se hace.** Antes de leer el reloj en un componente se llama a
+`await connection()`, que declara que esa parte se calcula al pedir la página.
+
+### 2026-10-16 - Correos aceptados por Brevo que nunca salían
+
+**Qué pasó.** El 1 de septiembre la llave SMTP de la zona se pasó de la cuenta
+de Brevo `monetIQ` a la cuenta `kgstudio`. El dominio `kgstudio.top` y el
+remitente `parla@kgstudio.top` se quedaron verificados en la cuenta vieja. Desde
+entonces Brevo contestaba `250 OK: queued` a cada envío y después lo descartaba:
+en Gmail no había nada, ni en spam. El último correo de `@kgstudio.top` que
+llegó era del 27 de julio.
+
+**Por qué costó verlo.** El `250` se lee como "enviado" y no lo es: solo dice que
+Brevo lo puso en cola. La cuenta que envía tiene que tener verificado el
+remitente; si no, el correo se pierde sin error en el SMTP.
+
+**Qué se hace.** Un remitente general para toda la zona,
+`no-responder@kgstudio.top`, verificado en la cuenta `kgstudio` con el dominio
+autenticado. El nombre visible sigue siendo el de cada sitio. Al mover una llave
+SMTP de cuenta se mueven con ella el dominio y los remitentes. Y una prueba de
+correo se da por buena cuando el correo aparece en el buzón, no cuando Brevo
+responde `250`.
