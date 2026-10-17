@@ -2960,3 +2960,27 @@ vez: la herramienta decodifica los escapes.
 **Qué se hace.** Un escape que tiene que quedar escrito como escape se pone
 con un script que arme la barra invertida (`chr(92) + "u2014"` en Python), y
 se comprueba con `grep` que el archivo no tenga el carácter.
+
+### 2026-10-16 - Medidas de un formato que se rompen en el otro
+
+**Qué pasó.** En el estilo cine de `autoreel`, el plano de la interfaz medía
+el ancho del cuadro y la línea final se medía con su alto. En 16:9 se veía
+bien; en 9:16 la interfaz quedó chica en medio del negro y la línea salió
+gigante y partida en dos. Es la segunda vez el mismo día que un formato
+esconde un fallo del otro.
+
+**Qué se hace.** Lo que tiene que verse igual en los dos formatos se mide con
+el lado menor del cuadro (`Math.min(width, height)`), y lo que tiene que
+llenar se mide con el mayor. Y cada formato tiene su hoja de fotogramas.
+
+### 2026-10-16 - Un heredoc de bash con código de JavaScript dentro
+
+**Qué pasó.** Para editar varios archivos de una vez se pasó un script de
+Python por un heredoc de bash. Dos veces bash cortó con "unexpected EOF while
+looking for matching quote": el código de JavaScript que iba dentro traía
+comillas invertidas y plantillas `${}` que el envoltorio del comando no dejó
+pasar intactas.
+
+**Qué se hace.** Un script de edición largo, sobre todo si lleva código con
+comillas invertidas, se escribe a un archivo y se ejecuta desde ahí. Además
+se puede releer y volver a correr si algo falla a la mitad.
