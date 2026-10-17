@@ -2866,3 +2866,50 @@ máquina. Dos renders de prueba del editor dejaron dos filas sin dueño
 listan las filas de `projects` creadas en la última hora y se borran las de la
 prueba. Y la tabla de repos de `CLAUDE.md` dice que todos publican desde
 `main`: autoreel publica desde `master`.
+
+### 2026-10-16 - Una hoja de miniaturas con los rótulos cambiados
+
+**Qué pasó.** Para revisar el muestrario de escenas de `autoreel` se sacó una
+hoja de fotogramas con el filtro `fps=1/4` de ffmpeg y un rótulo con el
+tiempo. Los rótulos no correspondían al fotograma: donde decía 0 s salía la
+escena de los 4 s, y parecía que el mapa no encendía nada y que la comparación
+salía a medias. Casi se corrige un fallo que no existía.
+
+**Por qué está mal.** El filtro `fps` redondea al fotograma más cercano de
+su propia rejilla, que no empieza donde uno cree, y `%{pts}` marca el tiempo
+de salida, no el del video.
+
+**Qué se hace.** Un fotograma por instante, cada uno con su propio `-ss`, y
+el rótulo escrito con el número que se pidió (`npm run hoja` en autoreel). Si
+una hoja dice algo raro, lo primero es comprobar que el rótulo y la imagen
+son del mismo segundo.
+
+### 2026-10-16 - `flex: 1` dentro de una columna dejó las barras sin alto
+
+**Qué pasó.** En la escena de barras de `autoreel`, en vertical cada fila es
+una columna (nombre arriba, barra abajo). La barra llevaba `flex: 1` y un
+`height` fijo, y en el render salían los números pero ninguna barra.
+
+**Por qué está mal.** En una columna, `flex: 1` es `flex-basis: 0` en el eje
+vertical: pisa el `height` y, sin espacio que repartir, la barra queda en 0.
+
+**Qué se hace.** `flex: 1` solo cuando la fila es una fila. Y lo mismo que con
+`objectFit`: una composición de Remotion se da por buena mirando el fotograma.
+
+### 2026-10-16 - Animaciones que se veían bien solas y mal en el fotograma donde se cruzan
+
+**Qué pasó.** En el editor de `autoreel`, dos cosas que leídas en el código
+estaban bien salieron mal en el render del video de prueba. La ventana con la
+persona volaba a la esquina durante la transición y quedaba encima de las
+tiras de la persiana y de la banda del barrido. Y el contador con curva suave
+llegaba a 6 medio segundo antes de que se dijera "seis".
+
+**Por qué está mal.** Cada animación se pensó con su propio reloj. Lo que
+importa es el fotograma donde se cruza con otra (la transición) o con la voz
+(la palabra que debe coincidir).
+
+**Qué se hace.** Lo que tiene que caer en una palabra va lineal, o con una
+curva que llegue al final justo en ella. Lo que vive encima de una escena
+entra cuando la transición terminó y se va antes de que empiece la salida. Y
+se revisa con una hoja de fotogramas cada 0,1 s alrededor de cada transición,
+no solo una cada segundo y medio.
