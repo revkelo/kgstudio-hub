@@ -2984,3 +2984,39 @@ pasar intactas.
 **Qué se hace.** Un script de edición largo, sobre todo si lleva código con
 comillas invertidas, se escribe a un archivo y se ejecuta desde ahí. Además
 se puede releer y volver a correr si algo falla a la mitad.
+
+### 2026-10-16 - Cortes "al ritmo" de una música que nadie había medido
+
+**Qué pasó.** Los lanzamientos de `autoreel` ajustaban cada toma a golpes de
+120 BPM, y así lo decía la documentación. La canción que sonaba debajo,
+`recursos/instrumental.mp3`, va a 107,7 BPM: los cortes caían fuera de los
+golpes desde el primer video. Se supo al medirla, y se confirmó con otro
+método (30 de los 60 ataques más fuertes caen en la rejilla de 107,7; por
+azar caerían unos 14).
+
+**Qué se hace.** Un número que describe un archivo se mide en el archivo, no
+se supone. El tempo se detecta de la canción que suena (`ritmo.mjs`), la
+tabla del plan dice en qué golpe cae cada corte y avisa si alguno cae fuera.
+
+### 2026-10-16 - Dos definiciones de "corte" desfasadas medio golpe
+
+**Qué pasó.** Al mezclar planos de cine (corte seco) con tomas de demo (con
+transición), el punto de corte de una transición se tomó en su centro y el de
+un corte seco en su inicio. Con transiciones de un golpe, los dos quedaban a
+medio golpe uno del otro. Lo detectó una prueba ("entre dos cortes hay un
+número entero de golpes"), no el render.
+
+**Qué se hace.** Un concepto, una definición: el corte es el momento en que
+empieza a entrar la toma nueva, haya transición o no. Y las transiciones duran
+golpes enteros, nunca medio.
+
+### 2026-10-16 - Un caché que sobrevivió a un cambio de reglas
+
+**Qué pasó.** El editor de `autoreel` reutiliza el video cortado si la
+grabación no cambió. Al añadir el corte de muletillas, la regla nueva no se
+habría aplicado nunca a un video ya procesado: el caché solo miraba la
+grabación, no cómo se cortaba.
+
+**Qué se hace.** Un caché guarda también lo que decide su resultado: ahora el
+corte se reutiliza solo si los tramos calculados son idénticos a los de antes
+(`tramos.json`). Al cambiar un algoritmo, preguntarse qué cachés dependen de él.
