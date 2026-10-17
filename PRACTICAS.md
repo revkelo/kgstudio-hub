@@ -2913,3 +2913,50 @@ curva que llegue al final justo en ella. Lo que vive encima de una escena
 entra cuando la transición terminó y se va antes de que empiece la salida. Y
 se revisa con una hoja de fotogramas cada 0,1 s alrededor de cada transición,
 no solo una cada segundo y medio.
+
+### 2026-10-16 - El zoom a un titular caía en el vacío
+
+**Qué pasó.** El modo de lanzamiento de `autoreel` hace zoom al titular de
+cada sección del sitio capturado. En resend.com, "First-class developer
+experience" salía cortado ("t-class eloper experience"): el zoom apuntaba al
+centro de la pantalla y el texto estaba a la izquierda.
+
+**Por qué está mal.** Se medía la caja del `h2` con `getBoundingClientRect`,
+y un `h2` ocupa todo el ancho de su columna aunque el texto sea corto.
+
+**Qué se hace.** Para ubicar un texto se mide el texto: un `Range` con
+`selectNodeContents(el)` y su `getBoundingClientRect`. La caja del elemento
+solo sirve para botones y bloques.
+
+### 2026-10-16 - Una página de escritorio reducida hasta no leerse en 9:16
+
+**Qué pasó.** En la versión vertical del video de lanzamiento, la ventana del
+navegador mostraba la portada entera a 1.000 px de ancho: letra ilegible y
+medio cuadro vacío debajo. En 16:9 se veía bien, y solo se notó en la hoja de
+fotogramas del vertical.
+
+**Qué se hace.** En 9:16 la ventana es más alta que ancha y muestra un recorte
+de la página centrado en el foco (el punto del zoom o del clic). Cada formato
+se revisa con su propia hoja: que uno esté bien no dice nada del otro.
+
+### 2026-10-16 - Subtítulos que cruzaban de una voz a la siguiente
+
+**Qué pasó.** Con voz, los subtítulos del lanzamiento se armaban en grupos de
+cinco palabras sobre todas las narraciones juntas. Un grupo podía llevar el
+final de una toma y el principio de la siguiente ("instead of spam folders
+Integrate").
+
+**Qué se hace.** Los grupos se arman dentro de cada narración. Lo mismo vale
+para cualquier texto que agrupe por cantidad: el grupo no cruza un corte de
+escena, de toma ni de hablante.
+
+### 2026-10-16 - La herramienta de edición convierte `\u2014` en la raya misma
+
+**Qué pasó.** Para sacar las rayas largas de una expresión regular (la que parte
+un título de sitio en nombre y lema) se cambiaron por `\u2013\u2014` con la
+herramienta de edición. El archivo quedó con los caracteres literales otra
+vez: la herramienta decodifica los escapes.
+
+**Qué se hace.** Un escape que tiene que quedar escrito como escape se pone
+con un script que arme la barra invertida (`chr(92) + "u2014"` en Python), y
+se comprueba con `grep` que el archivo no tenga el carácter.
