@@ -3020,3 +3020,47 @@ grabación, no cómo se cortaba.
 **Qué se hace.** Un caché guarda también lo que decide su resultado: ahora el
 corte se reutiliza solo si los tramos calculados son idénticos a los de antes
 (`tramos.json`). Al cambiar un algoritmo, preguntarse qué cachés dependen de él.
+
+### 2026-10-17 - Un binario que Next no encontraba y un `catch` vacío que lo escondía
+
+**Qué pasó.** En la web del estudio de `autoreel`, al subir un video se genera
+una tira de fotogramas con `ffmpeg-static`. Desde Node funcionaba; dentro de
+Next no se generaba nunca y la portada decía "Sin video todavía". El error
+(`spawn \ROOT\node_modules\ffmpeg-static\ffmpeg.exe ENOENT`) no salía en
+ningún lado: la llamada terminaba en `.catch(() => {})`.
+
+**Por qué está mal.** Next empaqueta el código del servidor y reescribe las
+rutas internas del paquete, que busca su binario junto a sí mismo. Y un
+`catch` vacío convierte un fallo en un misterio.
+
+**Qué se hace.** Los paquetes que traen un binario o lo buscan por su propia
+ruta van en `serverExternalPackages` de `next.config.ts`. Y ningún `catch`
+queda vacío: si el fallo no debe parar el flujo, al menos se registra con qué
+falló.
+
+### 2026-10-17 - Un indicador de avance que nunca funcionó
+
+**Qué pasó.** El render de `autoreel` leía el avance de la CLI de Remotion
+("Rendered 120/1206") para avisar cada 15 s. Al conectarlo a la web se vio que
+nunca había avisado nada: el render se lanzaba con `--log=error`, que suprime
+justo esas líneas. Llevaba así desde el primer día y nadie lo notó, porque la
+salida se miraba con `tail` y solo se veía la línea final.
+
+**Qué se hace.** Lo que lee la salida de otro programa se prueba contra la
+salida real de ese programa, con sus mismas opciones, no contra un ejemplo
+escrito a mano. Ahora el render corre con el registro normal y `leerAvance`
+tiene pruebas con líneas copiadas de la CLI.
+
+### 2026-10-17 - El desborde de grid por tercera vez, y una medida que no lo veía
+
+**Qué pasó.** En la web del estudio, la lista del material (un `grid`) se
+estiraba con el nombre largo del video y sacaba el panel de la pantalla en el
+teléfono: 624 px en 390. Es la regla de `minmax(0,1fr)` que ya estaba escrita
+dos veces. Después de arreglarlo, la página medía 390 px pero un cuadro de
+texto seguía saliéndose unos píxeles de su panel: medir el ancho del
+documento no lo detectaba.
+
+**Qué se hace.** Todo `display: grid` que pueda llevar texto largo nace con
+`grid-template-columns: minmax(0, 1fr)`, no se añade cuando falla. Y la
+comprobación en el navegador mide también que ningún elemento se salga de su
+contenedor, no solo que la página no tenga barra horizontal.
