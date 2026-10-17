@@ -2841,3 +2841,28 @@ se deslizan van con `minmax(0,1fr)`, no con `1fr` ni con el valor por defecto:
 `grid-cols-[minmax(0,1fr)]` y `md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]`. Y
 los títulos de las columnas del pie no son encabezados: un `h2` repetido en
 cada página ensucia el esquema y choca con los títulos propios.
+
+### 2026-10-16 - `edge-tts` devolviendo 403 y archivos de 0 bytes
+
+**Qué pasó.** Al probar el editor de `autoreel`, `python -m edge_tts` escribía
+MP3 de 0 bytes y el error real (`WSServerHandshakeError: 403`) solo salía en
+stderr. Microsoft cambia la firma que exige su servicio y la versión instalada
+(7.2.8) se había quedado vieja. Es el mismo paquete que pone la voz a todos los
+videos de autoreel, así que la fábrica entera estaba a un render de fallar.
+
+**Qué se hace.** `pip install -U edge-tts` (con la 7.3.1 volvió). Si la voz
+falla de golpe sin cambios en el código, se actualiza el paquete antes de
+buscar el fallo en otro lado. Y un archivo de audio de 0 bytes es un error,
+no un audio vacío: se comprueba el tamaño antes de seguir.
+
+### 2026-10-16 - Un render de prueba en local escribe en la base de producción
+
+**Qué pasó.** `renderVideo` de `autoreel` guarda un registro en la tabla
+`projects` de Supabase, que es la de producción aunque el render corra en tu
+máquina. Dos renders de prueba del editor dejaron dos filas sin dueño
+(`editado` y `prueba-editar-cola`); se borraron a mano.
+
+**Qué se hace.** Al probar el pipeline de autoreel en local, al terminar se
+listan las filas de `projects` creadas en la última hora y se borran las de la
+prueba. Y la tabla de repos de `CLAUDE.md` dice que todos publican desde
+`main`: autoreel publica desde `master`.
