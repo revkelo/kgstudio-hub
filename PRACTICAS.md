@@ -202,6 +202,35 @@ un registro de verdad, y solo entonces se despliega el código nuevo.
 
 ## Registro de fallos
 
+### 2026-11-17 - OpenNext y enlaces simbólicos en Windows
+
+**Qué pasó.** Next compiló y las pruebas de base pasaron, pero el empaquetado
+de OpenNext falló con EPERM al crear un enlace simbólico a `pg` en Windows.
+
+**Qué se hace.** Compilar el paquete final en el entorno Linux de Workers
+Builds desde Git. No cambiar permisos del sistema ni publicar una subida local.
+Comprobar el runtime real antes de cambiar DNS o borrar Vercel.
+
+### 2026-11-17 - El listado de variables no devuelve texto descifrado
+
+**Qué pasó.** El listado de variables de Vercel devolvía ciphertext incluso
+con `decrypt=true`. La comprobación de formato de Supabase detectó el problema
+antes de desplegar o cambiar el dominio de la app.
+
+**Qué se hace.** Leer cada valor recuperable con
+`GET /v1/projects/{proyecto}/env/{id}` y exigir `decrypted: true`. Validar los
+formatos de URL antes de transferirlos. Las variables sensibles siguen pendientes;
+no se sustituyen por valores de desarrollo.
+
+### 2026-11-17 - Comando de build sin el PATH de npm en Pages
+
+**Qué pasó.** `next build` falló con `next: not found` en Pages aunque Next
+estaba instalado como dependencia del repo.
+
+**Qué se hace.** Configurar `npm run build` para que npm agregue los binarios
+locales al PATH. La exportación estática también declara sus rutas de metadatos
+con `dynamic = "force-static"` y genera la imagen OG durante el build.
+
 Cada entrada: qué pasó, por qué estaba mal, qué se hace en su lugar.
 
 ### 2026-08-31 - Rayas largas en todo el contenido generado
