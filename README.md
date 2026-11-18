@@ -160,7 +160,6 @@ python -m http.server 8000
 | `pagobot.` | Bot de pagos en Telegram (la web es solo la API) | `pagobot` |
 | `arriendos.` | Gestión de arriendos (privado) | `arriendos` |
 | `examia.` | Bancos de preguntas y simulacros con IA | `examia` |
-| `autoreel.` | Estudio de video vertical automatizado | `autoreel` |
 | `itep.` | Simulador del examen de inglés iTEP | `itep` |
 | `distribucionesagd.` | Sitio de cliente: ferretería y pinturas | `distribuciones-agd` |
 

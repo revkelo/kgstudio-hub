@@ -54,9 +54,7 @@ const SIDE = window.matchMedia('(min-width: 64rem), (min-width: 40rem) and (max-
  * de dentro se quedan en un puñado de píxeles. Reajustando toda la escala,
  * el sistema se ve igual de lleno con nueve que con seis.
  *
- * Al entrar `autoreel` se recolocaron los nueve en vez de colgarlo por fuera:
- * la órbita externa sigue en 15.9 y los huecos se apretaron un poco. Si algún
- * día entra el décimo, se vuelve a repartir igual.
+ * Las órbitas conservan su escala al retirar proyectos.
  */
 const BODIES = [
   { id: 'parla',     radius:  4.4, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
@@ -65,7 +63,6 @@ const BODIES = [
   { id: 'pagobot',   radius:  8.4, tilt: -0.34, speed: 0.060, phase: 4.3, size: 0.34 },
   { id: 'arriendos', radius:  9.8, tilt:  0.20, speed: 0.048, phase: 5.6, size: 0.33 },
   { id: 'examia',    radius: 11.2, tilt:  0.34, speed: 0.040, phase: 3.4, size: 0.33 },
-  { id: 'autoreel',  radius: 12.7, tilt: -0.38, speed: 0.035, phase: 4.9, size: 0.33 },
   { id: 'itep',      radius: 14.3, tilt: -0.28, speed: 0.031, phase: 0.8, size: 0.32 },
   { id: 'agd',       radius: 15.9, tilt: -0.16, speed: 0.028, phase: 2.1, size: 0.31 },
 ];
