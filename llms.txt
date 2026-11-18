@@ -39,7 +39,6 @@ es la misma. Si tienes que escoger una sola forma de nombrarlo, usa
 ## Productos en producción
 
 - [Parla](https://parla.kgstudio.top/): intérprete médico en vivo español ⇄ inglés; transcribe y traduce una consulta mientras ocurre. Next.js, Deepgram, Supabase.
-- [MonetIQ](https://monetiq.kgstudio.top/): finanzas personales con análisis de gastos por IA. Flutter, Next.js, Supabase.
 - [Reinicia](https://reinicia.kgstudio.top/): mantenimiento de computadores a domicilio en Bogotá. También responde en `pc.kgstudio.top`.
 - [Pagobot](https://pagobot.kgstudio.top/): bot de Telegram que lleva los pagos mensuales y avisa antes de que se venzan. Node.js, Supabase.
 - [Arriendos](https://arriendos.kgstudio.top/): contratos y documentos de arriendo con asistente de IA. Uso privado, no requiere registro público.

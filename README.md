@@ -155,7 +155,6 @@ python -m http.server 8000
 | `kgstudio.top` + `www.` | Este hub | `kgstudio-hub` |
 | `portafolio.` | Portafolio personal | `portafolio` |
 | `parla.` | Intérprete médico en vivo ES⇄EN | `parla` |
-| `monetiq.` | Finanzas personales con IA | `monetiq-web` |
 | `reinicia.` + `pc.` | Mantenimiento de computadores | `kgstudio-soporte` |
 | `pagobot.` | Bot de pagos en Telegram (la web es solo la API) | `pagobot` |
 | `arriendos.` | Gestión de arriendos (privado) | `arriendos` |

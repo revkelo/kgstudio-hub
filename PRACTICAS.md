@@ -3093,3 +3093,17 @@ documento no lo detectaba.
 `grid-template-columns: minmax(0, 1fr)`, no se añade cuando falla. Y la
 comprobación en el navegador mide también que ningún elemento se salga de su
 contenedor, no solo que la página no tenga barra horizontal.
+
+
+### 2026-11-17 - Sockets y estados HTTP al pasar a Workers
+
+**Qué pasó.** Examia abría su portada pero el pool SQL de Node no llegaba a
+Supabase desde Workers. El hub marcaba respuestas 503 como disponibles porque
+fetch no-cors solo confirmaba una respuesta opaca. Las tarjetas de GitHub
+necesitaban Fetch y User-Agent, y su diagnóstico no validaba datos GraphQL.
+
+**Qué se hace.** Usar Hyperdrive y un pool propio por solicitud; cerrar tras
+terminar el stream de renderizado. Comprobar estados HTTP desde una función
+con destinos fijos y verificar el diagnóstico de base cuando existe. Para
+GitHub, usar el adaptador Fetch y exigir datos GraphQL válidos. Probar el
+runtime publicado, no solo que compile.

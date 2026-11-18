@@ -58,7 +58,6 @@ const SIDE = window.matchMedia('(min-width: 64rem), (min-width: 40rem) and (max-
  */
 const BODIES = [
   { id: 'parla',     radius:  4.4, tilt:  0.30, speed: 0.125, phase: 0.0, size: 0.44 },
-  { id: 'monetiq',   radius:  5.7, tilt: -0.24, speed: 0.096, phase: 1.4, size: 0.40 },
   { id: 'reinicia',  radius:  7.0, tilt:  0.42, speed: 0.076, phase: 2.9, size: 0.36 },
   { id: 'pagobot',   radius:  8.4, tilt: -0.34, speed: 0.060, phase: 4.3, size: 0.34 },
   { id: 'arriendos', radius:  9.8, tilt:  0.20, speed: 0.048, phase: 5.6, size: 0.33 },
@@ -86,13 +85,15 @@ const countAll = document.getElementById('countAll');
 // también el portafolio, que no orbita pero es parte de la zona.
 const probes = Array.from(document.querySelectorAll('[data-probe]'));
 if (countAll) countAll.textContent = String(probes.length);
+let statusRequest;
 
 async function probe(el) {
   const id = el.dataset.node;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    await fetch(el.dataset.probe, { mode: 'no-cors', cache: 'no-store', signal: controller.signal });
+    statusRequest ??= fetch('/api/status', { cache: 'no-store', signal: AbortSignal.timeout(TIMEOUT_MS) })
+      .then(response => { if (!response.ok) throw new Error('Estado no disponible'); return response.json(); });
+    const status = await statusRequest;
+    if (status.services?.[id]?.ok !== true) throw new Error('Servicio no disponible');
     live.set(id, true);
     el.dataset.state = 'live';
     rows.filter((r) => r.dataset.row === id).forEach((r) => { r.dataset.state = 'live'; });
@@ -100,8 +101,6 @@ async function probe(el) {
     if (panel.el && panel.current === id) paintPanelState(true);
   } catch {
     // Sin señal: se queda apagado.
-  } finally {
-    clearTimeout(timer);
   }
 }
 
